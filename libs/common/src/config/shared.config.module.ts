@@ -2,8 +2,8 @@ import { DynamicModule, Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { AppConfigService } from 'y/common/config/app.config.service';
 import { Schema as SchemaType } from 'joi';
+import { AppConfigService } from '@common/config/app.config.service';
 
 export interface AppConfigOptions {
   appName: string;

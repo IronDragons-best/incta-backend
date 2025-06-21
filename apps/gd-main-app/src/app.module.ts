@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppConfigService, SharedConfigModule, validationSchema } from 'y/common';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { AppConfigService, SharedConfigModule, validationSchema } from '@common';
 
 @Module({
   imports: [

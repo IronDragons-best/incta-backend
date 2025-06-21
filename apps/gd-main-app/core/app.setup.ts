@@ -1,6 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import { AppConfigService } from 'y/common';
+import { AppConfigService } from '@common';
 
 export function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.useGlobalPipes(
