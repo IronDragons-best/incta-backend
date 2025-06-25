@@ -4,8 +4,6 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AppConfigService, SharedConfigModule, validationSchema } from '@common';
-import { UsersModule } from './modules/users/users.module';
-import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
@@ -33,8 +31,6 @@ import { CqrsModule } from '@nestjs/cqrs';
       }),
       inject: [AppConfigService],
     }),
-    CqrsModule.forRoot(),
-    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
