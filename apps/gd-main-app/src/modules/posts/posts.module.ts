@@ -6,21 +6,12 @@ import { Post } from './domain/post.entity';
 import { PostsService } from './application/post.service';
 import { PostsQueryRepository } from './infrastructure/posts.query.repository';
 
-
 const CommandHandlers = [];
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Post,
-    ]),
-    CqrsModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Post]), CqrsModule],
   controllers: [PostsController],
-  providers: [
-    PostsQueryRepository,
-    PostsService,
-  ],
+  providers: [PostsQueryRepository, PostsService],
   exports: [],
 })
 export class PostsModule {}

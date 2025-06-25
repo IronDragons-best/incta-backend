@@ -4,6 +4,9 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AppConfigService, SharedConfigModule, validationSchema } from '@common';
+import { UsersModule } from './modules/users/users.module';
+import { PostsModule } from './modules/posts/posts.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
@@ -11,6 +14,7 @@ import { AppConfigService, SharedConfigModule, validationSchema } from '@common'
       appName: 'gd-main-app',
       validationSchema: validationSchema,
     }),
+    CqrsModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => ({
         type: 'postgres',
@@ -31,6 +35,8 @@ import { AppConfigService, SharedConfigModule, validationSchema } from '@common'
       }),
       inject: [AppConfigService],
     }),
+    UsersModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

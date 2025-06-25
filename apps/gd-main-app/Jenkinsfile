@@ -3,13 +3,13 @@ pipeline {
     agent any
     environment {
         ENV_TYPE = "production"
-        PORT = 3920
+        PORT = 3923
         NAMESPACE = "irondragon-site"
         REGISTRY_HOSTNAME = "irondragons"
-        PROJECT = "id-main-app-b"
+        PROJECT = "incta-main-back"
         SERVICE="gd-main-app"
         REGISTRY = "registry.hub.docker.com"
-        DEPLOYMENT_NAME = "id-main-app-b-deployment"
+        DEPLOYMENT_NAME = "incta-main-back-deployment"
         IMAGE_NAME = "${env.BUILD_ID}_${env.ENV_TYPE}_${env.GIT_COMMIT}"
         DOCKER_BUILD_NAME = "${env.REGISTRY_HOSTNAME}/${env.PROJECT}:${env.IMAGE_NAME}"
     }

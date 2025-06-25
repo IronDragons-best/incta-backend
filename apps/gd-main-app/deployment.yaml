@@ -21,3 +21,39 @@ spec:
            ports:
              - containerPort: PORT_CONTAINER
 
+           env:
+             - name: FRONTEND_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FRONTEND_URL
+             - name: PG_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PG_HOST
+             - name: MAIN_PG_DATABASE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: MAIN_PG_DATABASE
+             - name: PG_USER
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PG_USER
+             - name: PG_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PG_PASSWORD
+             - name: PG_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PG_PORT
+             - name: PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PORT
