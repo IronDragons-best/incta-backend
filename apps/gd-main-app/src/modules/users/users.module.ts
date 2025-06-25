@@ -7,11 +7,11 @@ import { GetAllUsersHandler } from './application/query-handlers/get.all.users.q
 import { UsersRepository } from './infrastructure/users.repository';
 import { UsersQueryRepository } from './infrastructure/users.query.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './domain/user.entity';
+import { User } from './domain/user.entity';
 
 const usersServices = [CreateUserUseCase, DeleteUserUseCase, GetUserHandler, GetAllUsersHandler];
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
   providers: [...usersServices, UsersRepository, UsersQueryRepository],
 })

@@ -7,9 +7,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const sharedConfig = app.get<AppConfigService>(AppConfigService);
   appSetup(app, sharedConfig);
-
   const port = sharedConfig.port;
   await app.listen(port);
+
   console.log(`🚀 API Gateway running on: http://localhost:${port}/api/v1`);
 }
 bootstrap();

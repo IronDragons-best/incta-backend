@@ -19,7 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/gd-main-app/test/jest-e2e.json",
     "build:gd-main-app": "nest build gd-main-app",
-    "start:gd-main-app": "node dist/apps/gd-main-app/main",
+    "add:migration": "node apps/gd-main-app/database/utils/add.migration.js",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d apps/gd-main-app/database/typeorm.config.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d apps/gd-main-app/database/typeorm.config.ts",
+    "start:gd-main-app": "pnpm migration:run && node dist/apps/gd-main-app/main",
     "start:dev:gd-main-app": "nest start gd-main-app --watch"
   },
   "dependencies": {
