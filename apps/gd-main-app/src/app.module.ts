@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AppConfigService, SharedConfigModule, validationSchema } from '@common';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AppConfigService, SharedConfigModule, validationSchema } from '@common'
       }),
       inject: [AppConfigService],
     }),
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
