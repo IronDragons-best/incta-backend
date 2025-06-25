@@ -1,15 +1,13 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '../domain/user.entity';
+import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
 
 @Injectable()
 /** User Entity repository. For Create, Update, Delete operations */
 export class UsersRepository {
-  constructor(
-    @InjectRepository(UserEntity) private readonly usersRepository: Repository<UserEntity>,
-  ) {}
+  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
   /** Find User or throw not found exception*/
   async findOrNotFoundException(id: number) {
     const user = await this.usersRepository.findOne({
@@ -46,12 +44,12 @@ export class UsersRepository {
   }
 
   /** Save changes */
-  async save(user: UserEntity) {
+  async save(user: User) {
     return this.usersRepository.save(user);
   }
 
   /** Create the new entity and use save method */
-  async createUser(user: UserEntity) {
+  async createUser(user: User) {
     try {
       const newUser = this.usersRepository.create(user);
       const savedUser = await this.save(newUser);
@@ -63,7 +61,7 @@ export class UsersRepository {
   }
 
   /** Delete user method */
-  async deleteUser(user: UserEntity) {
+  async deleteUser(user: User) {
     await this.usersRepository.softRemove(user);
   }
 }

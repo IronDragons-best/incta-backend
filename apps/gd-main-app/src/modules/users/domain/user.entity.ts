@@ -12,7 +12,7 @@ export type UserDomainDtoType = {
   password: string;
   email: string;
 };
-export class UserEntity {
+export class User {
   @PrimaryGeneratedColumn()
   id: number;
   @CreateDateColumn()
