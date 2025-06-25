@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
@@ -12,6 +13,8 @@ export type UserDomainDtoType = {
   password: string;
   email: string;
 };
+
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
