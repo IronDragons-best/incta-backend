@@ -21,7 +21,6 @@ for (const path of envPaths) {
   }
 }
 
-console.log(process.env.PG_PORT);
 export default new DataSource({
   type: 'postgres',
   host: process.env.PG_HOST,
