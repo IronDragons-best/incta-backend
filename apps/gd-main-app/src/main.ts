@@ -8,7 +8,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const sharedConfig = app.get<AppConfigService>(AppConfigService);
 
-  app.setGlobalPrefix('api/v1');
   const config = new DocumentBuilder()
     .setTitle('Inctagram')
     .setDescription('Описание API')
