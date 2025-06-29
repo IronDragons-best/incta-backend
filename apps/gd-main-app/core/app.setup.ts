@@ -19,7 +19,7 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
 
   app.setGlobalPrefix('api/v1', {
     exclude: [
-      'api/docs*', // исключаем swagger из глобального префикса
+      'api/docs', // исключаем swagger из глобального префикса
       'health', // и health check тоже
     ],
   });

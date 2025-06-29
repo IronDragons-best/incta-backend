@@ -17,11 +17,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      url: '/api/v1', // можно явно указать путь к json (опционально)
-    },
-  });
+  SwaggerModule.setup('api/docs', app, document, {});
 
   await appSetup(app, sharedConfig);
   const port = sharedConfig.port;
