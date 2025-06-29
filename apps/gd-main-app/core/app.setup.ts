@@ -17,12 +17,7 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
   app.use(cookieParser());
   setupValidation(app);
 
-  app.setGlobalPrefix('api/v1', {
-    exclude: [
-      'api/docs', // исключаем swagger из глобального префикса
-      'health', // и health check тоже
-    ],
-  });
+  app.setGlobalPrefix('api/v1', {});
   app.useGlobalInterceptors(new NotificationInterceptor());
 
   app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
