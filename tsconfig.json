@@ -19,8 +19,18 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "paths": {
-      "@common": ["libs/common/src"],
-      "@common/*": ["libs/common/src/*"]
+      "@common": [
+        "libs/common/src"
+      ],
+      "@common/*": [
+        "libs/common/src/*"
+      ],
+      "monitoring/monitoring": [
+        "libs/monitoring/src"
+      ],
+      "monitoring/monitoring/*": [
+        "libs/monitoring/src/*"
+      ]
     }
   }
 }
