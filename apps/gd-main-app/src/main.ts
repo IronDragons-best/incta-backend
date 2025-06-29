@@ -21,7 +21,8 @@ async function bootstrap() {
     swaggerOptions: {
       url: '/api/v1', // можно явно указать путь к json (опционально)
     },
-  })
+  });
+
   appSetup(app, sharedConfig);
   const port = sharedConfig.port;
   await app.listen(port);

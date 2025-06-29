@@ -5,7 +5,6 @@ import { GetUserQuery } from '../application/query-handlers/get.user.query.handl
 import { UserInputDto } from './dto/user.input.dto';
 import { CreateUserCommand } from '../application/use-cases/create.user.use.case';
 import { DeleteUserCommand } from '../application/use-cases/delete.user.use.case';
-import { UseNotificationInterceptor } from '@common';
 import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('users')
