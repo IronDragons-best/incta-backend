@@ -1,7 +1,7 @@
 import { ConsoleLogger, ConsoleLoggerOptions, Injectable, Scope } from '@nestjs/common';
-import { WinstonService } from 'monitoring/monitoring/winston/winston.service';
-import { AsyncLocalStorageService } from 'monitoring/monitoring/async-local-storage/async.local.storage.service';
-import { REQUEST_ID_KEY } from 'monitoring/monitoring/middleware/request.context.middleware';
+import { WinstonService } from '@monitoring/winston/winston.service';
+import { AsyncLocalStorageService } from '@monitoring/async-local-storage/async.local.storage.service';
+import { REQUEST_ID_KEY } from '@monitoring/middleware/request.context.middleware';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class CustomLogger extends ConsoleLogger {

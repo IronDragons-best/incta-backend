@@ -1,27 +1,27 @@
 import { AppConfigService } from '@common';
 import * as winston from 'winston';
+import { LoggerConfigService } from '@monitoring/config/logger.config.service';
 
 export interface LoggerConfig {
   level: string;
-  transports: any[];
-  format: any;
+  transports: winston.transports.StreamTransportInstance[];
+  format: ReturnType<typeof winston.format.timestamp>;
 }
-
-export const createLoggerConfig = (configService: AppConfigService): LoggerConfig => {
+export const createLoggerConfig = (configService: LoggerConfigService): LoggerConfig => {
   const env = configService.nodeEnv || 'development';
 
   // Маппинг уровней для разных сред
-  const logLevels = {
-    development: 'trace', // Все логи включая trace
-    staging: 'info', // info и выше
-    production: 'warn', // Только warn, error, fatal
-    test: 'error', // Только error и fatal
+  const logLevels: Record<'development' | 'staging' | 'production' | 'test', string> = {
+    development: 'trace',
+    staging: 'info',
+    production: 'warn',
+    test: 'error',
   };
 
   const timeFormat = 'YYYY-MM-DD HH:mm:ss';
   const { combine, timestamp, errors, prettyPrint, colorize, json } = winston.format;
 
-  const transports = [];
+  const transports: winston.transports.StreamTransportInstance[] = [];
 
   if (env === 'development') {
     // В разработке - красивые цветные логи
@@ -44,23 +44,23 @@ export const createLoggerConfig = (configService: AppConfigService): LoggerConfi
     );
 
     // Файловые логи только в продакшене
-    if (env === 'production') {
-      transports.push(
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          format: combine(timestamp({ format: timeFormat }), errors({ stack: true }), json()),
-        }),
-        new winston.transports.File({
-          filename: 'logs/combined.log',
-          format: combine(timestamp({ format: timeFormat }), errors({ stack: true }), json()),
-        }),
-      );
-    }
+    // if (env === 'production') {
+    //   transports.push(
+    //     new winston.transports.File({
+    //       filename: 'logs/error.log',
+    //       level: 'error',
+    //       format: combine(timestamp({ format: timeFormat }), errors({ stack: true }), json()),
+    //     }),
+    //     new winston.transports.File({
+    //       filename: 'logs/combined.log',
+    //       format: combine(timestamp({ format: timeFormat }), errors({ stack: true }), json()),
+    //     }),
+    //   );
+    // }
   }
 
   return {
-    level: logLevels[env] || 'info',
+    level: (logLevels[env] as string) || 'info',
     transports,
     format: timestamp({ format: timeFormat }),
   };

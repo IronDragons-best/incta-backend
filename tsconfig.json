@@ -25,10 +25,10 @@
       "@common/*": [
         "libs/common/src/*"
       ],
-      "monitoring/monitoring": [
+      "@monitoring": [
         "libs/monitoring/src"
       ],
-      "monitoring/monitoring/*": [
+      "@monitoring/*": [
         "libs/monitoring/src/*"
       ]
     }

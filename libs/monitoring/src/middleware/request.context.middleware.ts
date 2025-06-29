@@ -1,7 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { AsyncLocalStorageService } from 'monitoring/monitoring/async-local-storage/async.local.storage.service';
 import { Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { AsyncLocalStorageService } from '@monitoring/async-local-storage/async.local.storage.service';
 export const REQUEST_ID_KEY = 'requestId';
 
 @Injectable()

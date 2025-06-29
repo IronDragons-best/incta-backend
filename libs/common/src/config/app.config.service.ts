@@ -81,10 +81,6 @@ export class AppConfigService extends ConfigService {
     return this.nodeEnv === 'test';
   }
 
-  get logLeve(): string {
-    const logLevel = this.get<string>('LOG_LEVEL');
-  }
-
   // Получение переменных по префиксу
   getByPrefix(prefix: string): Record<string, any> {
     const allEnvVars = process.env;

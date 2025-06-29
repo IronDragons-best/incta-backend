@@ -7,8 +7,9 @@ import {
   NotificationInterceptor,
   setupValidation,
 } from '@common';
+import { CustomLogger } from '@monitoring';
 
-export function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
+export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
     origin: sharedConfig.frontendUrl || 'http://localhost:3000',
     credentials: true,
@@ -20,4 +21,8 @@ export function appSetup(app: INestApplication, sharedConfig: AppConfigService) 
   app.useGlobalInterceptors(new NotificationInterceptor());
 
   app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
+
+  const logger = await app.resolve(CustomLogger);
+  logger.setContext('NEST_INIT');
+  app.useLogger(logger);
 }

@@ -2,7 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { AppConfigService } from '@common';
-import { SERVICE_NAME_TOKEN } from 'monitoring/monitoring/winston/constants/winston.token';
+import { SERVICE_NAME_TOKEN } from '@monitoring/winston/constants/winston.token';
+import { createLoggerConfig } from '@monitoring/logger/logger.config';
+import { LoggerConfigService } from '@monitoring/config/logger.config.service';
 
 const customLevels = {
   levels: {
@@ -23,23 +25,40 @@ export class WinstonService {
   private logger: winston.Logger;
   private readonly serviceName: string;
   constructor(
-    private configService: AppConfigService,
+    private configService: LoggerConfigService,
+
     @Inject(SERVICE_NAME_TOKEN) serviceName: string,
   ) {
     this.serviceName = serviceName;
 
+    const loggerConfig = createLoggerConfig(this.configService);
+    const isProduction = this.configService.isProduction;
+    const consoleFormat = isProduction
+      ? combine(timestamp({ format: timeFormat }), errors({ stack: true }), prettyPrint())
+      : combine(
+          timestamp({ format: timeFormat }),
+          errors({ stack: true }),
+          prettyPrint(),
+          colorize({
+            all: true,
+            colors: {
+              trace: 'yellow',
+              debug: 'blue',
+              info: 'green',
+              warn: 'yellow',
+              error: 'red',
+              fatal: 'magenta',
+            },
+          }),
+        );
+
     const consoleTransport = new winston.transports.Console({
-      format: combine(
-        timestamp({ format: timeFormat }),
-        errors({ stack: true }),
-        prettyPrint(),
-        colorize({ all: true, colors: { trace: 'yellow' } }),
-      ),
+      format: consoleFormat,
     });
 
     const transports: Transport[] = [consoleTransport];
 
-    const isProduction = this.configService.isProduction;
+    // const isProduction = this.configService.isProduction;
 
     // if (isProduction) {
     //   const httpTransport = new winston.transports.Http({
@@ -52,10 +71,13 @@ export class WinstonService {
 
     this.logger = winston.createLogger({
       format: winston.format.timestamp({ format: timeFormat }),
-      level: configService.logLevel,
+      level: loggerConfig.level,
       levels: customLevels.levels,
       transports: transports,
       defaultMeta: { serviceName: this.serviceName },
+      handleExceptions: true,
+      handleRejections: true,
+      exitOnError: false,
     });
   }
   trace(message: string, requestId: string | null, functionName?: string, sourceName?: string) {

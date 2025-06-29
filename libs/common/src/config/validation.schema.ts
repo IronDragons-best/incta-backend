@@ -17,3 +17,9 @@ export const validationSchema = Joi.object({
 
   FRONTEND_URL: Joi.string(),
 });
+
+export const loggerValidationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+
+  LOGGER_LEVEL: Joi.string().valid('info', 'trace', 'error'),
+});
