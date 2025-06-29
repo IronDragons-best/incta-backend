@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { AppConfigService, SharedConfigModule, validationSchema } from '@common';
+import { AppConfigService, CommonModule, SharedConfigModule, validationSchema } from '@common';
 import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -35,6 +35,7 @@ import { CqrsModule } from '@nestjs/cqrs';
       }),
       inject: [AppConfigService],
     }),
+    CommonModule,
     UsersModule,
     PostsModule,
   ],

@@ -1,20 +1,23 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
-import { AppConfigService } from '@common';
+import {
+  AllExceptionsFilter,
+  AppConfigService,
+  DomainExceptionsFilter,
+  NotificationInterceptor,
+  setupValidation,
+} from '@common';
 
 export function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
   app.enableCors({
     origin: sharedConfig.frontendUrl || 'http://localhost:3000',
     credentials: true,
   });
   app.use(cookieParser());
+  setupValidation(app);
+
   app.setGlobalPrefix('api/v1');
-  // setGlobalPrefixAndRedirect(app) - уточнить, нужен ли редирект
+  app.useGlobalInterceptors(new NotificationInterceptor());
+
+  app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
 }
