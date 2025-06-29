@@ -5,6 +5,7 @@ import { GetUserQuery } from '../application/query-handlers/get.user.query.handl
 import { UserInputDto } from './dto/user.input.dto';
 import { CreateUserCommand } from '../application/use-cases/create.user.use.case';
 import { DeleteUserCommand } from '../application/use-cases/delete.user.use.case';
+import { UseNotificationInterceptor } from '@common';
 
 @Controller('users')
 export class UsersController {
@@ -25,7 +26,7 @@ export class UsersController {
   createUser(@Body() body: UserInputDto) {
     return this.commandBus.execute(new CreateUserCommand(body));
   }
-  @Delete('id')
+  @Delete(':id')
   deleteUser(@Param('id') id: number) {
     return this.commandBus.execute(new DeleteUserCommand(id));
   }

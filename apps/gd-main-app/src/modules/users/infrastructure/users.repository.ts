@@ -3,49 +3,63 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
+import { NotificationService } from '@common';
 
 @Injectable()
 /** User Entity repository. For Create, Update, Delete operations */
 export class UsersRepository {
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly notificationService: NotificationService,
+  ) {}
   /** Find User or throw not found exception*/
-  async findOrNotFoundException(id: number) {
-    const user = await this.usersRepository.findOne({
-      where: {
-        id,
-        deletedAt: IsNull(),
-      },
-    });
-    if (!user) {
-      throw new NotFoundException('User does not exist');
-    }
-    return user;
-  }
-
-  /** Find user by id */
   async findById(id: number) {
-    return this.findOrNotFoundException(id);
+    try {
+      const user = await this.usersRepository.findOne({
+        where: {
+          id,
+          deletedAt: IsNull(),
+        },
+      });
+      return user || null; // Возвращаем null вместо исключения
+    } catch (error) {
+      // Только технические ошибки (DB connection, etc.)
+      console.error('Database error in findById:', error);
+      throw new InternalServerErrorException('Database connection error');
+    }
   }
 
   /** Find user by login or email. Checking that user doesn't exist. */
   async findExistingByLoginOrEmail(login: string, email: string) {
-    const existingUser = await this.usersRepository.findOne({
-      where: [
-        { login: login, deletedAt: IsNull() },
-        { email: email, deletedAt: IsNull() },
-      ],
-    });
-    if (!existingUser) {
-      return null;
+    try {
+      const existingUser = await this.usersRepository.findOne({
+        where: [
+          { login: login, deletedAt: IsNull() },
+          { email: email, deletedAt: IsNull() },
+        ],
+      });
+
+      if (!existingUser) {
+        return null;
+      }
+
+      return existingUser.login === login
+        ? { existingUser, field: 'Login' }
+        : { existingUser, field: 'Email' };
+    } catch (error) {
+      console.error('Database error in findExistingByLoginOrEmail:', error);
+      throw new InternalServerErrorException('Database connection error');
     }
-    return existingUser.login === login
-      ? { existingUser, field: 'Login' }
-      : { existingUser, field: 'Email' };
   }
 
   /** Save changes */
   async save(user: User) {
-    return this.usersRepository.save(user);
+    try {
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      console.error('Database error in save:', error);
+      throw new InternalServerErrorException('Database save error');
+    }
   }
 
   /** Create the new entity and use save method */
@@ -55,13 +69,18 @@ export class UsersRepository {
       const savedUser = await this.save(newUser);
       return savedUser.id;
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(error);
+      console.error('Database error in findById:', error);
+      throw new InternalServerErrorException('Database connection error');
     }
   }
 
   /** Delete user method */
   async deleteUser(user: User) {
-    await this.usersRepository.softRemove(user);
+    try {
+      await this.usersRepository.softRemove(user);
+    } catch (error) {
+      console.error('Database error in deleteUser:', error);
+      throw new InternalServerErrorException('Database connection error');
+    }
   }
 }

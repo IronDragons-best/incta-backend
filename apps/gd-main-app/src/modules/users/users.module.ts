@@ -8,11 +8,12 @@ import { UsersRepository } from './infrastructure/users.repository';
 import { UsersQueryRepository } from './infrastructure/users.query.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';
+import { NotificationService } from '@common';
 
 const usersServices = [CreateUserUseCase, DeleteUserUseCase, GetUserHandler, GetAllUsersHandler];
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UsersController],
-  providers: [...usersServices, UsersRepository, UsersQueryRepository],
+  providers: [...usersServices, UsersRepository, UsersQueryRepository, NotificationService],
 })
 export class UsersModule {}
