@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { AppConfigService, CommonModule, SharedConfigModule, validationSchema } 
 import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CqrsModule } from '@nestjs/cqrs';
+import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } from '@monitoring';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CqrsModule } from '@nestjs/cqrs';
       validationSchema: validationSchema,
     }),
     CqrsModule.forRoot(),
+    MonitoringModule.forRoot('main-microservice'),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => ({
         type: 'postgres',
@@ -35,11 +37,16 @@ import { CqrsModule } from '@nestjs/cqrs';
       }),
       inject: [AppConfigService],
     }),
+
     CommonModule,
     UsersModule,
     PostsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AsyncLocalStorageService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestContextMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}

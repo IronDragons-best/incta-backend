@@ -3,6 +3,7 @@ import { UsersRepository } from '../../infrastructure/users.repository';
 import { UserInputDto } from '../../interface/dto/user.input.dto';
 import { User } from '../../domain/user.entity';
 import { NotificationService } from '@common';
+import { CustomLogger } from '@monitoring';
 
 export class CreateUserCommand {
   constructor(public userDto: UserInputDto) {}
@@ -12,8 +13,11 @@ export class CreateUserCommand {
 export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
-    public readonly notificationService: NotificationService,
-  ) {}
+    private readonly notificationService: NotificationService,
+    private readonly logger: CustomLogger,
+  ) {
+    this.logger.setContext('User use case');
+  }
   async execute(command: CreateUserCommand) {
     const notification = this.notificationService.create();
     try {
@@ -23,6 +27,10 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       );
 
       if (userWithTheSameLoginOrEmail) {
+        this.logger.warn(
+          `${userWithTheSameLoginOrEmail.field} already taken`,
+          'Create user use-case',
+        );
         notification.setBadRequest(
           `${userWithTheSameLoginOrEmail.field} already taken`,
           userWithTheSameLoginOrEmail.field.toLowerCase(),
