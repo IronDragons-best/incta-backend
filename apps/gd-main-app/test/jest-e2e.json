@@ -8,6 +8,8 @@
   },
   "moduleNameMapper": {
     "^@common/(.*)$": "<rootDir>/../../../libs/common/src/$1",
-    "^@common$": "<rootDir>/../../../libs/common/src"
+    "^@common$": "<rootDir>/../../../libs/common/src",
+    "^@monitoring/(.*)$": "<rootDir>/../../../libs/monitoring/src/$1",
+    "^@monitoring$": "<rootDir>/../../../libs/monitoring/src"
   }
 }

@@ -1,15 +1,15 @@
 import { IsString, Matches } from 'class-validator';
-import { userEmailConstraints } from '../../constants/user.constants';
 import { ApiProperty } from '@nestjs/swagger';
+import { userEmailConstraints } from '../../../users/constants/user.constants';
 
-export class UserInputDto {
+export class PostsInputDto {
   @IsString()
   @ApiProperty()
-  login: string;
+  title: string;
   @IsString()
   @ApiProperty()
-  password: string;
+  shortDescription: string;
   @Matches(userEmailConstraints.pattern)
   @ApiProperty()
-  email: string;
+  content: string;
 }
