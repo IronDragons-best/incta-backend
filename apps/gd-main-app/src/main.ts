@@ -23,7 +23,6 @@ async function bootstrap() {
     },
   });
 
-  appSetup(app, sharedConfig);
   await appSetup(app, sharedConfig);
   const port = sharedConfig.port;
   await app.listen(port);
