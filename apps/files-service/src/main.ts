@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { FilesServiceModule } from './files-service.module';
 import { Transport } from '@nestjs/microservices';
-import { AppConfigService, NotificationInterceptor } from '@common';
+import { FilesConfigService, NotificationInterceptor } from '@common';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(FilesServiceModule, {
-    inject: [AppConfigService],
-    useFactory: (configService: AppConfigService) => ({
+    inject: [FilesConfigService],
+    useFactory: (configService: FilesConfigService) => ({
       transport: Transport.TCP,
       options: {
         host: configService.getFilesHost(),

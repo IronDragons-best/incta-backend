@@ -27,3 +27,11 @@ export const loggerValidationSchema = Joi.object({
 
   LOGGER_LEVEL: Joi.string().valid('info', 'trace', 'error'),
 });
+
+export const filesValidationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+
+  FILES_HOST: Joi.string(),
+
+  FILES_PORT: Joi.number(),
+});

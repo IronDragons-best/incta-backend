@@ -4,6 +4,7 @@ import { NotificationService } from '@common/notification/notification.service';
 import { NotificationInterceptor } from '@common/interceptors/notification.interceptor';
 import { DomainExceptionsFilter } from '@common/exceptions/filters/domain.exceptions.filter';
 import { AllExceptionsFilter } from '@common/exceptions/filters/all.exceptions.filter';
+import { FilesConfigService } from '@common/config/files.config.service';
 
 @Module({
   providers: [
@@ -12,6 +13,7 @@ import { AllExceptionsFilter } from '@common/exceptions/filters/all.exceptions.f
     NotificationInterceptor,
     DomainExceptionsFilter,
     AllExceptionsFilter,
+    FilesConfigService,
   ],
   exports: [
     CommonService,
@@ -19,6 +21,7 @@ import { AllExceptionsFilter } from '@common/exceptions/filters/all.exceptions.f
     NotificationInterceptor,
     DomainExceptionsFilter,
     AllExceptionsFilter,
+    FilesConfigService,
   ],
 })
 export class CommonModule {}
