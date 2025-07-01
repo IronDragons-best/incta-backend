@@ -14,6 +14,21 @@ export class AppConfigService extends ConfigService {
     }
     return port;
   }
+  getFilesPort(): number {
+    const port = this.get<number>('FILES_PORT');
+    if (!port) {
+      throw new Error('Port is required');
+    }
+    return port;
+  }
+
+  getFilesHost(): string {
+    const host = this.get<string>('FILES_HOST');
+    if (!host) {
+      throw new Error('Host is required');
+    }
+    return host;
+  }
   get frontendUrl(): string {
     const url = this.get<string>('FRONTEND_URL');
     if (!url) {

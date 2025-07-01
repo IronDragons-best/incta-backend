@@ -5,6 +5,10 @@ export const validationSchema = Joi.object({
 
   PORT: Joi.number().port().default(3000),
 
+  FILES_HOST: Joi.string(),
+
+  FILES_PORT: Joi.number(),
+
   PG_HOST: Joi.string().required(),
 
   MAIN_PG_DATABASE: Joi.string().required(),

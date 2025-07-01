@@ -8,6 +8,7 @@ import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } from '@monitoring';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -37,7 +38,20 @@ import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } 
       }),
       inject: [AppConfigService],
     }),
-
+    ClientsModule.registerAsync([
+      {
+        name: 'FILES_SERVICE',
+        imports: [SharedConfigModule],
+        useFactory: (configService: AppConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.getFilesHost(),
+            port: configService.getFilesPort(),
+          },
+        }),
+        inject: [AppConfigService],
+      },
+    ]),
     CommonModule,
     UsersModule,
     PostsModule,
@@ -47,6 +61,8 @@ import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } 
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestContextMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
+    consumer
+      .apply(RequestContextMiddleware)
+      .forRoutes({ path: '*path', method: RequestMethod.ALL });
   }
 }

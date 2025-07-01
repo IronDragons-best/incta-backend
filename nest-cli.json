@@ -19,6 +19,15 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "files-service": {
+      "type": "application",
+      "root": "apps/files-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/files-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/files-service/tsconfig.app.json"
+      }
+    },
     "gd-main-app": {
       "type": "application",
       "root": "apps/gd-main-app",

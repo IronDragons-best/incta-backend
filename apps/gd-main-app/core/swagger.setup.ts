@@ -6,6 +6,7 @@ export function swaggerSetup(app: INestApplication) {
     .setTitle('Inctagram')
     .setDescription('Описание API')
     .setVersion('1.0')
+    .addServer('/api/v1')
     .addBearerAuth()
     .build();
 

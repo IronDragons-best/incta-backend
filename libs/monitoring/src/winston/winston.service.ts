@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
-import { AppConfigService } from '@common';
 import { SERVICE_NAME_TOKEN } from '@monitoring/winston/constants/winston.token';
 import { createLoggerConfig } from '@monitoring/logger/logger.config';
 import { LoggerConfigService } from '@monitoring/config/logger.config.service';
@@ -80,32 +79,51 @@ export class WinstonService {
       exitOnError: false,
     });
   }
-  trace(message: string, requestId: string | null, functionName?: string, sourceName?: string) {
-    this.logger.log('trace', message, {
+  private formatMessage(message: any): string {
+    if (typeof message === 'string') {
+      return message;
+    }
+
+    if (message instanceof Error) {
+      return `${message.name}: ${message.message}`;
+    } else {
+      return JSON.stringify(message);
+    }
+
+    try {
+      return JSON.stringify(message, null, 2);
+    } catch (error) {
+      console.error(error);
+      return String(message);
+    }
+  }
+
+  trace(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+    this.logger.log('trace', this.formatMessage(message), {
       sourceName,
       functionName,
       requestId,
     });
   }
 
-  debug(message: string, requestId: string | null, functionName?: string, sourceName?: string) {
-    this.logger.debug(message, {
+  debug(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+    this.logger.debug(this.formatMessage(message), {
       sourceName,
       functionName,
       requestId,
     });
   }
 
-  info(message: string, requestId: string | null, functionName?: string, sourceName?: string) {
-    this.logger.info(message, {
+  info(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+    this.logger.info(this.formatMessage(message), {
       sourceName,
       functionName,
       requestId,
     });
   }
 
-  warn(message: string, requestId: string | null, functionName?: string, sourceName?: string) {
-    this.logger.warn(message, {
+  warn(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+    this.logger.warn(this.formatMessage(message), {
       sourceName,
       functionName,
       requestId,
@@ -113,13 +131,13 @@ export class WinstonService {
   }
 
   error(
-    message: string,
+    message: any,
     requestId: string | null,
     functionName?: string,
     sourceName?: string,
     stack?: string,
   ) {
-    this.logger.error(message, {
+    this.logger.error(this.formatMessage(message), {
       sourceName,
       functionName,
       requestId,
@@ -128,13 +146,13 @@ export class WinstonService {
   }
 
   fatal(
-    message: string,
+    message: any,
     requestId: string | null,
     functionName?: string,
     sourceName?: string,
     stack?: string,
   ) {
-    this.logger.log('fatal', message, {
+    this.logger.log('fatal', this.formatMessage(message), {
       sourceName,
       functionName,
       requestId,
