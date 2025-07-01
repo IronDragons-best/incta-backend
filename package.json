@@ -25,7 +25,7 @@
     "migration:run": "typeorm-ts-node-commonjs migration:run -d apps/gd-main-app/database/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d apps/gd-main-app/database/typeorm.config.ts",
     "start:gd-main-app": "npm run migration:run && node dist/apps/gd-main-app/main",
-    "start:files-service": "npm run migration:run && node dist/apps/files-service/main",
+    "start:files-service": "node dist/apps/files-service/main",
     "start:dev:gd-main-app": "nest start gd-main-app --watch",
     "start:dev:files-service": "nest start files-service --watch"
   },
