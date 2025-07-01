@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { NotificationService } from '@common';
-import { CustomLogger } from '@monitoring';
 import { firstValueFrom } from 'rxjs';
+import { CustomLogger } from '@monitoring';
 
 @Injectable()
 export class AppService {
