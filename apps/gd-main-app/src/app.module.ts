@@ -45,7 +45,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         useFactory: (configService: AppConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: configService.getFilesHost(),
+            host: configService.isProduction ? 'incta-files-service' : configService.getFilesHost(),
             port: configService.getFilesPort(),
           },
         }),
