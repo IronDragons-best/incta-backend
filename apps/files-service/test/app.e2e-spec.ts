@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
 import { FilesServiceModule } from './../src/files-service.module';
 
 describe('FilesServiceController (e2e)', () => {
