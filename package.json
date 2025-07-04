@@ -19,11 +19,15 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/gd-main-app/test/jest-e2e.json",
     "build:gd-main-app": "nest build gd-main-app",
+    "build:files-service": "nest build files-service",
+
     "add:migration": "node apps/gd-main-app/database/utils/add.migration.js",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d apps/gd-main-app/database/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d apps/gd-main-app/database/typeorm.config.ts",
     "start:gd-main-app": "npm run migration:run && node dist/apps/gd-main-app/main",
-    "start:dev:gd-main-app": "nest start gd-main-app --watch"
+    "start:files-service": "node dist/apps/files-service/main",
+    "start:dev:gd-main-app": "nest start gd-main-app --watch",
+    "start:dev:files-service": "nest start files-service --watch"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -31,6 +35,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/cqrs": "^11.0.3",
     "@nestjs/jwt": "^11.0.0",
+    "@nestjs/microservices": "^11.1.3",
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",

@@ -1,4 +1,4 @@
-describe('AppController', () => {
+describe('FilesServiceController', () => {
   beforeEach(async () => {});
 
   describe('root', () => {

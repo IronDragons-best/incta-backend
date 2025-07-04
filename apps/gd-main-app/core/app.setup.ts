@@ -8,6 +8,7 @@ import {
   setupValidation,
 } from '@common';
 import { CustomLogger } from '@monitoring';
+import { swaggerSetup } from './swagger.setup';
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
@@ -16,7 +17,7 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
   });
   app.use(cookieParser());
   setupValidation(app);
-
+  swaggerSetup(app);
   app.setGlobalPrefix('api/v1', {});
   app.useGlobalInterceptors(new NotificationInterceptor());
 

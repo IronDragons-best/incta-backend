@@ -2,6 +2,7 @@ import { ConsoleLogger, ConsoleLoggerOptions, Injectable, Scope } from '@nestjs/
 import { WinstonService } from '@monitoring/winston/winston.service';
 import { AsyncLocalStorageService } from '@monitoring/async-local-storage/async.local.storage.service';
 import { REQUEST_ID_KEY } from '@monitoring/middleware/request.context.middleware';
+import { LoggerConfigService } from '@monitoring/config/logger.config.service';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class CustomLogger extends ConsoleLogger {
@@ -9,12 +10,16 @@ export class CustomLogger extends ConsoleLogger {
     context: string,
     options: ConsoleLoggerOptions,
     private winstonLogger: WinstonService,
+    private readonly configService: LoggerConfigService,
     private asyncLocalStorageService: AsyncLocalStorageService,
   ) {
     super(context, {
       ...options,
       logLevels: ['verbose', 'debug', 'log', 'warn', 'error', 'fatal'],
     });
+  }
+  private isDevelopment(): boolean {
+    return this.configService.nodeEnv === 'development';
   }
 
   private getRequestId(): string | null {
@@ -31,58 +36,116 @@ export class CustomLogger extends ConsoleLogger {
     }
   }
 
-  trace(message: string, functionName?: string) {
-    super.verbose(message, this.getSourceContext() || functionName);
+  formatMessage(message: any): string {
+    if (typeof message === 'string') {
+      return message;
+    }
 
-    this.winstonLogger.trace(message, this.getRequestId(), functionName, this.getSourceContext());
+    if (message instanceof Error) {
+      return `${message.name}: ${message.message}`;
+    }
+
+    try {
+      return JSON.stringify(message, null, 2);
+    } catch (error) {
+      console.error(error);
+      return String(message);
+    }
   }
 
-  debug(message: string, functionName?: string) {
-    super.debug(message, this.getSourceContext() || functionName);
-
-    this.winstonLogger.debug(message, this.getRequestId(), functionName, this.getSourceContext());
+  formatContext(data?: any): string {
+    if (!data) return '';
+    return typeof data === 'string' ? data : JSON.stringify(data);
   }
 
-  log(message: string, functionName?: string) {
-    super.log(message, this.getSourceContext() || functionName);
+  trace(message: any, context?: any) {
+    const formattedMessage = this.formatMessage(message);
+    const formattedContext = this.formatContext(context);
 
-    this.winstonLogger.info(message, this.getRequestId(), functionName, this.getSourceContext());
+    super.verbose(formattedMessage, this.getSourceContext() || formattedContext);
+    this.winstonLogger.trace(
+      message, // передаем оригинал в winston
+      this.getRequestId(),
+      formattedContext,
+      this.getSourceContext(),
+    );
   }
 
-  warn(message: string, functionName?: string) {
-    super.warn(message, this.getSourceContext() || functionName);
+  debug(message: any, context?: any) {
+    const formattedMessage = this.formatMessage(message);
+    const formattedContext = this.formatContext(context);
 
-    this.winstonLogger.warn(message, this.getRequestId(), functionName, this.getSourceContext());
+    super.debug(formattedMessage, this.getSourceContext() || formattedContext);
+    this.winstonLogger.debug(
+      message, // передаем оригинал в winston
+      this.getRequestId(),
+      formattedContext,
+      this.getSourceContext(),
+    );
   }
 
-  error(error: Error | string, functionName?: string) {
-    const jsonError = error instanceof Error ? JSON.stringify(error) : error;
-    const stack = this.getStack(error);
+  log(message: any, context?: any) {
+    const formattedMessage = this.formatMessage(message);
+    const formattedContext = this.formatContext(context);
 
-    const fullErrorMessage = `${
-      error instanceof Error && 'message' in error ? `msg: ${error?.message}; ` : ''
-    } fullError: ${jsonError}`;
+    super.log(formattedMessage, this.getSourceContext() || formattedContext);
+    this.winstonLogger.info(
+      message, // передаем оригинал в winston
+      this.getRequestId(),
+      formattedContext,
+      this.getSourceContext(),
+    );
+  }
 
-    super.error(error, stack, this.getSourceContext() || functionName);
+  warn(message: any, context?: any) {
+    const formattedMessage = this.formatMessage(message);
+    const formattedContext = this.formatContext(context);
 
+    super.warn(formattedMessage, this.getSourceContext() || formattedContext);
+    this.winstonLogger.warn(
+      message, // передаем оригинал в winston
+      this.getRequestId(),
+      formattedContext,
+      this.getSourceContext(),
+    );
+  }
+
+  error(error: any, context?: any) {
+    let stack: string | undefined;
+
+    if (error instanceof Error) {
+      stack = this.getStack(error);
+    }
+
+    const formattedMessage = this.formatMessage(error);
+    const formattedContext = this.formatContext(context);
+
+    super.error(formattedMessage, stack, this.getSourceContext() || formattedContext);
     this.winstonLogger.error(
-      fullErrorMessage,
+      error, // передаем оригинал в winston
       this.getRequestId(),
-      functionName,
+      formattedContext,
       this.getSourceContext(),
       stack,
     );
   }
 
-  fatal(message: string, functionName?: string, stack?: string) {
-    super.fatal(message, this.getSourceContext() || functionName);
+  fatal(message: any, context?: any, stack?: string) {
+    const formattedMessage = this.formatMessage(message);
+    const formattedContext = this.formatContext(context);
 
+    super.fatal(formattedMessage, this.getSourceContext() || formattedContext);
     this.winstonLogger.fatal(
-      message,
+      message, // передаем оригинал в winston
       this.getRequestId(),
-      functionName,
+      formattedContext,
       this.getSourceContext(),
       stack,
     );
+  }
+
+  // Для быстрого логирования в разработке
+  dev(message: any, context?: any) {
+    this.debug(message, context);
   }
 }

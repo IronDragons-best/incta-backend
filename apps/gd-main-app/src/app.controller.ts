@@ -1,13 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { HealthSwagger } from '../core/decorators/swagger-settings/health.swagger.decorator';
 
-@Controller()
+@Controller('health')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    const x = 'x';
-    return this.appService.getHello();
+  @HealthSwagger()
+  healthCheck() {
+    return this.appService.healthCheck();
   }
 }

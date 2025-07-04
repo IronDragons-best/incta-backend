@@ -3,9 +3,7 @@ import { PostsQueryRepository } from '../infrastructure/posts.query.repository';
 
 @Injectable()
 export class PostsService {
-  constructor(
-    @Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository
-  ) {}
+  constructor(@Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository) {}
   async findPosts() {
     return this.postsQueryRepository.findPosts();
   }

@@ -3,7 +3,7 @@ export * from './common.service';
 export * from './config/app.config.service';
 export * from './config/shared.config.module';
 export * from './config/validation.schema';
-
+export * from './config/files.config.service';
 // TYPES
 export * from './notification/notification.types';
 export * from './exceptions/exception.type';

@@ -52,6 +52,16 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: PG_PORT
+             - name: FILES_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_HOST
+             - name: FILES_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_PORT
              - name: PORT
                valueFrom:
                  secretKeyRef:

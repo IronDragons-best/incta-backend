@@ -5,6 +5,10 @@ export const validationSchema = Joi.object({
 
   PORT: Joi.number().port().default(3000),
 
+  FILES_HOST: Joi.string(),
+
+  FILES_PORT: Joi.number(),
+
   PG_HOST: Joi.string().required(),
 
   MAIN_PG_DATABASE: Joi.string().required(),
@@ -22,4 +26,12 @@ export const loggerValidationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test'),
 
   LOGGER_LEVEL: Joi.string().valid('info', 'trace', 'error'),
+});
+
+export const filesValidationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+
+  FILES_HOST: Joi.string(),
+
+  FILES_PORT: Joi.number(),
 });
