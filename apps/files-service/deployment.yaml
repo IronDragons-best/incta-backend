@@ -21,3 +21,14 @@ spec:
            ports:
              - containerPort: PORT_CONTAINER
 
+           env:
+             - name: FILES_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: FILES_PORT
+             - name: FILES_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: FILES_HOST
