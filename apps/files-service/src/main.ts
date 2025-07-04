@@ -8,7 +8,7 @@ async function bootstrap() {
   let port = parseInt(process.env.FILES_PORT!, 10);
 
   if (!port || isNaN(port) || port < 0 || port > 65535) {
-    console.log(port);
+    console.warn(port);
     port = 3923;
   }
 
