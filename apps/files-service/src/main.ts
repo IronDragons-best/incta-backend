@@ -9,7 +9,7 @@ async function bootstrap() {
 
   if (!port || isNaN(port) || port < 0 || port > 65535) {
     console.warn(port);
-    port = 3923;
+    port = 3929;
   }
 
   const app = await NestFactory.createMicroservice(FilesServiceModule, {
