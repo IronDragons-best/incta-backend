@@ -4,20 +4,23 @@ import { Transport } from '@nestjs/microservices';
 import { FilesConfigService, NotificationInterceptor } from '@common';
 
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(FilesServiceModule, {
-    inject: [FilesConfigService],
-    useFactory: (configService: FilesConfigService) => ({
-      transport: Transport.TCP,
-      options: {
-        host: configService.getFilesHost(),
-        port: configService.getFilesPort(),
-      },
-    }),
-  });
-  app.useGlobalInterceptors(new NotificationInterceptor());
+  const appContext = await NestFactory.createApplicationContext(FilesServiceModule);
+  const configService = appContext.get(FilesConfigService);
 
+  const app = await NestFactory.createMicroservice(FilesServiceModule, {
+    transport: Transport.TCP,
+    options: {
+      host: configService.getFilesHost(),
+      port: configService.getFilesPort(),
+    },
+  });
+
+  app.useGlobalInterceptors(new NotificationInterceptor());
   await app.listen();
 
-  console.log(`🚀 Files microservice started`);
+  await appContext.close();
+  console.log(
+    `🚀 Files microservice started on ${configService.getFilesHost()}:${configService.getFilesPort()}`,
+  );
 }
 bootstrap();

@@ -9,7 +9,7 @@ export class FilesConfigService extends ConfigService {
   getFilesPort(): number {
     const port = this.get<number>('FILES_PORT');
     if (!port) {
-      throw new Error('Port is required');
+      throw new Error('Files port is required');
     }
     return port;
   }
@@ -17,7 +17,7 @@ export class FilesConfigService extends ConfigService {
   getFilesHost(): string {
     const host = this.get<string>('FILES_HOST');
     if (!host) {
-      throw new Error('Host is required');
+      throw new Error('Files host is required');
     }
     return host;
   }

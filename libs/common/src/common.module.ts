@@ -13,7 +13,6 @@ import { FilesConfigService } from '@common/config/files.config.service';
     NotificationInterceptor,
     DomainExceptionsFilter,
     AllExceptionsFilter,
-    FilesConfigService,
   ],
   exports: [
     CommonService,
@@ -21,7 +20,6 @@ import { FilesConfigService } from '@common/config/files.config.service';
     NotificationInterceptor,
     DomainExceptionsFilter,
     AllExceptionsFilter,
-    FilesConfigService,
   ],
 })
 export class CommonModule {}
