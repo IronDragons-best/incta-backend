@@ -52,6 +52,23 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         inject: [AppConfigService],
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'NOTIFICATIONS_SERVICE',
+        imports: [SharedConfigModule],
+        useFactory: (configService: AppConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.getRabbitMqHost()],
+            queue: 'cats_queue',
+            queueOptions: {
+              durable: false,
+            },
+          },
+        }),
+        inject: [AppConfigService],
+      },
+    ]),
     CommonModule,
     UsersModule,
     PostsModule,

@@ -8,27 +8,52 @@ export class AppConfigService extends ConfigService {
   }
   // Геттеры для общих настроек
   get port(): number {
-    const port = this.get<number>('PORT');
+    const port = this.get<string>('PORT');
     if (!port) {
       throw new Error('Port is required');
     }
-    return port;
+    return Number.parseInt(port);
   }
   getFilesPort(): number {
-    const port = this.get<number>('FILES_PORT');
+    const port = this.get<string>('FILES_PORT');
     if (!port) {
       throw new Error('Port is required');
     }
-    return port;
+    return Number.parseInt(port);
   }
 
   getFilesHost(): string {
     const host = this.get<string>('FILES_HOST');
     if (!host) {
-      throw new Error('Host is required');
+      throw new Error('Files host is required');
     }
     return host;
   }
+
+  getNotificationHost(): string {
+    const host = this.get<string>('NOTIFICATION_HOST');
+    if (!host) {
+      throw new Error('Notification host is required');
+    }
+    return host;
+  }
+
+  getNotificationPort(): number {
+    const port = this.get<string>('NOTIFICATION_PORT');
+    if (!port) {
+      throw new Error('Notification port is required');
+    }
+    return Number.parseInt(port);
+  }
+
+  getRabbitMqHost(): string {
+    const host = this.get<string>('RABBITMQ_HOST');
+    if (!host) {
+      throw new Error('RABBITMQ_HOST is required in main app');
+    }
+    return host;
+  }
+
   get frontendUrl(): string {
     const url = this.get<string>('FRONTEND_URL');
     if (!url) {

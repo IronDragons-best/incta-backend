@@ -5,6 +5,7 @@ import { existsSync } from 'fs';
 import { Schema as SchemaType } from 'joi';
 import { AppConfigService } from '@common/config/app.config.service';
 import { FilesConfigService } from '@common/config/files.config.service';
+import { NotificationConfigService } from '@common/config/notification.config.service';
 
 export interface AppConfigOptions {
   appName: string;
@@ -53,6 +54,14 @@ export class SharedConfigModule {
           provide: FilesConfigService,
           useFactory: (configService: ConfigService) => {
             return new FilesConfigService(configService);
+          },
+          inject: [ConfigService],
+        },
+
+        {
+          provide: NotificationConfigService,
+          useFactory: (configService: ConfigService) => {
+            return new NotificationConfigService(configService);
           },
           inject: [ConfigService],
         },

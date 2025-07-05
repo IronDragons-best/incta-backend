@@ -7,11 +7,11 @@ export class FilesConfigService extends ConfigService {
     super(configService['internalConfig']);
   }
   getFilesPort(): number {
-    const port = this.get<number>('FILES_PORT');
+    const port = this.get<string>('FILES_PORT');
     if (!port) {
       throw new Error('Files port is required');
     }
-    return port;
+    return Number.parseInt(port);
   }
 
   getFilesHost(): string {

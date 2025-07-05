@@ -20,14 +20,16 @@
     "test:e2e": "jest --config ./apps/gd-main-app/test/jest-e2e.json",
     "build:gd-main-app": "nest build gd-main-app",
     "build:files-service": "nest build files-service",
-
+    "build:notification-service": "nest build notification-service",
     "add:migration": "node apps/gd-main-app/database/utils/add.migration.js",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d apps/gd-main-app/database/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d apps/gd-main-app/database/typeorm.config.ts",
     "start:gd-main-app": "npm run migration:run && node dist/apps/gd-main-app/main",
     "start:files-service": "node dist/apps/files-service/main",
+    "start:notification-service": "node dist/apps/notification-service/main",
     "start:dev:gd-main-app": "nest start gd-main-app --watch",
-    "start:dev:files-service": "nest start files-service --watch"
+    "start:dev:files-service": "nest start files-service --watch",
+    "start:dev:notification-service": "nest start notification-service --watch"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -42,6 +44,7 @@
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
+    "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
