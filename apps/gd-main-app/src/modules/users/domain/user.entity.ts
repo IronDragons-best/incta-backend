@@ -38,6 +38,7 @@ export class User {
     user.login = userDto.login;
     user.email = userDto.email;
     user.password = userDto.password;
+
     return user;
   }
 }

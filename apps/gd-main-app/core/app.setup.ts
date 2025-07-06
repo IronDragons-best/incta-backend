@@ -7,8 +7,9 @@ import {
   NotificationInterceptor,
   setupValidation,
 } from '@common';
-import { CustomLogger } from '@monitoring';
+import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 import { swaggerSetup } from './swagger.setup';
+import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
@@ -19,7 +20,10 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
   setupValidation(app);
   swaggerSetup(app);
   app.setGlobalPrefix('api/v1', {});
-  app.useGlobalInterceptors(new NotificationInterceptor());
+  app.useGlobalInterceptors(
+    new NotificationInterceptor(),
+    new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
+  );
 
   app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
 

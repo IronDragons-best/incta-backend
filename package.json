@@ -32,6 +32,8 @@
     "start:dev:notification-service": "nest start notification-service --watch"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
+    "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
@@ -46,6 +48,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -54,6 +57,7 @@
     "ioredis": "^5.6.1",
     "joi": "^17.13.3",
     "mongoose": "^8.16.0",
+    "nodemailer": "^7.0.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",

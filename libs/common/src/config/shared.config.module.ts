@@ -71,7 +71,13 @@ export class SharedConfigModule {
           useValue: options.appName,
         },
       ],
-      exports: [ConfigModule, AppConfigService, FilesConfigService, 'APP_NAME'],
+      exports: [
+        ConfigModule,
+        AppConfigService,
+        FilesConfigService,
+        NotificationConfigService,
+        'APP_NAME',
+      ],
     };
   }
 

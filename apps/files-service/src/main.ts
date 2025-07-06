@@ -3,6 +3,8 @@ import { config } from 'dotenv';
 import { FilesServiceModule } from './files-service.module';
 import { Transport } from '@nestjs/microservices';
 import { NotificationInterceptor } from '@common';
+import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
+import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 config();
 
 async function bootstrap() {
@@ -17,7 +19,14 @@ async function bootstrap() {
     },
   });
 
-  app.useGlobalInterceptors(new NotificationInterceptor());
+  const logger = await app.resolve(CustomLogger);
+  logger.setContext('FILES_NEST_INIT');
+  app.useLogger(logger);
+  app.useGlobalInterceptors(
+    new NotificationInterceptor(),
+    new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
+  );
+
   await app.listen();
 
   console.log(`🚀 Files microservice started on ${host}:${port}`);

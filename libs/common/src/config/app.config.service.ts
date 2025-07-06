@@ -62,6 +62,14 @@ export class AppConfigService extends ConfigService {
     return url;
   }
 
+  getNotificationUrl(): string {
+    const url = this.get<string>('NOTIFICATION_URL');
+    if (!url) {
+      throw new Error('Notification URL is required');
+    }
+    return url;
+  }
+
   get postgresHost(): string {
     const host = this.get<string>('PG_HOST');
     if (!host) {

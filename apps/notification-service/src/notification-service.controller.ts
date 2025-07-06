@@ -5,8 +5,8 @@ import { NotificationServiceService } from './notification-service.service';
 export class NotificationServiceController {
   constructor(private readonly notificationServiceService: NotificationServiceService) {}
 
-  @Get()
-  getHello(): string {
-    return this.notificationServiceService.getHello();
+  @Get('health')
+  getHello() {
+    return this.notificationServiceService.check();
   }
 }

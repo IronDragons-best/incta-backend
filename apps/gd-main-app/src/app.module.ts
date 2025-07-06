@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,8 +7,9 @@ import { AppConfigService, CommonModule, SharedConfigModule, validationSchema } 
 import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CqrsModule } from '@nestjs/cqrs';
-import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } from '@monitoring';
+import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -60,15 +61,21 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           transport: Transport.RMQ,
           options: {
             urls: [configService.getRabbitMqHost()],
-            queue: 'cats_queue',
+            queue: 'email_notifications_queue',
             queueOptions: {
-              durable: false,
+              durable: true,
+            },
+            exchangeOptions: {
+              name: 'email.topic',
+              type: 'topic',
+              durable: true,
             },
           },
         }),
         inject: [AppConfigService],
       },
     ]),
+    HttpModule,
     CommonModule,
     UsersModule,
     PostsModule,
@@ -76,10 +83,4 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   controllers: [AppController],
   providers: [AppService, AsyncLocalStorageService],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(RequestContextMiddleware)
-      .forRoutes({ path: '*path', method: RequestMethod.ALL });
-  }
-}
+export class AppModule {}
