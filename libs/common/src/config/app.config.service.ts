@@ -54,8 +54,8 @@ export class AppConfigService extends ConfigService {
     return host;
   }
 
-  get frontendUrl(): string {
-    const url = this.get<string>('FRONTEND_URL');
+  get productionUrl(): string {
+    const url = this.get<string>('PRODUCTION_URL');
     if (!url) {
       throw new Error('URL is required');
     }

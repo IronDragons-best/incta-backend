@@ -13,7 +13,7 @@ import { RequestContextInterceptor } from '@monitoring/interceptor/request.conte
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
-    origin: sharedConfig.frontendUrl || 'http://localhost:3000',
+    origin: sharedConfig.productionUrl || 'http://localhost:3000',
     credentials: true,
   });
   app.use(cookieParser());

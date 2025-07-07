@@ -56,4 +56,6 @@ export const notificationsValidationSchema = Joi.object({
   NOTIFICATION_SENDER_PASSWORD: Joi.string(),
 
   RABBITMQ_HOST: Joi.string(),
+
+  RABBITMQ_PORT: Joi.number().port(),
 });

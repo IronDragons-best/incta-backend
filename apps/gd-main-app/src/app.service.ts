@@ -9,10 +9,12 @@ type FilesCheckType = {
   status: string;
   timestamp: string;
 };
+type NotificationCheckType = FilesCheckType;
 @Injectable()
 export class AppService {
   constructor(
     @Inject('FILES_SERVICE') private filesClient: ClientProxy,
+    @Inject('NOTIFICATION_SERVICE') private notificationClient: ClientProxy,
     private readonly notificationService: NotificationService,
     private readonly logger: CustomLogger,
     private readonly http: HttpService,
@@ -28,12 +30,8 @@ export class AppService {
     try {
       const [filesResult, notificationResult] = await Promise.allSettled([
         firstValueFrom<FilesCheckType>(this.filesClient.send('files-check', { requestId })),
-        firstValueFrom(
-          this.http.get(`${this.configService.getNotificationUrl()}/health`, {
-            headers: {
-              'x-request-id': requestId,
-            },
-          }),
+        firstValueFrom<NotificationCheckType>(
+          this.notificationClient.send('notifications-check', { requestId }),
         ),
       ]);
 

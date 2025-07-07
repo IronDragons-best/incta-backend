@@ -31,13 +31,19 @@ async function bootstrap() {
     },
   });
 
+  app.connectMicroservice({
+    transport: Transport.TCP,
+    options: {
+      host: configService.getNotificationHost(),
+      port: configService.getNotificationPort(),
+    },
+  });
+
   app.useGlobalInterceptors(
     new NotificationInterceptor(),
     new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
   );
   await app.startAllMicroservices();
-  await app.listen(configService.getNotificationPort());
-
   console.log(`Notification microservice started at ${configService.getNotificationPort()} port.`);
 }
 bootstrap();

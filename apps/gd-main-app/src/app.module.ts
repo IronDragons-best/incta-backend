@@ -55,6 +55,22 @@ import { HttpModule } from '@nestjs/axios';
     ]),
     ClientsModule.registerAsync([
       {
+        name: 'NOTIFICATION_SERVICE',
+        imports: [SharedConfigModule],
+        useFactory: (configService: AppConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.isProduction
+              ? 'incta-notifications-service'
+              : configService.getNotificationHost(),
+            port: configService.getNotificationPort(),
+          },
+        }),
+        inject: [AppConfigService],
+      },
+    ]),
+    ClientsModule.registerAsync([
+      {
         name: 'NOTIFICATIONS_SERVICE',
         imports: [SharedConfigModule],
         useFactory: (configService: AppConfigService) => ({
