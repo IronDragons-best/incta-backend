@@ -3,7 +3,12 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { AppConfigService, CommonModule, SharedConfigModule, validationSchema } from '@common';
+import {
+  AppConfigService,
+  CommonModule,
+  SharedConfigModule,
+  validationSchema,
+} from '@common';
 import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -46,7 +51,9 @@ import { HttpModule } from '@nestjs/axios';
         useFactory: (configService: AppConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: configService.isProduction ? 'incta-files-service' : configService.getFilesHost(),
+            host: configService.isProduction
+              ? 'incta-files-service'
+              : configService.getFilesHost(),
             port: configService.getFilesPort(),
           },
         }),
