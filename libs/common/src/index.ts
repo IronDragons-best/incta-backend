@@ -7,6 +7,7 @@ export * from './config/files.config.service';
 // TYPES
 export * from './notification/notification.types';
 export * from './exceptions/exception.type';
+export * from './exceptions/types/error.message';
 
 // Notification
 export * from './notification/app.notification';
@@ -22,6 +23,7 @@ export * from './interceptors/notification.interceptor';
 export * from './exceptions/filters/domain.exceptions.filter';
 export * from './exceptions/filters/base.exception.filter';
 export * from './exceptions/filters/all.exceptions.filter';
+export * from './exceptions/exception.type';
 
 // Validation
 export * from './validation/validation.setup';

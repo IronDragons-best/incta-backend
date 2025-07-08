@@ -44,7 +44,9 @@ export class User extends BasicEntity {
     // Password info fill
     passwordInfo.passwordHash = userDto.passwordHash;
     passwordInfo.passwordRecoveryCode = null;
-
+    user.emailConfirmationInfo = emailInfo;
+    user.passwordInfo = passwordInfo;
+    console.log(user);
     return user;
   }
 }

@@ -12,6 +12,7 @@ import { NotificationService } from '@common';
 import { AsyncLocalStorageService } from '@monitoring';
 import { EmailInfo } from './domain/email.info.entity';
 import { PasswordInfo } from './domain/password.info.entity';
+import { CryptoService } from './application/crypto.service';
 
 const usersServices = [
   CreateUserUseCase,
@@ -25,9 +26,11 @@ const usersServices = [
   providers: [
     ...usersServices,
     UsersRepository,
+    CryptoService,
     UsersQueryRepository,
     NotificationService,
     AsyncLocalStorageService,
   ],
+  exports: [UsersRepository, CryptoService],
 })
 export class UsersModule {}

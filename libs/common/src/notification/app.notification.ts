@@ -45,6 +45,7 @@ export class AppNotification<T = any> {
 
   setValue(value: T) {
     this.value = value;
+    return this;
   }
 
   hasErrors(): boolean {

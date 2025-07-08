@@ -13,8 +13,11 @@ import { UsersModule } from './modules/users/users.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { HttpModule } from '@nestjs/axios';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { RabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
+import { AuthModule } from './modules/auth/auth.module';
+import { ClientsModule } from '../core/common/shared-modules/client.module';
 
 @Module({
   imports: [
@@ -23,6 +26,10 @@ import { HttpModule } from '@nestjs/axios';
       validationSchema: validationSchema,
     }),
     CqrsModule.forRoot(),
+    EventEmitterModule.forRoot({
+      wildcard: true,
+      delimiter: '.',
+    }),
     MonitoringModule.forRoot('main-microservice'),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => ({
@@ -44,66 +51,14 @@ import { HttpModule } from '@nestjs/axios';
       }),
       inject: [AppConfigService],
     }),
-    ClientsModule.registerAsync([
-      {
-        name: 'FILES_SERVICE',
-        imports: [SharedConfigModule],
-        useFactory: (configService: AppConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.isProduction
-              ? 'incta-files-service'
-              : configService.getFilesHost(),
-            port: configService.getFilesPort(),
-          },
-        }),
-        inject: [AppConfigService],
-      },
-    ]),
-    ClientsModule.registerAsync([
-      {
-        name: 'NOTIFICATION_SERVICE',
-        imports: [SharedConfigModule],
-        useFactory: (configService: AppConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.isProduction
-              ? 'incta-notifications-service'
-              : configService.getNotificationHost(),
-            port: configService.getNotificationPort(),
-          },
-        }),
-        inject: [AppConfigService],
-      },
-    ]),
-    ClientsModule.registerAsync([
-      {
-        name: 'NOTIFICATIONS_SERVICE',
-        imports: [SharedConfigModule],
-        useFactory: (configService: AppConfigService) => ({
-          transport: Transport.RMQ,
-          options: {
-            urls: [configService.getRabbitMqHost()],
-            queue: 'email_notifications_queue',
-            queueOptions: {
-              durable: true,
-            },
-            exchangeOptions: {
-              name: 'email.topic',
-              type: 'topic',
-              durable: true,
-            },
-          },
-        }),
-        inject: [AppConfigService],
-      },
-    ]),
+    ClientsModule,
     HttpModule,
     CommonModule,
     UsersModule,
+    AuthModule,
     PostsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AsyncLocalStorageService],
+  providers: [AppService, RabbitInitService, AsyncLocalStorageService],
 })
 export class AppModule {}
