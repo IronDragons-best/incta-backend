@@ -46,7 +46,6 @@ export class User extends BasicEntity {
     passwordInfo.passwordRecoveryCode = null;
     user.emailConfirmationInfo = emailInfo;
     user.passwordInfo = passwordInfo;
-    console.log(user);
     return user;
   }
 }

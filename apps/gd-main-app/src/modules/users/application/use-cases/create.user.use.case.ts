@@ -52,7 +52,6 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
         emailConfirmCode: confirmCode,
       });
       await this.usersRepository.createUser(user);
-      console.log(user);
 
       const registeredUserDto = new RegisteredUserDto(
         user.login,
