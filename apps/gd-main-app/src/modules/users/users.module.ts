@@ -10,10 +10,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/user.entity';
 import { NotificationService } from '@common';
 import { AsyncLocalStorageService } from '@monitoring';
+import { EmailInfo } from './domain/email.info.entity';
+import { PasswordInfo } from './domain/password.info.entity';
 
-const usersServices = [CreateUserUseCase, DeleteUserUseCase, GetUserHandler, GetAllUsersHandler];
+const usersServices = [
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  GetUserHandler,
+  GetAllUsersHandler,
+];
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User, EmailInfo, PasswordInfo])],
   controllers: [UsersController],
   providers: [
     ...usersServices,

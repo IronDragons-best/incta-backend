@@ -1,16 +1,15 @@
 import { NestFactory } from '@nestjs/core';
+import { config } from 'dotenv';
 import { FilesServiceModule } from './files-service.module';
 import { Transport } from '@nestjs/microservices';
 import { NotificationInterceptor } from '@common';
+import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
+import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
+config();
 
 async function bootstrap() {
   const host = process.env.FILES_HOST;
-  let port = parseInt(process.env.FILES_PORT!, 10);
-
-  if (!port || isNaN(port) || port < 0 || port > 65535) {
-    console.warn(port);
-    port = 3929;
-  }
+  const port = parseInt(process.env.FILES_PORT!, 10);
 
   const app = await NestFactory.createMicroservice(FilesServiceModule, {
     transport: Transport.TCP,
@@ -20,7 +19,14 @@ async function bootstrap() {
     },
   });
 
-  app.useGlobalInterceptors(new NotificationInterceptor());
+  const logger = await app.resolve(CustomLogger);
+  logger.setContext('FILES_NEST_INIT');
+  app.useLogger(logger);
+  app.useGlobalInterceptors(
+    new NotificationInterceptor(),
+    new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
+  );
+
   await app.listen();
 
   console.log(`🚀 Files microservice started on ${host}:${port}`);

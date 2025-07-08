@@ -9,6 +9,12 @@ export const validationSchema = Joi.object({
 
   FILES_PORT: Joi.number(),
 
+  NOTIFICATION_HOST: Joi.string(),
+
+  NOTIFICATION_PORT: Joi.number(),
+
+  RABBITMQ_HOST: Joi.string(),
+
   PG_HOST: Joi.string().required(),
 
   MAIN_PG_DATABASE: Joi.string().required(),
@@ -34,4 +40,22 @@ export const filesValidationSchema = Joi.object({
   FILES_HOST: Joi.string(),
 
   FILES_PORT: Joi.number(),
+});
+
+export const notificationsValidationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+
+  NOTIFICATION_HOST: Joi.string(),
+
+  NOTIFICATION_PORT: Joi.number().port(),
+
+  NOTIFICATION_EMAIL_HOST: Joi.string(),
+
+  NOTIFICATION_SENDER_ADDRESS: Joi.string().email(),
+
+  NOTIFICATION_SENDER_PASSWORD: Joi.string(),
+
+  RABBITMQ_HOST: Joi.string(),
+
+  RABBITMQ_PORT: Joi.number().port(),
 });

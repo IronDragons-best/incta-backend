@@ -1,8 +1,8 @@
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { FilesServiceController } from './files-service.controller';
 import { FilesServiceService } from './files-service.service';
 import { CommonModule, filesValidationSchema, SharedConfigModule } from '@common';
-import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } from '@monitoring';
+import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
 
 @Module({
   imports: [
@@ -17,10 +17,4 @@ import { AsyncLocalStorageService, MonitoringModule, RequestContextMiddleware } 
   controllers: [FilesServiceController],
   providers: [FilesServiceService, AsyncLocalStorageService],
 })
-export class FilesServiceModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(RequestContextMiddleware)
-      .forRoutes({ path: '*path', method: RequestMethod.ALL });
-  }
-}
+export class FilesServiceModule {}

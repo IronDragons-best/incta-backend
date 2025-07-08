@@ -6,7 +6,6 @@ import { CustomLogger } from '@monitoring/logger/custom.logger.service';
 import { AsyncLocalStorageService } from '@monitoring/async-local-storage/async.local.storage.service';
 import { loggerValidationSchema, SharedConfigModule } from '@common';
 import { SERVICE_NAME_TOKEN } from '@monitoring/winston/constants/winston.token';
-import { RequestContextMiddleware } from '@monitoring/middleware/request.context.middleware';
 
 @Global()
 @Module({
@@ -31,14 +30,8 @@ export class MonitoringModule {
         WinstonService,
         CustomLogger,
         AsyncLocalStorageService,
-        RequestContextMiddleware,
       ],
-      exports: [
-        MonitoringService,
-        CustomLogger,
-        AsyncLocalStorageService,
-        RequestContextMiddleware,
-      ],
+      exports: [MonitoringService, CustomLogger, AsyncLocalStorageService],
     };
   }
 }

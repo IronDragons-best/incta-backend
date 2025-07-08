@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/apps/gd-main-app"
+    "outDir": "../../dist/apps/gd-main-app",
+    "typeRoots": ["../../node_modules/@types", "./core/common/types"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]

@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationService } from '@common';
+import { AsyncLocalStorageService, CustomLogger, REQUEST_ID_KEY } from '@monitoring';
 
 @Injectable()
 export class FilesServiceService {
-  constructor(private readonly notification: NotificationService) {}
+  constructor(
+    private readonly notification: NotificationService,
+    private readonly asyncLocalStorage: AsyncLocalStorageService,
+    private readonly logger: CustomLogger,
+  ) {
+    this.logger.setContext('Files-microservice-service');
+  }
   check() {
     const notification = this.notification.create();
     notification.setValue({
