@@ -14,7 +14,7 @@ export class BasicEntity {
   @UpdateDateColumn()
   updatedAt: Date;
   @DeleteDateColumn()
-  deletedAt: Date;
+  deletedAt: Date | null;
   @VersionColumn({ default: 1 })
   version: number;
 }

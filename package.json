@@ -105,10 +105,11 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsconfig-paths-jest": "^0.0.1",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
-  "jest": {
+  "jest":  {
     "moduleFileExtensions": [
       "js",
       "json",
@@ -131,7 +132,9 @@
     "moduleNameMapper": {
       "^@common$": "<rootDir>/libs/common/src",
       "^@common/(.*)$": "<rootDir>/libs/common/src/$1",
-      "^monitoring/monitoring(|/.*)$": "<rootDir>/libs/monitoring/src/$1"
+      "^@monitoring$": "<rootDir>/libs/monitoring/src",
+      "^@monitoring/(.*)$": "<rootDir>/libs/monitoring/src/$1"
     }
   }
+
 }

@@ -49,7 +49,7 @@ export class User extends BasicEntity {
     user.passwordInfo = passwordInfo;
     return user;
   }
-  static isPasswordsMatch(password: string, confirmPassword: string) {
+  static isPasswordsMatch(this: void, password: string, confirmPassword: string) {
     if (password === confirmPassword) {
       return true;
     }

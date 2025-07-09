@@ -64,7 +64,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
 
       return notification.setValue(registeredUserDto);
     } catch (error) {
-      console.error('Error creating user:', error);
+      this.logger.error(error);
       notification.setServerError('Internal server error occurred while creating user');
       return notification;
     }

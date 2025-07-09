@@ -222,6 +222,9 @@ importers:
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
+      tsconfig-paths-jest:
+        specifier: ^0.0.1
+        version: 0.0.1
       typescript:
         specifier: ^5.7.3
         version: 5.8.3
@@ -4805,6 +4808,9 @@ packages:
         optional: true
       '@swc/wasm':
         optional: true
+
+  tsconfig-paths-jest@0.0.1:
+    resolution: {integrity: sha512-YKhUKqbteklNppC2NqL7dv1cWF8eEobgHVD5kjF1y9Q4ocqpBiaDlYslQ9eMhtbqIPRrA68RIEXqknEjlxdwxw==}
 
   tsconfig-paths-webpack-plugin@4.2.0:
     resolution: {integrity: sha512-zbem3rfRS8BgeNK50Zz5SIQgXzLafiHjOwUAvk/38/o1jHn/V5QAgVUcz884or7WYcPaH3N2CIfUc2u0ul7UcA==}
@@ -10543,6 +10549,8 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.12.5
+
+  tsconfig-paths-jest@0.0.1: {}
 
   tsconfig-paths-webpack-plugin@4.2.0:
     dependencies:
