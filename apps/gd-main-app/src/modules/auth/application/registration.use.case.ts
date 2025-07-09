@@ -17,13 +17,14 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
     private readonly commandBus: CommandBus,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    this.logger.setContext('Registration use case');
+  }
   async execute(command: RegistrationCommand) {
     try {
       const registrationResult: AppNotification<RegisteredUserDto> =
         await this.commandBus.execute(new CreateUserCommand(command.userDto));
       if (registrationResult.hasErrors()) {
-        this.logger.error(registrationResult.getErrors());
         return registrationResult;
       }
       const user: RegisteredUserDto | null = registrationResult.getValue();

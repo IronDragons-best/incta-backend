@@ -27,7 +27,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     try {
       const userWithTheSameLoginOrEmail =
         await this.usersRepository.findExistingByLoginOrEmail(
-          command.userDto.userName,
+          command.userDto.username,
           command.userDto.email,
         );
 
@@ -42,19 +42,22 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
         );
         return notification;
       }
+
       const userDto = command.userDto;
+      User.isPasswordsMatch(userDto.password, userDto.passwordConfirmation);
       const hash = await this.cryptoService.createHash(userDto.password);
       const confirmCode = uuidv4();
+
       const user: User = User.createInstance({
-        login: userDto.userName,
+        username: userDto.username,
         passwordHash: hash,
         email: userDto.email,
         emailConfirmCode: confirmCode,
       });
-      await this.usersRepository.createUser(user);
+      await this.usersRepository.save(user);
 
       const registeredUserDto = new RegisteredUserDto(
-        user.login,
+        user.username,
         user.email,
         user.emailConfirmationInfo.confirmCode,
       );

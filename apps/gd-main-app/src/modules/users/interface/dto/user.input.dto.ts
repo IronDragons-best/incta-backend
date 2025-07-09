@@ -6,6 +6,7 @@ import {
 } from '../../constants/user.constants';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
+
 export class UserInputDto {
   @IsStringWithTrim(userNameConstraints.minLength, userNameConstraints.maxLength)
   @ApiProperty({
@@ -13,7 +14,16 @@ export class UserInputDto {
     minLength: userNameConstraints.minLength,
     maxLength: userNameConstraints.maxLength,
   })
-  userName: string;
+  username: string;
+
+  @Matches(userEmailConstraints.pattern)
+  @ApiProperty({
+    required: true,
+    pattern: '^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$',
+    example: 'user@email.com',
+  })
+  email: string;
+
   @ApiProperty({
     required: true,
     minLength: userPasswordConstraints.minLength,
@@ -22,11 +32,14 @@ export class UserInputDto {
   @Matches(userPasswordConstraints.pattern)
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   password: string;
-  @Matches(userEmailConstraints.pattern)
+
   @ApiProperty({
+    description: 'Must match with password',
     required: true,
-    pattern: '^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$',
-    example: 'user@email.com',
+    minLength: userPasswordConstraints.minLength,
+    maxLength: userPasswordConstraints.maxLength,
   })
-  email: string;
+  @Matches(userPasswordConstraints.pattern)
+  @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
+  passwordConfirmation: string;
 }

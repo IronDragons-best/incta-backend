@@ -14,7 +14,6 @@ export * from './notification/app.notification';
 export * from './notification/notification.service';
 
 // Exceptions
-export * from './exceptions/domain.exception';
 
 // Interceptors
 export * from './interceptors/notification.interceptor';

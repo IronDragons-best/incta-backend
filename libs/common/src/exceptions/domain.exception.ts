@@ -1,4 +1,4 @@
-import { DomainExceptionCode } from '@common/exceptions/exception.type';
+import { DomainExceptionCode } from './exception.type';
 
 export class ErrorExtension {
   constructor(
@@ -17,7 +17,10 @@ export abstract class DomainException extends Error {
   }
 }
 
-function ConcreteDomainExceptionFactory(commonMessage: string, code: DomainExceptionCode) {
+function ConcreteDomainExceptionFactory(
+  commonMessage: string,
+  code: DomainExceptionCode,
+) {
   return class extends DomainException {
     constructor(extensions: ErrorExtension[]) {
       super(commonMessage, code, extensions);

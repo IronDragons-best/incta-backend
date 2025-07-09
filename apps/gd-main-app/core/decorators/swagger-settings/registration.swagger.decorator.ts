@@ -6,6 +6,8 @@ import { ErrorResponseDto } from '@common';
 export function RegistrationSwagger() {
   return applyDecorators(
     ApiOperation({ summary: 'User Registration.' }),
+    ApiBody({ type: UserInputDto, description: 'User credentials and email' }),
+
     ApiResponse({
       status: 204,
       description: 'Registration successful, no content returned',
@@ -19,7 +21,5 @@ export function RegistrationSwagger() {
       status: 429,
       description: 'More than 2 attempts from one IP-address during 10 seconds',
     }),
-
-    ApiBody({ type: UserInputDto, description: 'User credentials and email' }),
   );
 }

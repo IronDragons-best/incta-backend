@@ -43,10 +43,15 @@ import { ClientsModule } from '../core/common/shared-modules/client.module';
         synchronize: false,
         logging: ['error'],
         namingStrategy: new SnakeNamingStrategy(),
+        ssl: {
+          rejectUnauthorized: true,
+        },
+        // Для Neon можно также добавить:
         extra: {
-          ssl: {
-            rejectUnauthorized: false,
-          },
+          // Настройки пула соединений для Neon
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 2000,
         },
       }),
       inject: [AppConfigService],
