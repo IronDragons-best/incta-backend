@@ -1,4 +1,4 @@
-import { Matches } from 'class-validator';
+import { Equals, IsBoolean, Matches } from 'class-validator';
 import {
   userEmailConstraints,
   userNameConstraints,
@@ -42,4 +42,8 @@ export class UserInputDto {
   @Matches(userPasswordConstraints.pattern)
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   passwordConfirmation: string;
+
+  @IsBoolean()
+  @Equals(true, { message: 'You must agree to the Terms of Service' })
+  agreeToTerms: boolean;
 }

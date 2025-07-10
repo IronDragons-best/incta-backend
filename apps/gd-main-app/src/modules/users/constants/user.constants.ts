@@ -7,7 +7,8 @@ export const userNameConstraints = {
 export const userPasswordConstraints = {
   minLength: 6,
   maxLength: 20,
-  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,20}$/,
+  pattern:
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]{6,20}$/,
 };
 
 export const userEmailConstraints = {

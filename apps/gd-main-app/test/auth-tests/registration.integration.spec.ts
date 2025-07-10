@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RegistrationUseCase } from '../../src/modules/auth/application/registration.use.case';
+import { RegistrationUseCase } from '../../src/modules/auth/application/use-cases/registration.use.case';
 import { CommandBus } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomLogger } from '@monitoring';

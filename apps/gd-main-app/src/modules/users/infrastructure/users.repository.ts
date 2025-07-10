@@ -4,6 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
 import { AppConfigService } from '@common';
+import { CustomLogger } from '@monitoring';
 
 @Injectable()
 /** User Entity repository. For Create, Update, Delete operations */
@@ -12,65 +13,62 @@ export class UsersRepository {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly configService: AppConfigService,
-  ) {}
+    private readonly logger: CustomLogger,
+  ) {
+    this.logger.setContext('users repository');
+  }
   /** Find User or throw not found exception*/
   async findById(id: number) {
-    try {
-      const user = await this.usersRepository.findOne({
-        where: {
-          id,
-          deletedAt: IsNull(),
-        },
-      });
-      return user || null; // Возвращаем null вместо исключения
-    } catch (error) {
-      // Только технические ошибки (DB connection, etc.)
-      console.error('Database error in findById:', error);
-      throw new InternalServerErrorException('Database connection error');
+    const user = await this.usersRepository.findOne({
+      where: {
+        id,
+        deletedAt: IsNull(),
+      },
+    });
+    return user || null;
+  }
+
+  /** Find existing user by email or login */
+  async findByUsernameOrEmail(usernameOrEmail: string) {
+    const user = await this.usersRepository.findOne({
+      where: [
+        { username: usernameOrEmail, deletedAt: IsNull() },
+        { email: usernameOrEmail, deletedAt: IsNull() },
+      ],
+      relations: ['emailConfirmationInfo', 'passwordInfo'],
+    });
+    if (!user) {
+      return null;
     }
+    return user;
   }
 
   /** Find user by login or email. Checking that user doesn't exist. */
-  async findExistingByLoginOrEmail(username: string, email: string) {
-    try {
-      const existingUser = await this.usersRepository.findOne({
-        where: [
-          { username: username, deletedAt: IsNull() },
-          { email: email, deletedAt: IsNull() },
-        ],
-      });
+  async findExistingByLoginAndEmail(username: string, email: string) {
+    const existingUser = await this.usersRepository.findOne({
+      where: [
+        { username: username, deletedAt: IsNull() },
+        { email: email, deletedAt: IsNull() },
+      ],
+    });
 
-      if (!existingUser) {
-        return null;
-      }
-
-      return existingUser.username === username
-        ? { existingUser, field: 'Username' }
-        : { existingUser, field: 'Email' };
-    } catch (error) {
-      console.error('Database error in findExistingByLoginOrEmail:', error);
-      throw new InternalServerErrorException('Database connection error');
+    if (!existingUser) {
+      return null;
     }
+
+    return existingUser.username === username
+      ? { existingUser, field: 'Username' }
+      : { existingUser, field: 'Email' };
   }
 
   /** Save changes */
   async save(user: User) {
-    try {
-      return await this.usersRepository.save(user);
-    } catch (error) {
-      console.error('Database error in save:', error);
-      throw new InternalServerErrorException('Database save error');
-    }
+    return await this.usersRepository.save(user);
   }
 
   /** Delete user method */
   async deleteUser(user: User) {
-    try {
-      await this.usersRepository.softRemove(user);
-    } catch (error) {
-      console.error('Database error in deleteUser:', error);
-      throw new InternalServerErrorException('Database connection error');
-    }
+    await this.usersRepository.softRemove(user);
   }
 
   async dropUsers() {

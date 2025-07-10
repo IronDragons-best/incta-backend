@@ -91,6 +91,7 @@ describe('CreateUserUseCase', () => {
       email: 'new@example.com',
       password: 'StrongP@ss1',
       passwordConfirmation: 'StrongP@ss1',
+      agreeToTerms: true,
     };
     const hashedPassword = 'hashedPassword123';
     const confirmCode = 'some-uuid-code';
@@ -161,6 +162,7 @@ describe('CreateUserUseCase', () => {
       email: 'existing@example.com',
       password: 'StrongP@ss1',
       passwordConfirmation: 'StrongP@ss1',
+      agreeToTerms: true,
     };
 
     // Мокаем, что пользователь с таким логином уже существует
@@ -190,7 +192,8 @@ describe('CreateUserUseCase', () => {
       username: 'testuser',
       email: 'test@example.com',
       password: 'StrongP@ss1',
-      passwordConfirmation: 'WrongP@ss1', // Несоответствие
+      passwordConfirmation: 'WrongP@ss1',
+      agreeToTerms: true,
     };
 
     // Мокаем, что User.isPasswordsMatch выбрасывает ошибку
@@ -221,6 +224,7 @@ describe('CreateUserUseCase', () => {
       email: 'test@example.com',
       password: 'StrongP@ss1',
       passwordConfirmation: 'StrongP@ss1',
+      agreeToTerms: true,
     };
 
     // Мокаем, что хеширование пароля вызывает ошибку
@@ -247,6 +251,7 @@ describe('CreateUserUseCase', () => {
       email: 'test@example.com',
       password: 'StrongP@ss1',
       passwordConfirmation: 'StrongP@ss1',
+      agreeToTerms: true,
     };
     const hashedPassword = 'hashedPassword123';
 

@@ -26,7 +26,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
     const notification = this.notificationService.create<RegisteredUserDto>();
     try {
       const userWithTheSameLoginOrEmail =
-        await this.usersRepository.findExistingByLoginOrEmail(
+        await this.usersRepository.findExistingByLoginAndEmail(
           command.userDto.username,
           command.userDto.email,
         );

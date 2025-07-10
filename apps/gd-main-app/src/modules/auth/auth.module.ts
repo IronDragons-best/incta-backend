@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UsersModule } from '../users/users.module';
-import { RegistrationUseCase } from './application/registration.use.case';
+import { RegistrationUseCase } from './application/use-cases/registration.use.case';
 import { AuthController } from './interface/auth.controller';
 import { UserCreatedListener } from '../../../core/listeners/user.created.listener';
 import { NotificationService } from '@common';

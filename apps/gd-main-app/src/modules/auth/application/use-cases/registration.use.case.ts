@@ -1,11 +1,11 @@
-import { UserInputDto } from '../../users/interface/dto/user.input.dto';
+import { UserInputDto } from '../../../users/interface/dto/user.input.dto';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateUserCommand } from '../../users/application/use-cases/create.user.use.case';
+import { CreateUserCommand } from '../../../users/application/use-cases/create.user.use.case';
 import { AppNotification, NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserCreatedEvent } from '../../../../core/events/user.created.event';
-import { RegisteredUserDto } from '../../users/domain/registered.user.dto';
+import { UserCreatedEvent } from '../../../../../core/events/user.created.event';
+import { RegisteredUserDto } from '../../../users/domain/registered.user.dto';
 
 export class RegistrationCommand {
   constructor(public userDto: UserInputDto) {}
