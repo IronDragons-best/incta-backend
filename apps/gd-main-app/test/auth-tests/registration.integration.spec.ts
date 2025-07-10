@@ -4,6 +4,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomLogger } from '@monitoring';
 import { AppNotification, NotificationService } from '@common';
+import { UserInputDto } from '../../src/modules/users/interface/dto/user.input.dto';
 
 describe('RegistrationUseCase', () => {
   let useCase: RegistrationUseCase;
@@ -43,11 +44,12 @@ describe('RegistrationUseCase', () => {
   });
 
   it('204: успешно — вызывает CreateUser и эмитит событие', async () => {
-    const dto = {
+    const dto: UserInputDto = {
       username: 'testuser',
       email: 'test@example.com',
       password: 'StrongP@ss1',
       passwordConfirmation: 'StrongP@ss1',
+      agreeToTerms: true,
     };
     const regDto = { login: dto.username, email: dto.email, confirmCode: 'abc123' };
     const notification = new AppNotification<typeof regDto>().setValue(regDto);
@@ -68,7 +70,13 @@ describe('RegistrationUseCase', () => {
   });
 
   it('400: CreateUser вернул ошибки — эмит не вызывается', async () => {
-    const dto = { username: '', email: 'bad', password: '', passwordConfirmation: '' };
+    const dto = {
+      username: '',
+      email: 'bad',
+      password: '',
+      passwordConfirmation: '',
+      agreeToTerms: false,
+    };
     const notification = new AppNotification().setBadRequest(
       'bad credentials',
       'username',
@@ -88,11 +96,12 @@ describe('RegistrationUseCase', () => {
   });
 
   it('500: исключение — логирует и ничего не возвращает', async () => {
-    const dto = {
+    const dto: UserInputDto = {
       username: 'x',
       email: 'x@x',
       password: 'p',
       passwordConfirmation: 'p',
+      agreeToTerms: true,
     };
     commandBus.execute.mockRejectedValue(new Error('DB crash'));
 

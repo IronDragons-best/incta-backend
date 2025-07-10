@@ -31,7 +31,7 @@ class MockUserForTest extends User {
 
 describe('CreateUserUseCase', () => {
   let useCase: CreateUserUseCase;
-  let usersRepository: { findExistingByLoginOrEmail: jest.Mock; save: jest.Mock };
+  let usersRepository: { findExistingByLoginAndEmail: jest.Mock; save: jest.Mock };
   let loggerMock: CustomLoggerMock;
   let cryptoService: { createHash: jest.Mock };
   let userIsPasswordsMatchSpy: jest.SpyInstance;
@@ -52,7 +52,7 @@ describe('CreateUserUseCase', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     usersRepository = {
-      findExistingByLoginOrEmail: jest.fn(),
+      findExistingByLoginAndEmail: jest.fn(),
       save: jest.fn(),
     };
 
@@ -97,7 +97,7 @@ describe('CreateUserUseCase', () => {
     const confirmCode = 'some-uuid-code';
 
     // Мокаем зависимости для успешного сценария
-    usersRepository.findExistingByLoginOrEmail.mockResolvedValue(null);
+    usersRepository.findExistingByLoginAndEmail.mockResolvedValue(null);
     cryptoService.createHash.mockResolvedValue(hashedPassword);
 
     // Мокаем User.createInstance, чтобы он возвращал предсказуемый объект User
@@ -125,7 +125,7 @@ describe('CreateUserUseCase', () => {
     const result = await useCase.execute(new CreateUserCommand(dto));
 
     // Проверяем вызовы методов
-    expect(usersRepository.findExistingByLoginOrEmail).toHaveBeenCalledWith(
+    expect(usersRepository.findExistingByLoginAndEmail).toHaveBeenCalledWith(
       dto.username,
       dto.email,
     );
@@ -166,7 +166,7 @@ describe('CreateUserUseCase', () => {
     };
 
     // Мокаем, что пользователь с таким логином уже существует
-    usersRepository.findExistingByLoginOrEmail.mockResolvedValue({
+    usersRepository.findExistingByLoginAndEmail.mockResolvedValue({
       field: 'Login',
       value: dto.username,
     });
@@ -204,7 +204,7 @@ describe('CreateUserUseCase', () => {
     const result = await useCase.execute(new CreateUserCommand(dto));
 
     // Проверяем, что другие методы не были вызваны
-    expect(usersRepository.findExistingByLoginOrEmail).toHaveBeenCalled(); // Эта проверка должна пройти
+    expect(usersRepository.findExistingByLoginAndEmail).toHaveBeenCalled(); // Эта проверка должна пройти
     expect(cryptoService.createHash).not.toHaveBeenCalled();
     expect(usersRepository.save).not.toHaveBeenCalled();
     expect(User.createInstance).not.toHaveBeenCalled();
@@ -228,7 +228,7 @@ describe('CreateUserUseCase', () => {
     };
 
     // Мокаем, что хеширование пароля вызывает ошибку
-    usersRepository.findExistingByLoginOrEmail.mockResolvedValue(null);
+    usersRepository.findExistingByLoginAndEmail.mockResolvedValue(null);
     cryptoService.createHash.mockRejectedValue(new Error('Hashing failed'));
 
     const result = await useCase.execute(new CreateUserCommand(dto));
@@ -256,7 +256,7 @@ describe('CreateUserUseCase', () => {
     const hashedPassword = 'hashedPassword123';
 
     // Мокаем, что сохранение пользователя вызывает ошибку
-    usersRepository.findExistingByLoginOrEmail.mockResolvedValue(null);
+    usersRepository.findExistingByLoginAndEmail.mockResolvedValue(null);
     cryptoService.createHash.mockResolvedValue(hashedPassword);
     usersRepository.save.mockRejectedValue(new Error('DB save failed'));
 
