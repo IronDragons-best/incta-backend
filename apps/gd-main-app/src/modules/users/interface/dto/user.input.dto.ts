@@ -14,6 +14,7 @@ export class UserInputDto {
     minLength: userNameConstraints.minLength,
     maxLength: userNameConstraints.maxLength,
   })
+  @Matches(/^\S+$/, { message: 'Username or email must not contain spaces.' })
   username: string;
 
   @Matches(userEmailConstraints.pattern)
