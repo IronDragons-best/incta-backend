@@ -32,8 +32,8 @@ export class UsersRepository {
   async findByUsernameOrEmail(usernameOrEmail: string) {
     const user = await this.usersRepository.findOne({
       where: [
-        { username: usernameOrEmail, deletedAt: IsNull() },
-        { email: usernameOrEmail, deletedAt: IsNull() },
+        { username: usernameOrEmail.toLowerCase(), deletedAt: IsNull() },
+        { email: usernameOrEmail.toLowerCase(), deletedAt: IsNull() },
       ],
       relations: ['emailConfirmationInfo', 'passwordInfo'],
     });
@@ -47,8 +47,8 @@ export class UsersRepository {
   async findExistingByLoginAndEmail(username: string, email: string) {
     const existingUser = await this.usersRepository.findOne({
       where: [
-        { username: username, deletedAt: IsNull() },
-        { email: email, deletedAt: IsNull() },
+        { username: username.toLowerCase(), deletedAt: IsNull() },
+        { email: email.toLowerCase(), deletedAt: IsNull() },
       ],
     });
 

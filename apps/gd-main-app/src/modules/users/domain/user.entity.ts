@@ -33,8 +33,8 @@ export class User extends BasicEntity {
 
     const passwordInfo = new PasswordInfo();
 
-    user.username = userDto.username;
-    user.email = userDto.email;
+    user.username = userDto.username.toLowerCase();
+    user.email = userDto.email.toLowerCase();
 
     // Email info fill
     emailInfo.confirmCode = userDto.emailConfirmCode;
