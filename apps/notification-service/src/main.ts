@@ -24,7 +24,7 @@ async function bootstrap() {
         durable: true,
       },
       exchangeOptions: {
-        name: 'email.topic',
+        name: 'notification.topic',
         type: 'topic',
         durable: true,
       },
@@ -44,6 +44,8 @@ async function bootstrap() {
     new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
   );
   await app.startAllMicroservices();
-  console.log(`Notification microservice started at ${configService.getNotificationPort()} port.`);
+  console.log(
+    `Notification microservice started at ${configService.getNotificationPort()} port.`,
+  );
 }
 bootstrap();

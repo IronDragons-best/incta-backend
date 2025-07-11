@@ -6,9 +6,8 @@ import { EmailInfoInputDto } from '../types/email.info.input.dto';
 @Controller()
 export class EmailController {
   constructor(private readonly emailService: EmailService) {}
-  @EventPattern('email.registration.send')
+  @EventPattern('email.registration')
   async handleEmailSend(@Payload() data: EmailInfoInputDto) {
-    console.log(data);
-    //await this.emailService.sendRegistrationEmail(data);
+    await this.emailService.sendRegistrationEmail(data);
   }
 }

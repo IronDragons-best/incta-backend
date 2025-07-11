@@ -1,4 +1,3 @@
-import { AppConfigService } from '@common';
 import * as winston from 'winston';
 import { LoggerConfigService } from '@monitoring/config/logger.config.service';
 
@@ -39,7 +38,11 @@ export const createLoggerConfig = (configService: LoggerConfigService): LoggerCo
     // В продакшене - JSON формат
     transports.push(
       new winston.transports.Console({
-        format: combine(timestamp({ format: timeFormat }), errors({ stack: true }), json()),
+        format: combine(
+          timestamp({ format: timeFormat }),
+          errors({ stack: true }),
+          json(),
+        ),
       }),
     );
 

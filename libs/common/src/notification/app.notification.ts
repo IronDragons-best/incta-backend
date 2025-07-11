@@ -30,12 +30,14 @@ export class AppNotification<T = any> {
     this.errors.push({ message });
     this.statusType = StatusType.Unauthorized;
     this.statusCode = 401;
+    return this;
   }
 
   setBadRequest(message: string, field?: string) {
     this.errors.push({ message, field });
     this.statusType = StatusType.ValidationError;
     this.statusCode = 400;
+    return this;
   }
   setServerError(message: string) {
     this.errors.push({ message });
@@ -45,6 +47,7 @@ export class AppNotification<T = any> {
 
   setValue(value: T) {
     this.value = value;
+    return this;
   }
 
   hasErrors(): boolean {

@@ -20,7 +20,7 @@ export class NotificationInterceptor implements NestInterceptor {
         if (data instanceof AppNotification) {
           if (data.hasErrors()) {
             const errors = data.getErrors();
-            const errorResponse = { errorMessages: errors };
+            const errorResponse = { errorsMessages: errors };
             switch (data.getStatusCode()) {
               case 400:
                 throw new BadRequestException(errorResponse);

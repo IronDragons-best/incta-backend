@@ -1,10 +1,11 @@
 import { Column, Entity, OneToOne } from 'typeorm';
+import { BadRequestDomainException } from '../../../../../../libs/common/src/exceptions/domain.exception';
 import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 import { EmailInfo } from './email.info.entity';
 import { PasswordInfo } from './password.info.entity';
 
 export type UserDomainDtoType = {
-  login: string;
+  username: string;
   passwordHash: string;
   email: string;
   emailConfirmCode: string;
@@ -13,7 +14,7 @@ export type UserDomainDtoType = {
 @Entity()
 export class User extends BasicEntity {
   @Column()
-  login: string;
+  username: string;
 
   @Column()
   email: string;
@@ -32,7 +33,7 @@ export class User extends BasicEntity {
 
     const passwordInfo = new PasswordInfo();
 
-    user.login = userDto.login;
+    user.username = userDto.username;
     user.email = userDto.email;
 
     // Email info fill
@@ -44,7 +45,17 @@ export class User extends BasicEntity {
     // Password info fill
     passwordInfo.passwordHash = userDto.passwordHash;
     passwordInfo.passwordRecoveryCode = null;
-
+    user.emailConfirmationInfo = emailInfo;
+    user.passwordInfo = passwordInfo;
     return user;
+  }
+  static isPasswordsMatch(this: void, password: string, confirmPassword: string) {
+    if (password === confirmPassword) {
+      return true;
+    }
+    throw BadRequestDomainException.create(
+      'Password and confirm password must match.',
+      'confirmPassword',
+    );
   }
 }

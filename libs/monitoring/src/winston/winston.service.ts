@@ -98,7 +98,12 @@ export class WinstonService {
     }
   }
 
-  trace(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+  trace(
+    message: any,
+    requestId: string | null,
+    functionName?: string,
+    sourceName?: string,
+  ) {
     this.logger.log('trace', this.formatMessage(message), {
       sourceName,
       functionName,
@@ -106,7 +111,12 @@ export class WinstonService {
     });
   }
 
-  debug(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+  debug(
+    message: any,
+    requestId: string | null,
+    functionName?: string,
+    sourceName?: string,
+  ) {
     this.logger.debug(this.formatMessage(message), {
       sourceName,
       functionName,
@@ -114,7 +124,12 @@ export class WinstonService {
     });
   }
 
-  info(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+  info(
+    message: any,
+    requestId: string | null,
+    functionName?: string,
+    sourceName?: string,
+  ) {
     this.logger.info(this.formatMessage(message), {
       sourceName,
       functionName,
@@ -122,7 +137,12 @@ export class WinstonService {
     });
   }
 
-  warn(message: any, requestId: string | null, functionName?: string, sourceName?: string) {
+  warn(
+    message: any,
+    requestId: string | null,
+    functionName?: string,
+    sourceName?: string,
+  ) {
     this.logger.warn(this.formatMessage(message), {
       sourceName,
       functionName,

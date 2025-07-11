@@ -9,16 +9,18 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     const status =
-      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
 
     // Обработка HttpException (включая BadRequestException от NotificationInterceptor)
     if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse() as any;
 
       // Если это ошибка от NotificationInterceptor или ValidationPipe с правильным форматом
-      if (exceptionResponse && exceptionResponse.errorMessages) {
+      if (exceptionResponse && exceptionResponse.errorsMessages) {
         this.sendErrorResponse(response, status, {
-          errorsMessages: exceptionResponse.errorMessages,
+          errorsMessages: exceptionResponse.errorsMessages,
         });
         return;
       }
