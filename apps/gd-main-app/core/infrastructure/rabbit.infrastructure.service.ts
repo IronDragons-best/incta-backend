@@ -9,7 +9,7 @@ export class RabbitInitService implements OnModuleInit {
 
   constructor(private readonly configService: AppConfigService) {}
   async onModuleInit() {
-    const url = this.configService.getRabbitMqHost(); // или this.configService.getRabbitMqHost()
+    const url = this.configService.rabbitMqHost; // или this.configService.getRabbitMqHost()
     this.connection = await connect(url);
     this.channel = await this.connection.createChannel();
 

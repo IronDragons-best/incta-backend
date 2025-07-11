@@ -33,14 +33,14 @@ export class User extends BasicEntity {
 
     const passwordInfo = new PasswordInfo();
 
-    user.username = userDto.username;
-    user.email = userDto.email;
+    user.username = userDto.username.toLowerCase();
+    user.email = userDto.email.toLowerCase();
 
     // Email info fill
     emailInfo.confirmCode = userDto.emailConfirmCode;
-    emailInfo.codeExpirationDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    emailInfo.codeExpirationDate = new Date(now.getTime() + 60 * 60 * 1000); // 1 час
     emailInfo.isConfirmed = false;
-    emailInfo.emailConfirmationCooldown = new Date(now.getTime() + 10 * 60 * 1000);
+    emailInfo.emailConfirmationCooldown = new Date(now.getTime() + 10 * 60 * 1000); // переотправка письма cooldown 10 минут
 
     // Password info fill
     passwordInfo.passwordHash = userDto.passwordHash;

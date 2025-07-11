@@ -13,8 +13,8 @@ import { AppConfigService, SharedConfigModule } from '@common';
           options: {
             host: configService.isProduction
               ? 'incta-files-service'
-              : configService.getFilesHost(),
-            port: configService.getFilesPort(),
+              : configService.filesHost,
+            port: configService.filesPort,
           },
         }),
         inject: [AppConfigService],
@@ -27,8 +27,8 @@ import { AppConfigService, SharedConfigModule } from '@common';
           options: {
             host: configService.isProduction
               ? 'incta-notifications-service'
-              : configService.getNotificationHost(),
-            port: configService.getNotificationPort(),
+              : configService.notificationHost,
+            port: configService.notificationPort,
           },
         }),
         inject: [AppConfigService],
@@ -39,7 +39,7 @@ import { AppConfigService, SharedConfigModule } from '@common';
         useFactory: (configService: AppConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.getRabbitMqHost()],
+            urls: [configService.rabbitMqHost],
             queue: 'email_notifications_queue',
             queueOptions: {
               durable: true,
