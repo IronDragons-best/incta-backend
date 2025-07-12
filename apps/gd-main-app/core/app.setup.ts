@@ -26,7 +26,7 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
   );
 
   app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
-
+  app.use(cookieParser());
   const logger = await app.resolve(CustomLogger);
   logger.setContext('NEST_INIT');
   app.useLogger(logger);

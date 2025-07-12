@@ -58,4 +58,7 @@ export class User extends BasicEntity {
       'confirmPassword',
     );
   }
+  isEmailConfirmed() {
+    return this.emailConfirmationInfo.isConfirmed;
+  }
 }
