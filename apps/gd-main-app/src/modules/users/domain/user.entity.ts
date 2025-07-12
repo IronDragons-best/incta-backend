@@ -50,12 +50,86 @@ export class User extends BasicEntity {
     return user;
   }
   static isPasswordsMatch(this: void, password: string, confirmPassword: string) {
-    if (password === confirmPassword) {
-      return true;
+    // Проверка совпадения паролей
+    if (password !== confirmPassword) {
+      throw BadRequestDomainException.create('Passwords must match', 'confirmPassword');
     }
-    throw BadRequestDomainException.create(
-      'Password and confirm password must match.',
-      'confirmPassword',
+
+    // Проверка длины пароля
+    if (password.length < 6) {
+      throw BadRequestDomainException.create(
+        'Minimum number of characters 6',
+        'password',
+      );
+    }
+
+    if (password.length > 20) {
+      throw BadRequestDomainException.create(
+        'Maximum number of characters 20',
+        'password',
+      );
+    }
+
+    // Проверка содержания обязательных символов
+    const hasDigit = /[0-9]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const allowedSpecialChars = /^[0-9A-Za-z!"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~]*$/;
+
+    if (!hasDigit || !hasLowerCase || !hasUpperCase) {
+      throw BadRequestDomainException.create(
+        'Password must contain 0-9, a-z, A-Z',
+        'password',
+      );
+    }
+
+    if (!allowedSpecialChars.test(password)) {
+      throw BadRequestDomainException.create(
+        'Password must contain 0-9, a-z, A-Z, ! " # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\ ] ^ _ { | } ~',
+        'password',
+      );
+    }
+
+    return true;
+  }
+
+  static validateUsername(username: string) {
+    if (username.length < 6) {
+      throw BadRequestDomainException.create(
+        'Minimum number of characters 6',
+        'username',
+      );
+    }
+
+    if (username.length > 30) {
+      throw BadRequestDomainException.create(
+        'Maximum number of characters 30',
+        'username',
+      );
+    }
+
+    // Проверка допустимых символов: 0-9, A-Z, a-z, _, -
+    const allowedChars = /^[0-9A-Za-z_-]+$/;
+    if (!allowedChars.test(username)) {
+      throw BadRequestDomainException.create(
+        'Username can only contain 0-9, A-Z, a-z, _, -',
+        'username',
+      );
+    }
+
+    return true;
+  }
+
+  updateUserFields(userDto: UserDomainDtoType) {
+    const now = new Date();
+    this.username = userDto.username;
+    this.passwordInfo.passwordHash = userDto.passwordHash;
+    this.emailConfirmationInfo.confirmCode = userDto.emailConfirmCode;
+    this.emailConfirmationInfo.codeExpirationDate = new Date(
+      now.getTime() + 60 * 60 * 1000,
+    );
+    this.emailConfirmationInfo.emailConfirmationCooldown = new Date(
+      now.getTime() + 10 * 60 * 1000,
     );
   }
 }

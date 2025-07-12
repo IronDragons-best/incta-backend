@@ -30,7 +30,10 @@ export class UserInputDto {
     minLength: userPasswordConstraints.minLength,
     maxLength: userPasswordConstraints.maxLength,
   })
-  @Matches(userPasswordConstraints.pattern)
+  @Matches(userPasswordConstraints.pattern, {
+    message:
+      'Password must contain 0-9, a-z, A-Z, ! " # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\ ] ^ _ { | } ~',
+  })
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   password: string;
 

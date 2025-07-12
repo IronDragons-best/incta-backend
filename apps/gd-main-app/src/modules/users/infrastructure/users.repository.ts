@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
 import { AppConfigService } from '@common';
@@ -61,11 +61,42 @@ export class UsersRepository {
       : { existingUser, field: 'Email' };
   }
 
+  /** Find user by login or email. Checking that user doesn't exist. */
+  async findExistingByLoginAndEmailWithTransaction(
+    username: string,
+    email: string,
+    queryRunner: QueryRunner,
+  ) {
+    const existingUser: User | null = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where(
+        '(LOWER(user.username) = LOWER(:username) OR LOWER(user.email) = LOWER(:email))',
+      )
+      .andWhere('user.deletedAt IS NULL')
+      .setParameters({ username, email })
+      .setLock('pessimistic_write')
+      .getOne();
+    if (!existingUser) {
+      return null;
+    }
+    const field =
+      existingUser.username.toLowerCase() === username.toLowerCase()
+        ? 'Username'
+        : 'Email';
+
+    return { existingUser, field };
+  }
+
   /** Save changes */
   async save(user: User) {
     return await this.usersRepository.save(user);
   }
 
+  async saveWithTransaction(user: User, queryRunner: QueryRunner) {
+    return await queryRunner.manager.save(user);
+  }
   /** Delete user method */
   async deleteUser(user: User) {
     await this.usersRepository.softRemove(user);
