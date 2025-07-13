@@ -2,7 +2,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Tokens, TokenService } from './token.service';
 import { AppNotification, NotificationService } from '@common';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
-import { User } from '../../../users/domain/user.entity';
 
 export class LoginCommand {
   constructor(public userId: number) {}

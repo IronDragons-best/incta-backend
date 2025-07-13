@@ -47,6 +47,10 @@ export class UserInputDto {
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   passwordConfirmation: string;
 
+  @ApiProperty({
+    description: 'Agree to terms. Must be true.',
+    required: true,
+  })
   @IsBoolean()
   @Equals(true, { message: 'You must agree to the Terms of Service' })
   agreeToTerms: boolean;

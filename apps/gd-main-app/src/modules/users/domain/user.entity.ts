@@ -50,12 +50,10 @@ export class User extends BasicEntity {
     return user;
   }
   static isPasswordsMatch(this: void, password: string, confirmPassword: string) {
-    // Проверка совпадения паролей
     if (password !== confirmPassword) {
       throw BadRequestDomainException.create('Passwords must match', 'confirmPassword');
     }
 
-    // Проверка длины пароля
     if (password.length < 6) {
       throw BadRequestDomainException.create(
         'Minimum number of characters 6',
@@ -70,7 +68,6 @@ export class User extends BasicEntity {
       );
     }
 
-    // Проверка содержания обязательных символов
     const hasDigit = /[0-9]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasUpperCase = /[A-Z]/.test(password);
@@ -108,7 +105,6 @@ export class User extends BasicEntity {
       );
     }
 
-    // Проверка допустимых символов: 0-9, A-Z, a-z, _, -
     const allowedChars = /^[0-9A-Za-z_-]+$/;
     if (!allowedChars.test(username)) {
       throw BadRequestDomainException.create(

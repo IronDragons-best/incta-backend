@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
 import { userPasswordConstraints } from '../../../users/constants/user.constants';
-import { IsEmail, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
 
 export class LoginInputDto {
   @ApiProperty({
@@ -10,6 +10,7 @@ export class LoginInputDto {
   })
   @Matches(/^\S+$/, { message: 'Username or email must not contain spaces.' })
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty({
@@ -17,6 +18,7 @@ export class LoginInputDto {
     minLength: userPasswordConstraints.minLength,
     maxLength: userPasswordConstraints.maxLength,
   })
+  @IsNotEmpty()
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   @Matches(userPasswordConstraints.pattern)
   password: string;
