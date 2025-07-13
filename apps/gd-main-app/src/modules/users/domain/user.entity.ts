@@ -132,4 +132,7 @@ export class User extends BasicEntity {
       now.getTime() + 10 * 60 * 1000,
     );
   }
+  isEmailConfirmed() {
+    return this.emailConfirmationInfo.isConfirmed;
+  }
 }

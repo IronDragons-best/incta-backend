@@ -16,7 +16,6 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     // Обработка HttpException (включая BadRequestException от NotificationInterceptor)
     if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse() as any;
-
       // Если это ошибка от NotificationInterceptor или ValidationPipe с правильным форматом
       if (exceptionResponse && exceptionResponse.errorsMessages) {
         this.sendErrorResponse(response, status, {
@@ -24,7 +23,6 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         });
         return;
       }
-
       // Если это обычная HttpException
       const message: string =
         typeof exceptionResponse === 'string'

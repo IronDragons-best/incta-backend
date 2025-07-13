@@ -18,7 +18,7 @@ export class UsersRepository {
     this.logger.setContext('users repository');
   }
   /** Find User or throw not found exception*/
-  async findById(id: number) {
+  async findById(id: number): Promise<User | null> {
     const user = await this.usersRepository.findOne({
       where: {
         id,

@@ -1,5 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { TokenService } from './token.service';
+import { Tokens, TokenService } from './token.service';
+import { AppNotification, NotificationService } from '@common';
+import { UsersRepository } from '../../../users/infrastructure/users.repository';
+import { User } from '../../../users/domain/user.entity';
 
 export class LoginCommand {
   constructor(public userId: number) {}
@@ -7,10 +10,15 @@ export class LoginCommand {
 
 @CommandHandler(LoginCommand)
 export class LoginUseCase implements ICommandHandler<LoginCommand> {
-  constructor(private readonly tokenService: TokenService) {}
-  async execute(command: LoginCommand) {
-    const { accessToken, refreshToken } = this.tokenService.generateTokenPare(
-      command.userId,
-    );
+  constructor(
+    private readonly tokenService: TokenService,
+    private readonly notification: NotificationService,
+    private readonly usersRepository: UsersRepository,
+  ) {}
+  async execute(command: LoginCommand): Promise<AppNotification<Tokens>> {
+    const notify = this.notification.create<Tokens>();
+
+    const tokens: Tokens = this.tokenService.generateTokenPare(command.userId);
+    return notify.setValue(tokens);
   }
 }
