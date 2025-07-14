@@ -3,11 +3,12 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
-  Post,
+  Post, Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import type { Response } from 'express';
 import { UserInputDto } from '../../users/interface/dto/user.input.dto';
 import { RegistrationCommand } from '../application/use-cases/registration.use.case';
 import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/registration.swagger.decorator';
@@ -20,6 +21,9 @@ import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
 import { TokenResponseDto } from '../../../../core/types/token.types';
 import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login.swagger.decorator';
+import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
+import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
+import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
 
 @Controller('auth')
 export class AuthController {
@@ -47,5 +51,14 @@ export class AuthController {
     }
 
     return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
+  }
+
+  @Post('logout')
+  @LogoutSwagger()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@Res() res: Response) {
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    res.sendStatus(HttpStatus.NO_CONTENT);
   }
 }

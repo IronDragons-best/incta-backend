@@ -13,6 +13,7 @@ import { LocalStrategy } from '../../../core/guards/local/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './application/auth.service';
 import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from '../../../core/guards/local/jwt.strategy';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PassportModule } from '@nestjs/passport';
     AuthService,
     TokenService,
     LocalStrategy,
+    JwtStrategy,
     UserCreatedListener,
     NotificationService,
     AsyncLocalStorageService,
