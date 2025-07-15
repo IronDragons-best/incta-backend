@@ -31,11 +31,11 @@ RUN pnpm install --frozen-lockfile --prod
 
 COPY --from=builder /app/dist ./dist
 
+
 COPY --from=builder /app/apps ./apps
 COPY --from=builder /app/libs ./libs
 COPY --from=builder /app/tsconfig*.json ./
 COPY --from=builder /app/nest-cli.json ./
-COPY --from=builder /app/env ./env
 
 COPY start-services.sh ./start-services.sh
 
