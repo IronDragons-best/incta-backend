@@ -3,21 +3,25 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Copy package files
 COPY package*.json ./
+COPY pnpm-lock.yaml ./
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 
 # Install ALL dependencies (нужны dev зависимости для сборки)
-RUN npm ci && npm cache clean --force
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build all services
-RUN npm run build:gd-main-app
-RUN npm run build:files-service
-RUN npm run build:notification-service
+RUN pnpm run build:gd-main-app
+RUN pnpm run build:files-service
+RUN pnpm run build:notification-service
 
 # Production image
 FROM node:18-alpine AS production
@@ -27,9 +31,13 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Copy package files and install production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+COPY pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy built applications
 COPY --from=builder /app/dist ./dist

@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # Start notification service in background
-npm run start:notification-service &
+pnpm run start:notification-service &
 
 # Start files service in background
-npm run start:files-service &
+pnpm run start:files-service &
 
 # Give services time to start
 sleep 5
 
 # Start main app (this will run migrations first)
-npm run start:gd-main-app
+pnpm run start:gd-main-app
