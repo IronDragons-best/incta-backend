@@ -1,0 +1,78 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging]
+  pull_request:
+    branches: [staging]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/nestjs-app:staging
+            ${{ secrets.DOCKERHUB_USERNAME }}/nestjs-app:staging-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Navigate to deployment directory
+            cd /home/deploy/nestjs-app
+
+            # Pull latest image
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/nestjs-app:staging
+
+            # Stop current containers
+            docker-compose down || true
+
+            # Remove old code if exists
+            rm -rf code
+
+            # Clone fresh code (only docker-compose.yml and .env.production)
+            git clone -b staging https://github.com/${{ github.repository }}.git code
+
+            # Copy necessary files
+            cp code/docker-compose.yml ./
+            cp code/.env.production.example ./.env.production
+
+            # Update docker-compose to use pulled image
+            sed -i 's|build:|# build:|' docker-compose.yml
+            sed -i 's|context: .|# context: .|' docker-compose.yml
+            sed -i 's|dockerfile: Dockerfile|# dockerfile: Dockerfile|' docker-compose.yml
+            sed -i 's|target: production|# target: production|' docker-compose.yml
+            sed -i '/# build:/a\    image: ${{ secrets.DOCKERHUB_USERNAME }}/nestjs-app:staging' docker-compose.yml
+
+            # Start new containers
+            docker-compose up -d
+
+            # Clean up
+            rm -rf code
+            docker image prune -af
+
+            # Show status
+            docker-compose ps

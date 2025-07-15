@@ -20,6 +20,8 @@ import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
 import { TokenResponseDto } from '../../../../core/types/token.types';
 import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login.swagger.decorator';
+import { EmailResendInputDto } from './dto/email.resend.input.dto';
+import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +32,12 @@ export class AuthController {
   @RegistrationSwagger()
   async registration(@Body() body: UserInputDto) {
     return this.commandBus.execute(new RegistrationCommand(body));
+  }
+
+  @Post('email-resend')
+  @HttpCode(HttpStatus.OK)
+  async resendEmail(@Body() body: EmailResendInputDto) {
+    return this.commandBus.execute(new EmailResendCommand(body.email));
   }
 
   @Post('login')

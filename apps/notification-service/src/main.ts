@@ -28,6 +28,8 @@ async function bootstrap() {
         type: 'topic',
         durable: true,
       },
+      noAck: false,
+      prefetchCount: 10,
     },
   });
 

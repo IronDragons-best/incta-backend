@@ -7,8 +7,13 @@ export class NotificationService {
     return new AppNotification<T>();
   }
 
-  success<T>(value: T): AppNotification<T> {
-    return AppNotification.success(value);
+  success<T>(value: T): AppNotification<T>;
+  success(): AppNotification<void>;
+  success<T>(value?: T): AppNotification<T | void> {
+    if (value !== undefined) {
+      return AppNotification.success(value);
+    }
+    return AppNotification.success();
   }
 
   error<T>(message: string, field?: string): AppNotification<T> {

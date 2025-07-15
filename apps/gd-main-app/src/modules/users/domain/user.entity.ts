@@ -131,4 +131,14 @@ export class User extends BasicEntity {
   isEmailConfirmed() {
     return this.emailConfirmationInfo.isConfirmed;
   }
+
+  setEmailConfirmationCode(confirmCode: string) {
+    this.emailConfirmationInfo.confirmCode = confirmCode;
+    this.emailConfirmationInfo.codeExpirationDate = new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000,
+    );
+    this.emailConfirmationInfo.emailConfirmationCooldown = new Date(
+      new Date().getTime() + 10 * 60 * 1000,
+    );
+  }
 }

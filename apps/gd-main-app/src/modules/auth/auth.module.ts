@@ -13,6 +13,8 @@ import { LocalStrategy } from '../../../core/guards/local/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './application/auth.service';
 import { PassportModule } from '@nestjs/passport';
+import { EmailResendListener } from '../../../core/listeners/email.resend.listener';
+import { EmailResendUseCase } from './application/use-cases/email.resend.use-case';
 
 @Module({
   imports: [
@@ -24,11 +26,13 @@ import { PassportModule } from '@nestjs/passport';
   ],
   providers: [
     RegistrationUseCase,
+    EmailResendUseCase,
     LoginUseCase,
     AuthService,
     TokenService,
     LocalStrategy,
     UserCreatedListener,
+    EmailResendListener,
     NotificationService,
     AsyncLocalStorageService,
   ],

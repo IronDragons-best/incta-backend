@@ -43,6 +43,24 @@ export class UsersRepository {
     return user;
   }
 
+  async findByEmailWithTransaction(email: string, queryRunner: QueryRunner) {
+    console.log(email);
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('LOWER(user.email) = LOWER(:email)')
+      .andWhere('user.deletedAt IS NULL')
+      .setParameter('email', email)
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
+
   /** Find user by login or email. Checking that user doesn't exist. */
   async findExistingByLoginAndEmail(username: string, email: string) {
     const existingUser = await this.usersRepository.findOne({
