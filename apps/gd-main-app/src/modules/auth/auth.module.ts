@@ -15,6 +15,7 @@ import { AuthService } from './application/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { EmailResendListener } from '../../../core/listeners/email.resend.listener';
 import { EmailResendUseCase } from './application/use-cases/email.resend.use-case';
+import { JwtStrategy } from '../../../core/guards/local/jwt.strategy';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { EmailResendUseCase } from './application/use-cases/email.resend.use-cas
     AuthService,
     TokenService,
     LocalStrategy,
+    JwtStrategy,
     UserCreatedListener,
     EmailResendListener,
     NotificationService,

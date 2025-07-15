@@ -1,13 +1,16 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
-  HttpStatus,
+  HttpStatus, NotFoundException,
   Post,
+  Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
+import type { Response } from 'express';
 import { UserInputDto } from '../../users/interface/dto/user.input.dto';
 import { RegistrationCommand } from '../application/use-cases/registration.use.case';
 import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/registration.swagger.decorator';
@@ -20,12 +23,13 @@ import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
 import { TokenResponseDto } from '../../../../core/types/token.types';
 import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login.swagger.decorator';
-import { EmailResendInputDto } from './dto/email.resend.input.dto';
-import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -55,5 +59,28 @@ export class AuthController {
     }
 
     return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
+  }
+
+  @Post('logout')
+  @LogoutSwagger()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@Res() res: Response) {
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    res.sendStatus(HttpStatus.NO_CONTENT);
+  }
+
+  @Get('me')
+  @MeSwagger()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMe(@ExtractUserFromRequest() user: UserContextDto) {
+    const result = await this.authService.findUserById(user.id);
+
+    if (result.hasErrors() || !result.getValue()) {
+      throw new NotFoundException(result.getErrors());
+    }
+
+    return new AuthMeViewDto(result.getValue()!);
   }
 }
