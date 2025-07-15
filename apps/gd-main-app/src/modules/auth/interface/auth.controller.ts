@@ -32,6 +32,7 @@ import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
 import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
 import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 import { EmailResendInputDto } from './dto/email.resend.input.dto';
+import { User } from '../../users/domain/user.entity';
 
 @Controller('auth')
 export class AuthController {
