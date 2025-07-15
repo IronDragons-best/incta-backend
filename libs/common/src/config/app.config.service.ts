@@ -62,6 +62,14 @@ export class AppConfigService extends ConfigService {
     return url;
   }
 
+  get depType(): string {
+    const type = this.get<string>('DEP_TYPE');
+    if (!type) {
+      throw new Error('Dep TYPE is required');
+    }
+    return type;
+  }
+
   notificationUrl(): string {
     const url = this.get<string>('NOTIFICATION_URL');
     if (!url) {

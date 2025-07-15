@@ -1,7 +1,12 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { MockUser, MockUsersRepository } from '../mocks/user.flow.mocks';
 import { MockCryptoService, MockTokenService } from '../mocks/auth.flow.mocks';
-import { MockAppNotification, MockCommandBus, MockFactory, MockNotificationService } from '../mocks/common.mocks';
+import {
+  MockAppConfigService,
+  MockCommandBus,
+  MockFactory,
+  MockNotificationService,
+} from '../mocks/common.mocks';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -30,7 +35,7 @@ describe('AuthController - Me Integration Tests', () => {
       imports: [
         PassportModule,
         JwtModule.register({
-          secret: 'test-secret',
+          secret: 'testAccessSecret',
           signOptions: { expiresIn: '1h' },
         }),
       ],
@@ -41,6 +46,10 @@ describe('AuthController - Me Integration Tests', () => {
         LocalAuthGuard,
         JwtStrategy,
         JwtAuthGuard,
+        {
+          provide: AppConfigService,
+          useClass: MockAppConfigService,
+        },
         {
           provide: UsersRepository,
           useClass: MockUsersRepository,
@@ -62,19 +71,27 @@ describe('AuthController - Me Integration Tests', () => {
           useClass: MockNotificationService,
         },
         {
-          provide: AppConfigService,
-          useValue: { jwtAccessSecret: 'test-secret' },
+          provide: 'COOKIE_OPTIONS',
+          useValue: {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+          },
         },
+
         JwtService,
       ],
     }).compile();
 
     app = module.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
 
     await app.init();
 
@@ -157,9 +174,7 @@ describe('AuthController - Me Integration Tests', () => {
     });
 
     it('should return 401 Unauthorized if token is not provided', async () => {
-      await request(app.getHttpServer())
-        .get('/auth/me')
-        .expect(HttpStatus.UNAUTHORIZED);
+      await request(app.getHttpServer()).get('/auth/me').expect(HttpStatus.UNAUTHORIZED);
     });
   });
 });

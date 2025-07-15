@@ -10,7 +10,7 @@ import {
   MockFactory,
   MockNotificationService,
 } from '../mocks/common.mocks';
-import { NotificationService } from '@common';
+import { AppConfigService, NotificationService } from '@common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -21,6 +21,7 @@ import { CryptoService } from '../../src/modules/users/application/crypto.servic
 import { TokenService } from '../../src/modules/auth/application/use-cases/token.service';
 import { CommandBus } from '@nestjs/cqrs';
 import request from 'supertest';
+import { CookieInterceptor } from '../../core/interceptors/refresh-cookie.interceptor';
 
 describe('AuthController - Login Integration Tests', () => {
   let app: INestApplication;
@@ -46,6 +47,7 @@ describe('AuthController - Login Integration Tests', () => {
         AuthService,
         LocalStrategy,
         LocalAuthGuard,
+        CookieInterceptor,
         {
           provide: UsersRepository,
           useClass: MockUsersRepository,
@@ -75,8 +77,17 @@ describe('AuthController - Login Integration Tests', () => {
           },
         },
         {
-          provide: 'APP_CONFIG_SERVICE',
+          provide: AppConfigService,
           useClass: MockAppConfigService,
+        },
+        {
+          provide: 'COOKIE_OPTIONS',
+          useValue: {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+          },
         },
       ],
     }).compile();

@@ -19,6 +19,7 @@ export class MockCustomLogger {
 }
 
 export class MockAppConfigService {
+  depType = 'develop';
   jwtAccessSecret = 'testAccessSecret';
   jwtAccessExpires = '1h';
   jwtRefreshSecret = 'testRefreshSecret';

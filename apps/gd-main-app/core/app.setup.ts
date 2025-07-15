@@ -13,10 +13,11 @@ import { RequestContextInterceptor } from '@monitoring/interceptor/request.conte
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
-    origin: sharedConfig.productionUrl || 'http://localhost:3000',
-    credentials: true,
+    origin:
+      sharedConfig.depType === 'staging'
+        ? 'http://localhost:3000'
+        : sharedConfig.productionUrl,
   });
-  app.use(cookieParser());
   setupValidation(app);
   swaggerSetup(app);
   app.setGlobalPrefix('api/v1', {});

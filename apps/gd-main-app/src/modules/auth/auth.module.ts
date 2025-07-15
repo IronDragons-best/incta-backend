@@ -16,6 +16,7 @@ import { PassportModule } from '@nestjs/passport';
 import { EmailResendListener } from '../../../core/listeners/email.resend.listener';
 import { EmailResendUseCase } from './application/use-cases/email.resend.use-case';
 import { JwtStrategy } from '../../../core/guards/local/jwt.strategy';
+import { cookieOptionsProvider } from './constants/cookie-options.constants';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { JwtStrategy } from '../../../core/guards/local/jwt.strategy';
     EmailResendListener,
     NotificationService,
     AsyncLocalStorageService,
+    cookieOptionsProvider,
   ],
   controllers: [AuthController],
 })

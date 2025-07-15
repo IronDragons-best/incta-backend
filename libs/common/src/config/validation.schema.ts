@@ -5,6 +5,8 @@ export const validationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
 
+  DEP_TYPE: Joi.string(),
+
   PORT: Joi.number().port().default(3000),
 
   FILES_HOST: Joi.string(),

@@ -16,19 +16,14 @@ import { AppConfigService, NotificationService } from '@common';
 
 import request from 'supertest';
 import {
+  MockAppConfigService,
   MockAppNotification,
   MockCommandBus,
   MockFactory,
   MockNotificationService,
 } from '../mocks/common.mocks';
-import {
-  MockUsersRepository,
-  MockUser,
-} from '../mocks/user.flow.mocks';
-import {
-  MockCryptoService,
-  MockTokenService,
-} from '../mocks/auth.flow.mocks';
+import { MockUsersRepository, MockUser } from '../mocks/user.flow.mocks';
+import { MockCryptoService, MockTokenService } from '../mocks/auth.flow.mocks';
 
 describe('AuthController - Logout Integration Tests', () => {
   let app: INestApplication;
@@ -41,7 +36,7 @@ describe('AuthController - Logout Integration Tests', () => {
       imports: [
         PassportModule,
         JwtModule.register({
-          secret: 'test-secret',
+          secret: 'testAccessSecret',
           signOptions: { expiresIn: '1h' },
         }),
       ],
@@ -74,8 +69,15 @@ describe('AuthController - Logout Integration Tests', () => {
         },
         {
           provide: AppConfigService,
+          useClass: MockAppConfigService,
+        },
+        {
+          provide: 'COOKIE_OPTIONS',
           useValue: {
-            jwtAccessSecret: 'test-secret',
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            path: '/',
           },
         },
         JwtService,
@@ -175,7 +177,5 @@ describe('AuthController - Logout Integration Tests', () => {
         message: 'Unauthorized',
       });
     });
-
   });
-
 });

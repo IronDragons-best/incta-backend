@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   NotFoundException,
   Post,
   Res,
@@ -11,7 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import type { Response } from 'express';
+import type { CookieOptions, Response } from 'express';
 import { UserInputDto } from '../../users/interface/dto/user.input.dto';
 import { RegistrationCommand } from '../application/use-cases/registration.use.case';
 import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/registration.swagger.decorator';
@@ -28,7 +29,6 @@ import { AuthService } from '../application/auth.service';
 import { MeSwagger } from '../../../../core/decorators/swagger-settings/me.swagger.decorator';
 import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 import { AuthMeViewDto } from './dto/output/me.view.dto';
-import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
 import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
 import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 import { EmailResendInputDto } from './dto/email.resend.input.dto';
@@ -39,6 +39,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly commandBus: CommandBus,
+    @Inject('COOKIE_OPTIONS') private readonly cookieOptions: CookieOptions,
   ) {}
 
   @Post('registration')
@@ -76,7 +77,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Res() res: Response) {
-    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    res.clearCookie('refreshToken', this.cookieOptions);
     res.sendStatus(HttpStatus.NO_CONTENT);
   }
 
