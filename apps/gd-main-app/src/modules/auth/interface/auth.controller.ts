@@ -33,6 +33,7 @@ import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logo
 import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 import { EmailResendInputDto } from './dto/email.resend.input.dto';
 import { User } from '../../users/domain/user.entity';
+import { ResendEmailSwagger } from '../../../../core/decorators/swagger-settings/resend.email.swagger.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -51,6 +52,7 @@ export class AuthController {
 
   @Post('email-resend')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ResendEmailSwagger()
   async resendEmail(@Body() body: EmailResendInputDto) {
     return this.commandBus.execute(new EmailResendCommand(body.email));
   }
