@@ -3,7 +3,8 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus, NotFoundException,
+  HttpStatus,
+  NotFoundException,
   Post,
   Res,
   UseGuards,
@@ -23,6 +24,14 @@ import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
 import { TokenResponseDto } from '../../../../core/types/token.types';
 import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login.swagger.decorator';
+import { EmailResendInputDto } from './dto/email.resend.input.dto';
+import { AuthService } from '../application/auth.service';
+import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
+import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
+import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
+import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
+import { MeSwagger } from '../../../../core/decorators/swagger-settings/me.swagger.decorator';
+import { AuthMeViewDto } from './dto/output/me.view.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -81,6 +90,6 @@ export class AuthController {
       throw new NotFoundException(result.getErrors());
     }
 
-    return new AuthMeViewDto(result.getValue()!);
+    return new AuthMeViewDto(result.getValue());
   }
 }
