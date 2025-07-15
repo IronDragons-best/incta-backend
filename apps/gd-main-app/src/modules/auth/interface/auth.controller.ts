@@ -32,6 +32,7 @@ import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
 import { MeSwagger } from '../../../../core/decorators/swagger-settings/me.swagger.decorator';
 import { AuthMeViewDto } from './dto/output/me.view.dto';
+import { User } from '../../users/domain/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -74,7 +75,7 @@ export class AuthController {
   @LogoutSwagger()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Res() res: Response) {
+  logout(@Res() res: Response) {
     res.clearCookie('refreshToken', COOKIE_OPTIONS);
     res.sendStatus(HttpStatus.NO_CONTENT);
   }
@@ -84,12 +85,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async getMe(@ExtractUserFromRequest() user: UserContextDto) {
-    const result = await this.authService.findUserById(user.id);
+    const result: AppNotification<User> = await this.authService.findUserById(user.id);
 
-    if (result.hasErrors() || !result.getValue()) {
+    const me = result.getValue();
+    if (result.hasErrors() || !me) {
       throw new NotFoundException(result.getErrors());
     }
 
-    return new AuthMeViewDto(result.getValue());
+    return new AuthMeViewDto(me);
   }
 }

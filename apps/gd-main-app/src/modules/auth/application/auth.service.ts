@@ -39,7 +39,7 @@ export class AuthService {
 
   async findUserById(id: User['id']): Promise<AppNotification<User>> {
     const notify = this.notification.create<User>();
-    const user = await this.usersRepository.findById(id);
+    const user: User | null = await this.usersRepository.findById(id);
 
     if (!user) {
       notify.setNotFound('User not found');
