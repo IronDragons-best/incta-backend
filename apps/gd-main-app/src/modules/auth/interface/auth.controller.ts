@@ -23,6 +23,14 @@ import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
 import { TokenResponseDto } from '../../../../core/types/token.types';
 import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login.swagger.decorator';
+import { AuthService } from '../application/auth.service';
+import { MeSwagger } from '../../../../core/decorators/swagger-settings/me.swagger.decorator';
+import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
+import { AuthMeViewDto } from './dto/output/me.view.dto';
+import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
+import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
+import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
+import { EmailResendInputDto } from './dto/email.resend.input.dto';
 
 @Controller('auth')
 export class AuthController {
