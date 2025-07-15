@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
-import { userPasswordConstraints } from '../../../users/constants/user.constants';
+import { IsStringWithTrim } from '../../../../../../core/decorators/validation/is.string.with.trim';
+import { userPasswordConstraints } from '../../../../users/constants/user.constants';
 import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
 
 export class LoginInputDto {

@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
-  HttpStatus,
-  Post, Res,
+  HttpStatus, NotFoundException,
+  Post,
+  Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -24,10 +26,16 @@ import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login
 import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
 import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 import { COOKIE_OPTIONS } from '../constants/cookie-options.constants';
+import { AuthService } from '../application/auth.service';
+import { MeSwagger } from '../../../../core/decorators/swagger-settings/me.swagger.decorator';
+import { AuthMeViewDto } from './dto/output/me.view.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -60,5 +68,19 @@ export class AuthController {
   async logout(@Res() res: Response) {
     res.clearCookie('refreshToken', COOKIE_OPTIONS);
     res.sendStatus(HttpStatus.NO_CONTENT);
+  }
+
+  @Get('me')
+  @MeSwagger()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMe(@ExtractUserFromRequest() user: UserContextDto) {
+    const result = await this.authService.findUserById(user.id);
+
+    if (result.hasErrors() || !result.getValue()) {
+      throw new NotFoundException(result.getErrors());
+    }
+
+    return new AuthMeViewDto(result.getValue()!);
   }
 }
