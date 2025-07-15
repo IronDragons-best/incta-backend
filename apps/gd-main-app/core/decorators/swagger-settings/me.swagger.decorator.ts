@@ -1,11 +1,12 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { AuthMeViewDto } from '../../../src/modules/auth/interface/dto/output/me.view.dto';
 
 export function MeSwagger() {
   return applyDecorators(
     ApiOperation({ summary: 'Get current user information.' }),
+    ApiBearerAuth(),
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Returns the current user information.',
