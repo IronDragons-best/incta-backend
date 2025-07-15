@@ -1,52 +1,53 @@
-FROM node:18-alpine AS builder
+# Multi-stage build for NestJS monorepo
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm
-
+# Copy package files
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 
-RUN pnpm install --frozen-lockfile
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
 
+# Copy source code
 COPY . .
 
-RUN pnpm run build:gd-main-app
-RUN pnpm run build:files-service
-RUN pnpm run build:notification-service
+# Build all services
+RUN npm run build:gd-main-app
+RUN npm run build:files-service
+RUN npm run build:notification-service
 
-FROM node:18-alpine AS production
+# Production image
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
+# Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
-RUN npm install -g pnpm
-
+# Copy package files and install production dependencies
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+RUN npm ci --only=production && npm cache clean --force
 
+# Copy built applications
 COPY --from=builder /app/dist ./dist
-
-
 COPY --from=builder /app/apps ./apps
-COPY --from=builder /app/libs ./libs
-COPY --from=builder /app/tsconfig*.json ./
-COPY --from=builder /app/nest-cli.json ./
 
+# Copy startup script
 COPY start-services.sh ./start-services.sh
 
+# Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nestjs -u 1001
 
+# Change ownership
 RUN chown -R nestjs:nodejs /app
 USER nestjs
 
+# Expose ports
 EXPOSE 3000 3001 3002
 
+# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
-
-CMD ["/bin/sh", "-c", "chmod +x /app/start-services.sh && /app/start-services.sh"]
