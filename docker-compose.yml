@@ -31,6 +31,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    extra_hosts:
+      - "incta-files-service:127.0.0.1"
+      - "incta-notifications-service:127.0.0.1"
 
 networks:
   app-network:
