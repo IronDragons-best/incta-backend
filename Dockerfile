@@ -8,8 +8,8 @@ COPY package*.json ./
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install ALL dependencies (нужны dev зависимости для сборки)
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -29,7 +29,7 @@ RUN apk add --no-cache dumb-init
 
 # Copy package files and install production dependencies
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Copy built applications
 COPY --from=builder /app/dist ./dist
