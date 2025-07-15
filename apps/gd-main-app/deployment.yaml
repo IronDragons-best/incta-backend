@@ -102,6 +102,11 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: JWT_REFRESH_EXPIRE
+             - name: DEP_TYPE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: DEP_TYPE
              - name: PORT
                valueFrom:
                  secretKeyRef:
