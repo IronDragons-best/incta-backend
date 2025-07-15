@@ -5,7 +5,7 @@ import { EmailResendEvent } from '../events/email.resend.event';
 
 @Injectable()
 export class EmailResendListener {
-  constructor(@Inject('NOTIFICATION_SERVICE') private readonly client: ClientProxy) {}
+  constructor(@Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy) {}
   @OnEvent('email.registration_resend')
   handleEmailResend(event: EmailResendEvent) {
     const record = new RmqRecordBuilder({
@@ -13,7 +13,13 @@ export class EmailResendListener {
       email: event.email,
       confirmCode: event.code,
     })
-      .setOptions({ persistent: true })
+      .setOptions({
+        persistent: true,
+        headers: {
+          'x-retry-count': '0',
+          'x-original-routing-key': 'email.registration_resend',
+        },
+      })
       .build();
     this.client.emit('email.registration_resend', record);
   }

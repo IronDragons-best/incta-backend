@@ -62,11 +62,13 @@ export class EmailService {
       `;
 
       await this.sendEmail(data.email, subject, textBody, htmlBody);
+      return notify.setNoContent();
     } catch (e) {
       this.logger.error(e);
       notify.setServerError(
         'Internal server error occurred while sending registration email',
       );
+      return notify;
     }
   }
 
@@ -100,9 +102,11 @@ export class EmailService {
       `;
 
       await this.sendEmail(data.email, subject, textBody, htmlBody);
+      return notify.setNoContent();
     } catch (e) {
       this.logger.error(e);
       notify.setServerError('Internal server error occurred while resending email');
+      return notify;
     }
   }
 }

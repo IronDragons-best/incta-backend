@@ -43,11 +43,23 @@ import { AppConfigService, SharedConfigModule } from '@common';
             queue: 'email_notifications_queue',
             queueOptions: {
               durable: true,
+              exclusive: false,
+              autoDelete: false,
+              messageTtl: 86400000,
+              arguments: {
+                'x-dead-letter-exchange': 'notification.dlx',
+              },
             },
             exchangeOptions: {
               name: 'notification.topic',
               type: 'topic',
               durable: true,
+              autoDelete: false,
+            },
+            persistent: true,
+            socketOptions: {
+              heartbeatIntervalInSeconds: 60,
+              reconnectTimeInSeconds: 5,
             },
           },
         }),
