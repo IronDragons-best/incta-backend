@@ -1,5 +1,5 @@
 # Multi-stage build for NestJS monorepo
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN npm run build:files-service
 RUN npm run build:notification-service
 
 # Production image
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
