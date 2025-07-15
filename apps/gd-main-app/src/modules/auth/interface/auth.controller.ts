@@ -50,7 +50,7 @@ export class AuthController {
   }
 
   @Post('email-resend')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async resendEmail(@Body() body: EmailResendInputDto) {
     return this.commandBus.execute(new EmailResendCommand(body.email));
   }

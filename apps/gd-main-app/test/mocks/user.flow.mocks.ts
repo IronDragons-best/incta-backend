@@ -15,14 +15,14 @@ export class MockUser {
     username: string,
     email: string,
     passwordHash: string,
-    isEmailConfirmed: boolean = true,
+    isConfirmed: boolean = true,
     deletedAt?: Date | null,
   ) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.passwordInfo = { passwordHash };
-    this.emailConfirmationInfo = { isConfirmed: isEmailConfirmed };
+    this.emailConfirmationInfo = { isConfirmed: isConfirmed };
     this.deletedAt = deletedAt || null;
   }
 
@@ -34,6 +34,7 @@ export class MockUser {
 export class MockUsersRepository {
   findById = jest.fn();
   findByUsernameOrEmail = jest.fn();
+  findByEmailWithTransaction = jest.fn();
   findExistingByLoginAndEmail = jest.fn();
   findExistingByLoginAndEmailWithTransaction = jest.fn();
   save = jest.fn();

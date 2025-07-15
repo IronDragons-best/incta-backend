@@ -5,25 +5,13 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomLogger } from '@monitoring';
 import { AppNotification, NotificationService } from '@common';
 import { UserInputDto } from '../../src/modules/users/interface/dto/user.input.dto';
+import { MockCustomLogger } from '../mocks/common.mocks';
 
 describe('RegistrationUseCase', () => {
   let useCase: RegistrationUseCase;
   let commandBus: { execute: jest.Mock };
   let eventEmitter: { emit: jest.Mock };
   let logger: CustomLogger;
-
-  class CustomLoggerMock implements Partial<CustomLogger> {
-    winstonLogger = {};
-    configService = {};
-    asyncLocalStorageService = {};
-    isDevelopment = false;
-    setContext = jest.fn();
-    error = jest.fn();
-    warn = jest.fn();
-    log = jest.fn();
-    debug = jest.fn();
-    verbose = jest.fn();
-  }
 
   beforeEach(async () => {
     commandBus = { execute: jest.fn() };
@@ -35,7 +23,7 @@ describe('RegistrationUseCase', () => {
         NotificationService,
         { provide: CommandBus, useValue: commandBus },
         { provide: EventEmitter2, useValue: eventEmitter },
-        { provide: CustomLogger, useClass: CustomLoggerMock },
+        { provide: CustomLogger, useClass: MockCustomLogger },
       ],
     }).compile();
 

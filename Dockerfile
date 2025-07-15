@@ -49,6 +49,9 @@ COPY --from=builder /app/libs ./libs
 COPY --from=builder /app/tsconfig*.json ./
 COPY --from=builder /app/nest-cli.json ./
 
+
+RUN echo "127.0.0.1 incta-files-service" >> /etc/hosts
+RUN echo "127.0.0.1 incta-notifications-service" >> /etc/hosts
 # Copy the startup script
 COPY start-services.sh ./start-services.sh
 
