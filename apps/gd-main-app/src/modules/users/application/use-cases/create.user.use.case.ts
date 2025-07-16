@@ -104,9 +104,9 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
       await queryRunner.rollbackTransaction();
 
       if (error instanceof BadRequestDomainException) {
-        const fistExtension = error.firstExtension;
+        const firstExtension = error.firstExtension;
         this.logger.error(error.firstExtension.message);
-        notification.setBadRequest(fistExtension.message, fistExtension.key);
+        notification.setBadRequest(firstExtension.message, firstExtension.key);
         return notification;
       }
       this.logger.error(error);

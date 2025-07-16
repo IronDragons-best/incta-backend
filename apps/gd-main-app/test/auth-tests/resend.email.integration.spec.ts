@@ -189,7 +189,6 @@ describe('AuthController - Email Resend Integration Tests', () => {
           .send(invalidEmailData)
           .expect(400);
         const body: ResponseBody = response.body;
-        console.log(body);
 
         expect(response.body).toHaveProperty('message');
         expect(Array.isArray(body.message)).toBeTruthy();
@@ -219,7 +218,6 @@ describe('AuthController - Email Resend Integration Tests', () => {
           .send({ email: userEmail })
           .expect(400);
         const body: ErrorResponseDto = response.body;
-        console.log(body);
 
         expect(response.body).toHaveProperty('errorsMessages');
         expect(Array.isArray(body.errorsMessages)).toBeTruthy();

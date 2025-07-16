@@ -31,9 +31,12 @@ import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 import { AuthMeViewDto } from './dto/output/me.view.dto';
 import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
 import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
-import { EmailResendInputDto } from './dto/email.resend.input.dto';
+import { EmailResendInputDto } from './dto/input/email.resend.input.dto';
 import { User } from '../../users/domain/user.entity';
 import { ResendEmailSwagger } from '../../../../core/decorators/swagger-settings/resend.email.swagger.decorator';
+import { ConfirmCodeInputDto } from './dto/input/confirm.code.input.dto';
+import { ConfirmEmailCommand } from '../application/use-cases/confirm.email.use-case';
+import { ConfirmEmailSwagger } from '../../../../core/decorators/swagger-settings/confirm.email.swagger.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -55,6 +58,13 @@ export class AuthController {
   @ResendEmailSwagger()
   async resendEmail(@Body() body: EmailResendInputDto) {
     return this.commandBus.execute(new EmailResendCommand(body.email));
+  }
+
+  @Post('confirm-email')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ConfirmEmailSwagger()
+  async confirmEmail(@Body() body: ConfirmCodeInputDto) {
+    return await this.commandBus.execute(new ConfirmEmailCommand(body.code));
   }
 
   @Post('login')

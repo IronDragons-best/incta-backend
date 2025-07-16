@@ -17,6 +17,7 @@ import { EmailResendListener } from '../../../core/listeners/email.resend.listen
 import { EmailResendUseCase } from './application/use-cases/email.resend.use-case';
 import { JwtStrategy } from '../../../core/guards/local/jwt.strategy';
 import { cookieOptionsProvider } from './constants/cookie-options.constants';
+import { ConfirmEmailUseCase } from './application/use-cases/confirm.email.use-case';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { cookieOptionsProvider } from './constants/cookie-options.constants';
   providers: [
     RegistrationUseCase,
     EmailResendUseCase,
+    ConfirmEmailUseCase,
     LoginUseCase,
     AuthService,
     TokenService,

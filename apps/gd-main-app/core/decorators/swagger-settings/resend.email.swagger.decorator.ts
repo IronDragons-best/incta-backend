@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { EmailResendInputDto } from '../../../src/modules/auth/interface/dto/email.resend.input.dto';
+import { EmailResendInputDto } from '../../../src/modules/auth/interface/dto/input/email.resend.input.dto';
 import { ErrorResponseDto } from '@common';
 
 export function ResendEmailSwagger() {
