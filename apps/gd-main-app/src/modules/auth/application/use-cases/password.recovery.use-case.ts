@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 
-import { EmailResendInputDto } from '../../interface/dto/email.resend.input.dto';
+import { EmailResendInputDto } from '../../interface/dto/input/email.resend.input.dto';
 
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { User } from '../../../users/domain/user.entity';
