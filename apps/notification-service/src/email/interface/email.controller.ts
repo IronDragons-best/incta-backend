@@ -2,13 +2,14 @@ import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext, Transport } from '@nestjs/microservices';
 import { EmailService } from '../application/email.service';
 import { EmailInfoInputDto } from '../types/email.info.input.dto';
-import { Channel, ConsumeMessage } from 'amqplib';
+import { Channel, Message } from 'amqplib';
 import { CustomLogger } from '@monitoring';
-import { AppNotification } from '@common';
 
 @Controller()
 export class EmailController {
-  private readonly MAX_RETRY = 3;
+  private readonly MAX_RETRY_ATTEMPTS = 3;
+  private readonly RETRY_HEADER = 'x-retry-count';
+  private readonly NESTJS_PATTERN_HEADER = 'x-pattern-id'; // Добавляем константу для заголовка паттерна NestJS
 
   constructor(
     private readonly emailService: EmailService,
@@ -17,101 +18,112 @@ export class EmailController {
     this.logger.setContext('Email Controller');
   }
 
-  private getChannelAndMessage(context: RmqContext): {
-    channel: Channel;
-    originalMsg: ConsumeMessage;
-  } {
-    const channel: Channel = context.getChannelRef() as Channel;
-    const originalMsg: ConsumeMessage = context.getMessage() as ConsumeMessage;
-    return { channel, originalMsg };
-  }
+  @EventPattern('email.registration', Transport.RMQ)
+  async handleEmailRegistration(
+    @Payload() data: EmailInfoInputDto,
+    @Ctx() context: RmqContext,
+  ) {
+    const email = data.email;
 
-  private getRetryCount(originalMsg: ConsumeMessage): number {
-    const xDeathHeader = originalMsg.properties?.headers?.['x-death'];
-    return Array.isArray(xDeathHeader) ? xDeathHeader.length : 0;
-  }
-
-  private handleServiceOperationResult(
-    result: AppNotification,
-    channel: Channel,
-    originalMsg: ConsumeMessage,
-    email: string,
-    requeueOnNack: boolean,
-  ): void {
-    if (result.hasErrors()) {
-      if (requeueOnNack) {
-        this.logger.error(result.getErrors());
-      } else {
-        this.logger.error(`Error processing email for ${email}. Retrying...`);
-      }
-      channel.nack(originalMsg, false, requeueOnNack);
-    } else {
-      this.logger.log(`Email successfully processed for ${email}.`);
-      channel.ack(originalMsg);
+    try {
+      this.logger.log(`Processing registration email for ${email}`);
+      const result = await this.emailService.sendRegistrationEmail(data);
+      this.handleMessage(context, email, !result.hasErrors());
+    } catch (error) {
+      this.logger.error(`Exception sending registration email to ${email}: ${error}`);
+      this.handleMessage(context, email, false);
     }
   }
 
-  @EventPattern('email.registration', Transport.RMQ)
-  async handleEmailSend(@Payload() data: EmailInfoInputDto, @Ctx() context: RmqContext) {
-    const { channel, originalMsg } = this.getChannelAndMessage(context);
-    const retryCount = this.getRetryCount(originalMsg);
+  @EventPattern('email.registration_resend', Transport.RMQ)
+  async handleEmailRegistrationResend(
+    @Payload() data: EmailInfoInputDto,
+    @Ctx() context: RmqContext,
+  ) {
+    const email = data.email;
 
-    if (retryCount >= this.MAX_RETRY) {
-      this.logger.error('Email send failed');
+    try {
+      this.logger.log(`Processing registration resend email for ${email}`);
+      const result = await this.emailService.resendEmail(data);
+      this.handleMessage(context, email, !result.hasErrors());
+    } catch (error) {
+      this.logger.error(`Exception resending registration email to ${email}: ${error}`);
+      this.handleMessage(context, email, false);
+    }
+  }
+
+  private getRetryCount(context: RmqContext): number {
+    const msg = context.getMessage() as Message;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const retryCountHeader = (msg.properties?.headers as unknown)?.[this.RETRY_HEADER];
+    return typeof retryCountHeader === 'string' ? parseInt(retryCountHeader, 10) : 0;
+  }
+
+  private handleMessage(context: RmqContext, email: string, isSuccess: boolean): void {
+    const channel = context.getChannelRef() as Channel;
+    const originalMsg = context.getMessage() as Message;
+    let currentRetryCount = this.getRetryCount(context);
+
+    if (isSuccess) {
+      this.logger.log(`Email successfully processed for ${email}`);
+      channel.ack(originalMsg);
+      return;
+    }
+
+    currentRetryCount++;
+
+    if (currentRetryCount >= this.MAX_RETRY_ATTEMPTS) {
+      this.logger.error(
+        `Email failed after ${this.MAX_RETRY_ATTEMPTS} attempts for ${email}. Rejecting.`,
+      );
       channel.reject(originalMsg, false);
       return;
     }
 
-    const result = await this.emailService.sendRegistrationEmail(data);
-    this.handleServiceOperationResult(result, channel, originalMsg, data.email, true);
-  }
+    this.logger.error(
+      `Email failed for ${email}. Retrying ${currentRetryCount}/${this.MAX_RETRY_ATTEMPTS}`,
+    );
 
-  @EventPattern('email.registration_resend', Transport.RMQ)
-  async handleMessage(@Payload() data: EmailInfoInputDto, @Ctx() context: RmqContext) {
-    const { channel, originalMsg } = this.getChannelAndMessage(context);
-    const retryCount = this.getRetryCount(originalMsg);
+    const newMessage = originalMsg.content;
 
-    try {
-      this.logger.log(
-        `Received message for email.registration_resend. Retry count: ${retryCount}`,
-      );
+    const newHeaders = {
+      ...originalMsg.properties.headers,
+      [this.RETRY_HEADER]: String(currentRetryCount),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      [this.NESTJS_PATTERN_HEADER]:
+        originalMsg.properties?.headers?.[this.NESTJS_PATTERN_HEADER],
+    };
 
-      if (retryCount >= this.MAX_RETRY) {
-        this.logger.error(
-          `Email send failed after ${retryCount} retries for ${data.email}. Rejecting permanently.`,
-        );
-        channel.reject(originalMsg, false);
-        return;
-      }
+    const correlationId =
+      typeof originalMsg.properties.correlationId === 'string'
+        ? originalMsg.properties.correlationId
+        : undefined;
 
-      const result = await this.emailService.resendEmail(data);
+    channel.publish(
+      originalMsg.fields.exchange,
+      originalMsg.fields.routingKey,
+      newMessage,
+      {
+        correlationId: correlationId,
+        headers: newHeaders,
+        deliveryMode: 2,
+      },
+    );
 
-      this.handleServiceOperationResult(result, channel, originalMsg, data.email, false);
-    } catch (e: any) {
-      this.logger.error(`Unhandled exception in handleMessage for ${data.email}: ${e}`);
-      channel.nack(originalMsg, false, false);
-    }
+    channel.ack(originalMsg);
   }
 
   @EventPattern('email.password_recovery', Transport.RMQ)
   async handlePasswordRecovery(@Payload() data: EmailInfoInputDto, @Ctx() context: RmqContext) {
-    const { channel, originalMsg } = this.getChannelAndMessage(context);
-    const retryCount = this.getRetryCount(originalMsg);
+    const { email } = data;
 
     try {
-      if (retryCount >= this.MAX_RETRY) {
-        this.logger.error(
-          `Email send failed after ${retryCount} retries for ${data.email}. Rejecting permanently.`,
-        );
-        channel.reject(originalMsg, false);
-        return;
-      }
-
+      this.logger.log(`Processing password recovery email for ${email}`);
       const result = await this.emailService.sendPasswordRecoveryEmail(data);
-      this.handleServiceOperationResult(result, channel, originalMsg, data.email, false);
+      this.handleMessage(context, email, !result.hasErrors());
     } catch (e: any) {
       this.logger.error(`Unhandled exception in handlePasswordRecovery for ${data.email}: ${e}`);
-      channel.nack(originalMsg, false, false);
+      this.handleMessage(context, email, false);
     }
   }
 }

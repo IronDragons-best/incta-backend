@@ -18,7 +18,10 @@ import { RegistrationCommand } from '../application/use-cases/registration.use.c
 import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/registration.swagger.decorator';
 import { LoginCommand } from '../application/use-cases/login.use-case';
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
-import { UserContextDto } from '../../../../core/dto/user.context.dto';
+import {
+  UserContextDto,
+  UserRefreshContextDto,
+} from '../../../../core/dto/user.context.dto';
 import { AppNotification } from '@common';
 import { Tokens } from '../application/use-cases/token.service';
 import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
@@ -42,6 +45,9 @@ import { ResendEmailSwagger } from '../../../../core/decorators/swagger-settings
 import { ConfirmCodeInputDto } from './dto/input/confirm.code.input.dto';
 import { ConfirmEmailCommand } from '../application/use-cases/confirm.email.use-case';
 import { ConfirmEmailSwagger } from '../../../../core/decorators/swagger-settings/confirm.email.swagger.decorator';
+import { RefreshTokenCommand } from '../application/use-cases/refresh.token.use-case';
+import { ClientInfo } from '../../../../core/decorators/info-decorators/client.info.decorator';
+import { ClientInfoDto } from './dto/input/client.info.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -86,6 +92,22 @@ export class AuthController {
       return result;
     }
 
+    return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
+  }
+  @Post('refresh-token')
+  @UseInterceptors(CookieInterceptor)
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @ExtractUserFromRequest() user: UserRefreshContextDto,
+    @ClientInfo() clientInfo: ClientInfoDto,
+  ) {
+    const result: AppNotification<Tokens> = await this.commandBus.execute(
+      new RefreshTokenCommand(user, clientInfo),
+    );
+    const tokens = result.getValue();
+    if (!tokens) {
+      return result;
+    }
     return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
   }
 

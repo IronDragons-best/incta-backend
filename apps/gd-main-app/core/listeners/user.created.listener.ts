@@ -14,10 +14,9 @@ export class UserCreatedListener {
       confirmCode: event.code,
     })
       .setOptions({
-        persistent: true,
+        deliveryMode: 2,
         headers: {
-          'x-retry-count': '0', // Начинаем с 0 попыток
-          'x-original-routing-key': 'email.registration_resend',
+          'x-retry-count': '0',
         },
       })
       .build();
