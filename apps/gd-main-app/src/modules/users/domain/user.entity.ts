@@ -116,6 +116,34 @@ export class User extends BasicEntity {
     return true;
   }
 
+  static validatePasswordRecoveryCode(user: User, recoveryCode: string) {
+    console.log(user, 'User')
+    const { passwordInfo } = user;
+
+    if (!passwordInfo.passwordRecoveryCode || !passwordInfo.passwordRecoveryCodeExpirationDate) {
+      throw BadRequestDomainException.create(
+        'Password recovery code is not set or incomplete',
+        'recoveryCode',
+      );
+    }
+
+    const now = new Date();
+
+    if (passwordInfo.passwordRecoveryCodeExpirationDate < now) {
+      throw BadRequestDomainException.create(
+        'Password recovery code has expired',
+        'recoveryCode',
+      );
+    }
+
+    if (passwordInfo.passwordRecoveryCode !== recoveryCode) {
+      throw BadRequestDomainException.create(
+        'Invalid password recovery code',
+        'recoveryCode',
+      );
+    }
+  }
+
   updateUserFields(userDto: UserDomainDtoType) {
     const now = new Date();
     this.username = userDto.username;
@@ -140,5 +168,24 @@ export class User extends BasicEntity {
     this.emailConfirmationInfo.emailConfirmationCooldown = new Date(
       new Date().getTime() + 10 * 60 * 1000,
     );
+  }
+
+  setPasswordRecoveryCode(recoveryCode: string) {
+    this.passwordInfo.passwordRecoveryCode = recoveryCode;
+    this.passwordInfo.passwordRecoveryCodeExpirationDate = new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000,
+    );
+  }
+
+  setPasswordRecoveryCodeNullable() {
+    this.passwordInfo.passwordRecoveryCode = null;
+    this.passwordInfo.passwordRecoveryCodeExpirationDate = null;
+  }
+
+  setPasswordHash(passwordHash: string) {
+    if (!passwordHash || passwordHash.length === 0) {
+      throw BadRequestDomainException.create('Password hash cannot be empty', 'passwordHash');
+    }
+    this.passwordInfo.passwordHash = passwordHash;
   }
 }

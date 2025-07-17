@@ -109,4 +109,42 @@ export class EmailService {
       return notify;
     }
   }
+
+  async sendPasswordRecoveryEmail(data: EmailInfoInputDto) {
+    const notify = this.notificationService.create();
+    try {
+      const link = this.generateLink(data.confirmCode);
+
+      const subject = 'Восстановление пароля на Iron Dragon';
+
+      const textBody = [
+        `Hi ${data.login},`,
+        '',
+        `Вы запросили восстановление пароля на Iron Dragon.`,
+        `Чтобы восстановить пароль, перейдите по ссылке:`,
+        link,
+        '',
+        `Если вы не запрашивали восстановление — просто проигнорируйте это письмо.`,
+        '',
+        `С уважением,`,
+        `Команда Iron Dragon`,
+      ].join('\n');
+
+      const htmlBody = `
+        <p>Hi <strong>${data.login}</strong>,</p>
+        <p>Вы запросили восстановление пароля на <strong>Iron Dragon</strong>.</p>
+        <p>Чтобы восстановить пароль, перейдите по ссылке:</p>
+        <p><a href="${link}">Восстановить пароль</a></p>
+        <p>Если вы не запрашивали восстановление — просто проигнорируйте это письмо.</p>
+        <p>С уважением,<br/>Команда Iron Dragon</p>
+      `;
+
+      await this.sendEmail(data.email, subject, textBody, htmlBody);
+      return notify.setNoContent();
+    } catch (e) {
+      this.logger.error(e);
+      notify.setServerError('Internal server error occurred while sending password recovery email');
+      return notify;
+    }
+  }
 }

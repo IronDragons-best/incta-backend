@@ -85,9 +85,32 @@ export class EmailController {
       }
 
       const result = await this.emailService.resendEmail(data);
+
       this.handleServiceOperationResult(result, channel, originalMsg, data.email, false);
     } catch (e: any) {
       this.logger.error(`Unhandled exception in handleMessage for ${data.email}: ${e}`);
+      channel.nack(originalMsg, false, false);
+    }
+  }
+
+  @EventPattern('email.password_recovery', Transport.RMQ)
+  async handlePasswordRecovery(@Payload() data: EmailInfoInputDto, @Ctx() context: RmqContext) {
+    const { channel, originalMsg } = this.getChannelAndMessage(context);
+    const retryCount = this.getRetryCount(originalMsg);
+
+    try {
+      if (retryCount >= this.MAX_RETRY) {
+        this.logger.error(
+          `Email send failed after ${retryCount} retries for ${data.email}. Rejecting permanently.`,
+        );
+        channel.reject(originalMsg, false);
+        return;
+      }
+
+      const result = await this.emailService.sendPasswordRecoveryEmail(data);
+      this.handleServiceOperationResult(result, channel, originalMsg, data.email, false);
+    } catch (e: any) {
+      this.logger.error(`Unhandled exception in handlePasswordRecovery for ${data.email}: ${e}`);
       channel.nack(originalMsg, false, false);
     }
   }

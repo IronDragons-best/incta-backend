@@ -33,6 +33,11 @@ import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logo
 import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 import { EmailResendInputDto } from './dto/email.resend.input.dto';
 import { User } from '../../users/domain/user.entity';
+import { PasswordRecoverySwagger } from '../../../../core/decorators/swagger-settings/password-recovery.decorator';
+import { PasswordRecoveryCommand } from '../application/use-cases/password.recovery.use-case';
+import { NewPasswordSwagger } from '../../../../core/decorators/swagger-settings/new-password.decorator';
+import { NewPasswordInputDto } from './dto/input/new.password.input.dto';
+import { NewPasswordCommand } from '../application/use-cases/new.password.use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -90,9 +95,27 @@ export class AuthController {
 
     const me = result.getValue();
     if (result.hasErrors() || !me) {
-      throw new NotFoundException(result.getErrors());
+      return result;
     }
 
     return new AuthMeViewDto(me);
+  }
+
+  @Post('/password-recovery')
+  @PasswordRecoverySwagger()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async passwordRecovery(@Body() body: EmailResendInputDto) {
+   return this.commandBus.execute(new PasswordRecoveryCommand(body.email))
+  }
+
+  @Post('/new-password')
+  @NewPasswordSwagger()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async newPassword(@Body() body: NewPasswordInputDto) {
+    const { recoveryCode, newPassword } = body;
+    return this.commandBus.execute(new NewPasswordCommand(
+      newPassword,
+      recoveryCode,
+    ))
   }
 }
