@@ -11,8 +11,12 @@ export function PasswordRecoverySwagger() {
       description: 'Password recovery email sent successfully.',
     }),
     ApiResponse({
+      status: HttpStatus.NOT_FOUND,
+      description: 'User not found',
+    }),
+    ApiResponse({
       status: HttpStatus.BAD_REQUEST,
-      description: 'Invalid email address or user not found.',
+      description: 'Invalid email address',
     })
   )
 }
