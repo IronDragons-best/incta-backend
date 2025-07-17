@@ -44,6 +44,7 @@ export class UsersRepository {
   }
 
   async findByEmailWithTransaction(email: string, queryRunner: QueryRunner) {
+    console.log(email);
     const user = await queryRunner.manager
       .createQueryBuilder(User, 'user')
       .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
@@ -74,6 +75,26 @@ export class UsersRepository {
       return null;
     }
     return user;
+  }
+
+  async findByRecoveryCodeWithTransaction(
+    recoveryCode: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    console.log('recoveryCode', recoveryCode);
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('passwordInfo.passwordRecoveryCode = :recoveryCode')
+      .setParameters({
+        recoveryCode
+      })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    return user || null;
   }
 
   /** Find user by login or email. Checking that user doesn't exist. */

@@ -19,6 +19,7 @@ export class AppNotification<T = any> {
     this.errors.push({ message });
     this.statusType = StatusType.NotFound;
     this.statusCode = 404;
+    return this;
   }
 
   setForbidden(message: string) {

@@ -17,6 +17,9 @@ import { EmailResendListener } from '../../../core/listeners/email.resend.listen
 import { EmailResendUseCase } from './application/use-cases/email.resend.use-case';
 import { JwtStrategy } from '../../../core/guards/local/jwt.strategy';
 import { cookieOptionsProvider } from './constants/cookie-options.constants';
+import { PasswordRecoveryListener } from '../../../core/listeners/password.recovery.listener';
+import { PasswordRecoveryUseCase } from './application/use-cases/password.recovery.use-case';
+import { NewPasswordUseCase } from './application/use-cases/new.password.use-case';
 import { ConfirmEmailUseCase } from './application/use-cases/confirm.email.use-case';
 import { JwtRefreshStrategy } from '../../../core/guards/local/jwt.refresh.strategy';
 import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-case';
@@ -44,7 +47,9 @@ import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-c
     NotificationService,
     AsyncLocalStorageService,
     cookieOptionsProvider,
-
+    PasswordRecoveryListener,
+    PasswordRecoveryUseCase,
+    NewPasswordUseCase,
     {
       provide: JwtRefreshStrategy,
       useFactory: (configService: AppConfigService, tokenService: TokenService) => {

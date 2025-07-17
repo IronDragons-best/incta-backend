@@ -112,4 +112,18 @@ export class EmailController {
 
     channel.ack(originalMsg);
   }
+
+  @EventPattern('email.password_recovery', Transport.RMQ)
+  async handlePasswordRecovery(@Payload() data: EmailInfoInputDto, @Ctx() context: RmqContext) {
+    const { email } = data;
+
+    try {
+      this.logger.log(`Processing password recovery email for ${email}`);
+      const result = await this.emailService.sendPasswordRecoveryEmail(data);
+      this.handleMessage(context, email, !result.hasErrors());
+    } catch (e: any) {
+      this.logger.error(`Unhandled exception in handlePasswordRecovery for ${data.email}: ${e}`);
+      this.handleMessage(context, email, false);
+    }
+  }
 }
