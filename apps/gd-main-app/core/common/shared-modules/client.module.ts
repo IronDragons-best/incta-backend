@@ -45,10 +45,7 @@ import { AppConfigService, SharedConfigModule } from '@common';
               durable: true,
               exclusive: false,
               autoDelete: false,
-              messageTtl: 86400000,
-              arguments: {
-                'x-dead-letter-exchange': 'notification.dlx',
-              },
+              arguments: {},
             },
             exchangeOptions: {
               name: 'notification.topic',

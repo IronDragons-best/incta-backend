@@ -14,10 +14,9 @@ export class EmailResendListener {
       confirmCode: event.code,
     })
       .setOptions({
-        persistent: true,
+        deliveryMode: 2,
         headers: {
           'x-retry-count': '0',
-          'x-original-routing-key': 'email.registration_resend',
         },
       })
       .build();
