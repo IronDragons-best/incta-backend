@@ -44,6 +44,7 @@ export class AppNotification<T = any> {
     this.errors.push({ message });
     this.statusType = StatusType.ServerError; // Новый тип
     this.statusCode = 500;
+    return this;
   }
 
   setValue(value: T) {

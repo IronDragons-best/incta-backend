@@ -20,6 +20,7 @@ import { cookieOptionsProvider } from './constants/cookie-options.constants';
 import { PasswordRecoveryListener } from '../../../core/listeners/password.recovery.listener';
 import { PasswordRecoveryUseCase } from './application/use-cases/password.recovery.use-case';
 import { NewPasswordUseCase } from './application/use-cases/new.password.use-case';
+import { ConfirmEmailUseCase } from './application/use-cases/confirm.email.use-case';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { NewPasswordUseCase } from './application/use-cases/new.password.use-cas
   providers: [
     RegistrationUseCase,
     EmailResendUseCase,
+    ConfirmEmailUseCase,
     LoginUseCase,
     AuthService,
     TokenService,

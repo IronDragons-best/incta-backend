@@ -1,21 +1,13 @@
 import { AppNotification } from '@common';
 import { MockUser } from './user.flow.mocks';
 import { MockTokens } from './auth.flow.mocks';
+import { CustomLogger } from '@monitoring';
 
 export class MockEventEmitter2 {
   emit = jest.fn();
   on = jest.fn();
   off = jest.fn();
   removeAllListeners = jest.fn();
-}
-
-export class MockCustomLogger {
-  setContext = jest.fn();
-  error = jest.fn();
-  warn = jest.fn();
-  log = jest.fn();
-  debug = jest.fn();
-  verbose = jest.fn();
 }
 
 export class MockAppConfigService {
@@ -79,6 +71,12 @@ export class MockAppNotification<T> {
     return this.value;
   }
 
+  setNoContent(): void {
+    this.statusCode = 204;
+    this.value = null; // Нет содержимого
+    this.errors = []; // Нет ошибок
+  }
+
   setUnauthorized(message: string, field?: string): void {
     this.statusCode = 401;
     this.errors.push({ message, field });
@@ -118,6 +116,11 @@ export class MockAppNotification<T> {
   static success<T>(value: T): MockAppNotification<T> {
     const notification = new MockAppNotification<T>();
     notification.setValue(value);
+    return notification;
+  }
+  static noContent<T>(): MockAppNotification<T> {
+    const notification = new MockAppNotification<T>();
+    notification.setNoContent();
     return notification;
   }
 
@@ -161,9 +164,9 @@ export class MockFactory {
     username: string = 'testuser',
     email: string = 'test@example.com',
     passwordHash: string = 'hashedPassword123',
-    isEmailConfirmed: boolean = true,
+    isConfirmed: boolean = true,
   ): MockUser {
-    return new MockUser(id, username, email, passwordHash, isEmailConfirmed);
+    return new MockUser(id, username, email, passwordHash, isConfirmed);
   }
 
   static createTokens(
@@ -179,6 +182,10 @@ export class MockFactory {
 
   static createSuccessNotification<T>(value: T): MockAppNotification<T> {
     return MockAppNotification.success(value);
+  }
+
+  static createNoContentNotification(): MockAppNotification<any> {
+    return MockAppNotification.noContent();
   }
 
   static createErrorNotification<T>(
@@ -210,4 +217,16 @@ export class MockFactory {
   static createErrorResponse(errors: MockValidationError[]): MockErrorResponse {
     return { errorsMessages: errors };
   }
+}
+export class MockCustomLogger implements Partial<CustomLogger> {
+  winstonLogger = {};
+  configService = {};
+  asyncLocalStorageService = {};
+  isDevelopment = false;
+  setContext = jest.fn();
+  error = jest.fn();
+  warn = jest.fn();
+  log = jest.fn();
+  debug = jest.fn();
+  verbose = jest.fn();
 }

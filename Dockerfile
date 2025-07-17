@@ -49,6 +49,8 @@ COPY --from=builder /app/libs ./libs
 COPY --from=builder /app/tsconfig*.json ./
 COPY --from=builder /app/nest-cli.json ./
 
+
+
 # Copy the startup script
 COPY start-services.sh ./start-services.sh
 

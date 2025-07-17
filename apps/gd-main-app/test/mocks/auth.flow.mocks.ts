@@ -1,4 +1,5 @@
 import { CallHandler } from '@nestjs/common';
+import { CustomLogger } from '@monitoring';
 
 export class MockCryptoService {
   createHash = jest.fn((password: string) => `hashed_${password}`);

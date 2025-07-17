@@ -37,4 +37,10 @@ export class NotificationService {
     notification.setBadRequest(message, field);
     return notification;
   }
+
+  serverError<T>(message: string): AppNotification<T> {
+    const notification = new AppNotification<T>();
+    notification.setServerError(message);
+    return notification;
+  }
 }

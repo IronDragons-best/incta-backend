@@ -25,6 +25,10 @@ export class User extends BasicEntity {
   @OneToOne(() => PasswordInfo, (p) => p.user, { cascade: true, eager: true })
   passwordInfo: PasswordInfo;
 
+  confirmEmail() {
+    this.emailConfirmationInfo.isConfirmed = true;
+  }
+
   static createInstance(userDto: UserDomainDtoType) {
     const now = new Date();
     const user = new this();
@@ -141,6 +145,22 @@ export class User extends BasicEntity {
         'Invalid password recovery code',
         'recoveryCode',
       );
+    }
+  }
+
+  static validateEmailConfirmation(user: User, confirmCode: string) {
+    if (user.emailConfirmationInfo.isConfirmed) {
+      throw BadRequestDomainException.create('Email is already confirmed', 'code');
+    }
+    if (
+      user.emailConfirmationInfo.codeExpirationDate &&
+      user.emailConfirmationInfo.codeExpirationDate < new Date()
+    ) {
+      throw BadRequestDomainException.create('Confirmation code is expired', 'code');
+    }
+
+    if (user.emailConfirmationInfo.confirmCode !== confirmCode) {
+      throw BadRequestDomainException.create('Invalid confirmation code', 'code');
     }
   }
 

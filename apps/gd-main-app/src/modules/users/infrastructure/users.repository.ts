@@ -44,6 +44,7 @@ export class UsersRepository {
   }
 
   async findByEmailWithTransaction(email: string, queryRunner: QueryRunner) {
+    console.log(email);
     const user = await queryRunner.manager
       .createQueryBuilder(User, 'user')
       .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
@@ -51,6 +52,22 @@ export class UsersRepository {
       .where('LOWER(user.email) = LOWER(:email)')
       .andWhere('user.deletedAt IS NULL')
       .setParameter('email', email)
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
+
+  async findByEmailConfirmCodeWithTransaction(code: string, queryRunner: QueryRunner) {
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('emailInfo.confirmCode = :code', { code: code })
+      .andWhere('user.deletedAt IS NULL')
       .setLock('pessimistic_write')
       .getOne();
 
