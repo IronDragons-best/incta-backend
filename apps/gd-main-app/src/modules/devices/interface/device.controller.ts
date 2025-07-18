@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 
@@ -8,15 +8,31 @@ import { AllUserDevicesSwagger } from '../../../../core/decorators/swagger-setti
 import { UserContextDto } from '../../../../core/dto/user.context.dto';
 
 import { DevicesQueryRepository } from '../infrastructure/devices.query.repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { DeleteOtherDevicesCommand } from '../application/delete.device.use.case';
+import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
 
 @Controller('devices')
 export class DeviceController {
-  constructor(private readonly devicesQueryRepository: DevicesQueryRepository) {}
+  constructor(
+    private readonly devicesQueryRepository: DevicesQueryRepository,
+    private readonly commandBus: CommandBus,
+  ) {}
 
   @Get()
   @AllUserDevicesSwagger()
   @UseGuards(JwtAuthGuard)
   async getAllUserDevices(@ExtractUserFromRequest() user: UserContextDto) {
     return await this.devicesQueryRepository.findSessionsByUserId(user.id);
+  }
+
+  @Delete()
+  @UseGuards(RefreshGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async terminateOtherSessions(@ExtractUserFromRequest() user: UserContextDto) {
+    console.log(user);
+    return await this.commandBus.execute(
+      new DeleteOtherDevicesCommand(user.id, user.sessionId),
+    );
   }
 }
