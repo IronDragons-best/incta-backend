@@ -143,7 +143,9 @@ export class EmailService {
       return notify.setNoContent();
     } catch (e) {
       this.logger.error(e);
-      notify.setServerError('Internal server error occurred while sending password recovery email');
+      notify.setServerError(
+        'Internal server error occurred while sending password recovery email',
+      );
       return notify;
     }
   }

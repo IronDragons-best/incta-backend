@@ -4,7 +4,7 @@ import { UsersModule } from '../users/users.module';
 import { RegistrationUseCase } from './application/use-cases/registration.use.case';
 import { AuthController } from './interface/auth.controller';
 import { UserCreatedListener } from '../../../core/listeners/user.created.listener';
-import { AppConfigService, NotificationService } from '@common';
+import { NotificationService } from '@common';
 import { AsyncLocalStorageService } from '@monitoring';
 import { ClientsModule } from '../../../core/common/shared-modules/client.module';
 import { LoginUseCase } from './application/use-cases/login.use-case';
@@ -21,7 +21,7 @@ import { PasswordRecoveryListener } from '../../../core/listeners/password.recov
 import { PasswordRecoveryUseCase } from './application/use-cases/password.recovery.use-case';
 import { NewPasswordUseCase } from './application/use-cases/new.password.use-case';
 import { ConfirmEmailUseCase } from './application/use-cases/confirm.email.use-case';
-import { JwtRefreshStrategy } from '../../../core/guards/local/jwt.refresh.strategy';
+import { JwtRefreshStrategy } from '../../../core/guards/refresh/jwt.refresh.strategy';
 import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-case';
 import { DeviceModule } from '../devices/device.module';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
@@ -46,6 +46,7 @@ import { LogoutUseCase } from './application/use-cases/logout.use-case';
     TokenService,
     LocalStrategy,
     JwtStrategy,
+    JwtRefreshStrategy,
     UserCreatedListener,
     EmailResendListener,
     NotificationService,
@@ -54,13 +55,6 @@ import { LogoutUseCase } from './application/use-cases/logout.use-case';
     PasswordRecoveryListener,
     PasswordRecoveryUseCase,
     NewPasswordUseCase,
-    {
-      provide: JwtRefreshStrategy,
-      useFactory: (configService: AppConfigService, tokenService: TokenService) => {
-        return new JwtRefreshStrategy(tokenService, configService);
-      },
-      inject: [AppConfigService, TokenService],
-    },
   ],
   controllers: [AuthController],
 })

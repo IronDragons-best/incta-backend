@@ -52,8 +52,9 @@ import { ConfirmEmailSwagger } from '../../../../core/decorators/swagger-setting
 import { RefreshTokenCommand } from '../application/use-cases/refresh.token.use-case';
 import { ClientInfo } from '../../../../core/decorators/info-decorators/client.info.decorator';
 import { ClientInfoDto } from './dto/input/client.info.dto';
-import { RefreshGuard } from '../../../../core/guards/local/jwt.refresh.auth.guard';
 import { LogoutCommand } from '../application/use-cases/logout.use-case';
+import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/refresh.token.swagger.decorator';
+import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -116,6 +117,8 @@ export class AuthController {
   }
   @Post('refresh-token')
   @UseInterceptors(CookieInterceptor)
+  @RefreshTokenSwagger()
+  @UseGuards(RefreshGuard)
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @ExtractUserFromRequest() user: UserRefreshContextDto,
@@ -169,7 +172,7 @@ export class AuthController {
   @PasswordRecoverySwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() body: EmailResendInputDto) {
-   return this.commandBus.execute(new PasswordRecoveryCommand(body.email))
+    return this.commandBus.execute(new PasswordRecoveryCommand(body.email));
   }
 
   @Post('/new-password')
@@ -177,9 +180,6 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async newPassword(@Body() body: NewPasswordInputDto) {
     const { recoveryCode, newPassword } = body;
-    return this.commandBus.execute(new NewPasswordCommand(
-      newPassword,
-      recoveryCode,
-    ))
+    return this.commandBus.execute(new NewPasswordCommand(newPassword, recoveryCode));
   }
 }

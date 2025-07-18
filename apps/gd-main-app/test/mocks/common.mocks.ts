@@ -11,11 +11,21 @@ export class MockEventEmitter2 {
 }
 
 export class MockAppConfigService {
-  depType = 'develop';
-  jwtAccessSecret = 'testAccessSecret';
-  jwtAccessExpires = '1h';
-  jwtRefreshSecret = 'testRefreshSecret';
-  jwtRefreshExpires = '7d';
+  get depType() {
+    return 'develop';
+  }
+  get jwtAccessSecret() {
+    return 'testAccessSecret';
+  }
+  get jwtAccessExpires() {
+    return '1h';
+  }
+  get jwtRefreshSecret() {
+    return 'testRefreshSecret';
+  }
+  get jwtRefreshExpires() {
+    return '7d';
+  }
 }
 
 export class MockCommandBus {

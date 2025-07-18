@@ -4,9 +4,10 @@ import { TokenService } from '../../../src/modules/auth/application/use-cases/to
 import { AppConfigService } from '@common';
 import { Request } from 'express';
 import { UserContextDto } from '../../dto/user.context.dto';
-import { UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
-export class JwtRefreshStrategy extends PassportStrategy(Strategy, ' jwt-refresh') {
+@Injectable()
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(
     private readonly tokenService: TokenService,
     private readonly configService: AppConfigService,
@@ -20,9 +21,11 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, ' jwt-refresh
   }
   validate(req: Request, payload: UserContextDto) {
     const refreshToken = req.cookies.refreshToken;
+
     if (!payload || !payload.id || !refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
+
     return payload;
   }
 }
