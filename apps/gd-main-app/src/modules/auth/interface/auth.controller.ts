@@ -7,12 +7,16 @@ import {
   Inject,
   NotFoundException,
   Post,
+  Req,
   Res,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import type { CookieOptions, Response } from 'express';
+import type { CookieOptions, Response, Request } from 'express';
+
+import * as UAParserNS from 'ua-parser-js';
+
 import { UserInputDto } from '../../users/interface/dto/user.input.dto';
 import { RegistrationCommand } from '../application/use-cases/registration.use.case';
 import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/registration.swagger.decorator';
@@ -48,6 +52,8 @@ import { ConfirmEmailSwagger } from '../../../../core/decorators/swagger-setting
 import { RefreshTokenCommand } from '../application/use-cases/refresh.token.use-case';
 import { ClientInfo } from '../../../../core/decorators/info-decorators/client.info.decorator';
 import { ClientInfoDto } from './dto/input/client.info.dto';
+import { RefreshGuard } from '../../../../core/guards/local/jwt.refresh.auth.guard';
+import { LogoutCommand } from '../application/use-cases/logout.use-case';
 
 @Controller('auth')
 export class AuthController {
@@ -83,9 +89,23 @@ export class AuthController {
   @LoginSwagger()
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@ExtractUserFromRequest() user: UserContextDto) {
+  async login(
+    @Req() req: Request,
+    @ExtractUserFromRequest() user: UserContextDto
+  ) {
+
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
+
+    const parser = new UAParserNS.UAParser(req.headers['user-agent']);
+    const browser = parser.getBrowser();
+
     const result: AppNotification<Tokens> = await this.commandBus.execute(
-      new LoginCommand(user.id),
+      new LoginCommand({
+        userId: user.id,
+        deviceName: browser.name || 'Unknown',
+        ip: ip || 'Unknown',
+      }),
     );
     const tokens = result.getValue();
     if (!tokens) {
@@ -112,12 +132,22 @@ export class AuthController {
   }
 
   @Post('logout')
-  @LogoutSwagger()
   @UseGuards(JwtAuthGuard)
+  @LogoutSwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
-  logout(@Res() res: Response) {
-    res.clearCookie('refreshToken', this.cookieOptions);
-    res.sendStatus(HttpStatus.NO_CONTENT);
+  async logout(
+    @ExtractUserFromRequest() user: UserContextDto,
+    @Res() res: Response
+  ) {
+
+    const result = await this.commandBus.execute(
+      new LogoutCommand(user.id)
+    )
+
+    if (result) {
+      res.clearCookie('refreshToken', this.cookieOptions);
+      res.sendStatus(HttpStatus.NO_CONTENT);
+    }
   }
 
   @Get('me')

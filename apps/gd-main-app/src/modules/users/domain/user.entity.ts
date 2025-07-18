@@ -1,8 +1,9 @@
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BadRequestDomainException } from '../../../../../../libs/common/src/exceptions/domain.exception';
 import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 import { EmailInfo } from './email.info.entity';
 import { PasswordInfo } from './password.info.entity';
+import { DeviceEntity } from '../../devices/domain/device.entity';
 
 export type UserDomainDtoType = {
   username: string;
@@ -24,6 +25,9 @@ export class User extends BasicEntity {
 
   @OneToOne(() => PasswordInfo, (p) => p.user, { cascade: true, eager: true })
   passwordInfo: PasswordInfo;
+
+  @OneToMany(() => DeviceEntity, (device) => device.user)
+  devices: DeviceEntity[];
 
   confirmEmail() {
     this.emailConfirmationInfo.isConfirmed = true;
