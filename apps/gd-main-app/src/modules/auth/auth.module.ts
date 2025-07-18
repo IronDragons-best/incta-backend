@@ -23,12 +23,15 @@ import { NewPasswordUseCase } from './application/use-cases/new.password.use-cas
 import { ConfirmEmailUseCase } from './application/use-cases/confirm.email.use-case';
 import { JwtRefreshStrategy } from '../../../core/guards/refresh/jwt.refresh.strategy';
 import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-case';
+import { DeviceModule } from '../devices/device.module';
+import { LogoutUseCase } from './application/use-cases/logout.use-case';
 
 @Module({
   imports: [
     PassportModule,
     CqrsModule,
     UsersModule,
+    DeviceModule,
     ClientsModule,
     JwtModule.register({}),
   ],
@@ -38,6 +41,7 @@ import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-c
     ConfirmEmailUseCase,
     RefreshTokenUseCase,
     LoginUseCase,
+    LogoutUseCase,
     AuthService,
     TokenService,
     LocalStrategy,
