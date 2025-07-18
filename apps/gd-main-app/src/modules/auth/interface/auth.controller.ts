@@ -49,6 +49,7 @@ import { RefreshTokenCommand } from '../application/use-cases/refresh.token.use-
 import { ClientInfo } from '../../../../core/decorators/info-decorators/client.info.decorator';
 import { ClientInfoDto } from './dto/input/client.info.dto';
 import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/refresh.token.swagger.decorator';
+import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -98,6 +99,7 @@ export class AuthController {
   @Post('refresh-token')
   @UseInterceptors(CookieInterceptor)
   @RefreshTokenSwagger()
+  @UseGuards(RefreshGuard)
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @ExtractUserFromRequest() user: UserRefreshContextDto,
