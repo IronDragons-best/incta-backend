@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
-  NotFoundException,
   Post,
   Req,
   Res,
@@ -19,7 +18,7 @@ import * as UAParserNS from 'ua-parser-js';
 
 import { UserInputDto } from '../../users/interface/dto/user.input.dto';
 import { RegistrationCommand } from '../application/use-cases/registration.use.case';
-import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/registration.swagger.decorator';
+import { RegistrationSwagger } from '../../../../core/decorators/swagger-settings/auth/registration.swagger.decorator';
 import { LoginCommand } from '../application/use-cases/login.use-case';
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
 import {
@@ -31,29 +30,29 @@ import { Tokens } from '../application/use-cases/token.service';
 import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
 import { TokenResponseDto } from '../../../../core/types/token.types';
-import { LoginSwagger } from '../../../../core/decorators/swagger-settings/login.swagger.decorator';
+import { LoginSwagger } from '../../../../core/decorators/swagger-settings/auth/login.swagger.decorator';
 import { AuthService } from '../application/auth.service';
-import { MeSwagger } from '../../../../core/decorators/swagger-settings/me.swagger.decorator';
+import { MeSwagger } from '../../../../core/decorators/swagger-settings/auth/me.swagger.decorator';
 import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 import { AuthMeViewDto } from './dto/output/me.view.dto';
-import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/logout.swagger.decorator';
+import { LogoutSwagger } from '../../../../core/decorators/swagger-settings/auth/logout.swagger.decorator';
 import { EmailResendCommand } from '../application/use-cases/email.resend.use-case';
 import { EmailResendInputDto } from './dto/input/email.resend.input.dto';
 import { User } from '../../users/domain/user.entity';
-import { PasswordRecoverySwagger } from '../../../../core/decorators/swagger-settings/password-recovery.decorator';
+import { PasswordRecoverySwagger } from '../../../../core/decorators/swagger-settings/auth/password-recovery.decorator';
 import { PasswordRecoveryCommand } from '../application/use-cases/password.recovery.use-case';
-import { NewPasswordSwagger } from '../../../../core/decorators/swagger-settings/new-password.decorator';
+import { NewPasswordSwagger } from '../../../../core/decorators/swagger-settings/auth/new-password.decorator';
 import { NewPasswordInputDto } from './dto/input/new.password.input.dto';
 import { NewPasswordCommand } from '../application/use-cases/new.password.use-case';
-import { ResendEmailSwagger } from '../../../../core/decorators/swagger-settings/resend.email.swagger.decorator';
+import { ResendEmailSwagger } from '../../../../core/decorators/swagger-settings/auth/resend.email.swagger.decorator';
 import { ConfirmCodeInputDto } from './dto/input/confirm.code.input.dto';
 import { ConfirmEmailCommand } from '../application/use-cases/confirm.email.use-case';
-import { ConfirmEmailSwagger } from '../../../../core/decorators/swagger-settings/confirm.email.swagger.decorator';
+import { ConfirmEmailSwagger } from '../../../../core/decorators/swagger-settings/auth/confirm.email.swagger.decorator';
 import { RefreshTokenCommand } from '../application/use-cases/refresh.token.use-case';
 import { ClientInfo } from '../../../../core/decorators/info-decorators/client.info.decorator';
 import { ClientInfoDto } from './dto/input/client.info.dto';
 import { LogoutCommand } from '../application/use-cases/logout.use-case';
-import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/refresh.token.swagger.decorator';
+import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/auth/refresh.token.swagger.decorator';
 import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
 
 @Controller('auth')
@@ -90,11 +89,7 @@ export class AuthController {
   @LoginSwagger()
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Req() req: Request,
-    @ExtractUserFromRequest() user: UserContextDto
-  ) {
-
+  async login(@Req() req: Request, @ExtractUserFromRequest() user: UserContextDto) {
     const forwarded = req.headers['x-forwarded-for'];
     const ip = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
 
@@ -138,14 +133,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @LogoutSwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(
-    @ExtractUserFromRequest() user: UserContextDto,
-    @Res() res: Response
-  ) {
-
-    const result = await this.commandBus.execute(
-      new LogoutCommand(user.id)
-    )
+  async logout(@ExtractUserFromRequest() user: UserContextDto, @Res() res: Response) {
+    const result: AppNotification = await this.commandBus.execute(
+      new LogoutCommand(user.id),
+    );
 
     if (result) {
       res.clearCookie('refreshToken', this.cookieOptions);

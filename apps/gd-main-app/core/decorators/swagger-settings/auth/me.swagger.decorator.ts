@@ -1,7 +1,7 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-import { AuthMeViewDto } from '../../../src/modules/auth/interface/dto/output/me.view.dto';
+import { AuthMeViewDto } from '../../../../src/modules/auth/interface/dto/output/me.view.dto';
 
 export function MeSwagger() {
   return applyDecorators(
@@ -10,7 +10,7 @@ export function MeSwagger() {
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Returns the current user information.',
-      type: AuthMeViewDto
+      type: AuthMeViewDto,
     }),
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
@@ -19,6 +19,6 @@ export function MeSwagger() {
     ApiResponse({
       status: HttpStatus.UNAUTHORIZED,
       description: 'User is not authenticated.',
-    })
-  )
+    }),
+  );
 }

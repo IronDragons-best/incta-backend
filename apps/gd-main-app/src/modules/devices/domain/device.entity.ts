@@ -10,7 +10,7 @@ export type DeviceDomainDtoType = {
   deviceName?: string;
   ip?: string;
   updatedAt?: Date;
-}
+};
 
 @Entity('devices')
 export class DeviceEntity extends BasicEntity {
@@ -43,6 +43,6 @@ export class DeviceEntity extends BasicEntity {
       deviceId: device.id,
       ip: device.ip,
       updatedAt: device.updatedAt,
-    }
+    };
   }
 }

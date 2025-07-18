@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ErrorResponseDto, WithoutFieldErrorResponseDto } from '@common';
-import { ConfirmCodeInputDto } from '../../../src/modules/auth/interface/dto/input/confirm.code.input.dto';
+import { ConfirmCodeInputDto } from '../../../../src/modules/auth/interface/dto/input/confirm.code.input.dto';
 
 export function ConfirmEmailSwagger() {
   return applyDecorators(

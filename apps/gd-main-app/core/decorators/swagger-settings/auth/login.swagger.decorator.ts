@@ -1,7 +1,7 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { LoginInputDto } from '../../../src/modules/auth/interface/dto/input/login.input.dto';
-import { LoginViewDto } from '../../../src/modules/auth/interface/dto/output/login.view.dto';
+import { LoginInputDto } from '../../../../src/modules/auth/interface/dto/input/login.input.dto';
+import { LoginViewDto } from '../../../../src/modules/auth/interface/dto/output/login.view.dto';
 import { ErrorResponseDto } from '@common';
 
 export function LoginSwagger() {

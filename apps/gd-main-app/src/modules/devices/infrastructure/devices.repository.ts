@@ -9,8 +9,9 @@ import { DeviceDomainDtoType, DeviceEntity } from '../domain/device.entity';
 @Injectable()
 export class DevicesRepository {
   constructor(
-    @InjectRepository(DeviceEntity) private readonly devicesRepository: Repository<DeviceEntity>,
-    private readonly logger: CustomLogger
+    @InjectRepository(DeviceEntity)
+    private readonly devicesRepository: Repository<DeviceEntity>,
+    private readonly logger: CustomLogger,
   ) {
     this.logger.setContext('Devices repository');
   }
@@ -25,7 +26,7 @@ export class DevicesRepository {
 
   async updateDeviceById(
     deviceId: DeviceEntity['id'],
-    device: DeviceDomainDtoType
+    device: DeviceDomainDtoType,
   ): Promise<DeviceEntity | null> {
     const res = await this.devicesRepository.update(deviceId, device);
     if (!res.affected) {

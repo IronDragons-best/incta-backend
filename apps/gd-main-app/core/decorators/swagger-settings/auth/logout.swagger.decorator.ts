@@ -19,6 +19,6 @@ export function LogoutSwagger() {
       status: HttpStatus.UNAUTHORIZED,
       type: ErrorResponseDto,
       description: 'Logout failed. User is not authenticated.',
-    })
+    }),
   );
 }

@@ -26,7 +26,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     private readonly notification: NotificationService,
     private readonly usersRepository: UsersRepository,
     private readonly devicesQueryRepository: DevicesQueryRepository,
-    private readonly devicesRepository: DevicesRepository
+    private readonly devicesRepository: DevicesRepository,
   ) {}
 
   async execute(command: LoginCommand): Promise<AppNotification<Tokens>> {
@@ -43,10 +43,10 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
 
     const now = new Date();
 
-    let userDevice = await this.devicesQueryRepository.findByUserAndDeviceNameAndIp(
+    const userDevice = await this.devicesQueryRepository.findByUserAndDeviceNameAndIp(
       userId,
       deviceName,
-      ip
+      ip,
     );
 
     if (userDevice) {

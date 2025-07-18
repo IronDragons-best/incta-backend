@@ -9,21 +9,9 @@ import { DevicesQueryRepository } from './infrastructure/devices.query.repositor
 import { DevicesRepository } from './infrastructure/devices.repository';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      DeviceEntity
-    ])
-  ],
-  providers: [
-    DevicesQueryRepository,
-    DevicesRepository
-  ],
-  controllers: [
-    DeviceController
-  ],
-  exports: [
-    DevicesQueryRepository,
-    DevicesRepository
-  ],
+  imports: [TypeOrmModule.forFeature([DeviceEntity])],
+  providers: [DevicesQueryRepository, DevicesRepository],
+  controllers: [DeviceController],
+  exports: [DevicesQueryRepository, DevicesRepository],
 })
 export class DeviceModule {}

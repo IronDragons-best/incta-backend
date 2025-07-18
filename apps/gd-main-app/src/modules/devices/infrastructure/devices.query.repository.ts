@@ -30,10 +30,12 @@ export class DevicesQueryRepository {
       return null;
     }
 
-    return device
+    return device;
   }
 
-  async findSessionByDeviceId(deviceId: DeviceEntity['id']): Promise<DeviceEntity | null> {
+  async findSessionByDeviceId(
+    deviceId: DeviceEntity['id'],
+  ): Promise<DeviceEntity | null> {
     const device = await this.devicesQueryRepository.findOne({
       where: {
         id: deviceId,
@@ -60,10 +62,14 @@ export class DevicesQueryRepository {
       return [];
     }
 
-    return devices.map(d => DeviceEntity.mapToDomainDto(d));
+    return devices.map((d) => DeviceEntity.mapToDomainDto(d));
   }
 
-  async findByUserAndDeviceNameAndIp(userId: number, deviceName: string, ip: string): Promise<DeviceEntity | null> {
+  async findByUserAndDeviceNameAndIp(
+    userId: number,
+    deviceName: string,
+    ip: string,
+  ): Promise<DeviceEntity | null> {
     return this.devicesQueryRepository.findOne({
       where: {
         user: { id: userId },
@@ -78,7 +84,8 @@ export class DevicesQueryRepository {
     userId: User['id'],
     deviceId: DeviceEntity['id'],
   ): Promise<boolean> {
-    const res = await this.devicesQueryRepository.createQueryBuilder('device')
+    const res = await this.devicesQueryRepository
+      .createQueryBuilder('device')
       .where('device.id = :deviceId', { deviceId })
       .andWhere('device.user.id = :userId', { userId })
       .getCount();

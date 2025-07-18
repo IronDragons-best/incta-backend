@@ -8,9 +8,7 @@ import { DevicesQueryRepository } from '../../../devices/infrastructure/devices.
 import { DevicesRepository } from '../../../devices/infrastructure/devices.repository';
 
 export class LogoutCommand {
-  constructor(
-    public readonly userId: User['id']
-  ) {}
+  constructor(public readonly userId: User['id']) {}
 }
 
 @CommandHandler(LogoutCommand)
@@ -18,7 +16,7 @@ export class LogoutUseCase implements ICommandHandler<LogoutCommand> {
   constructor(
     private readonly notification: NotificationService,
     private readonly devicesQueryRepository: DevicesQueryRepository,
-    private readonly devicesRepository: DevicesRepository
+    private readonly devicesRepository: DevicesRepository,
   ) {}
 
   async execute(command: LogoutCommand) {

@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { HealthSwagger } from '../core/decorators/swagger-settings/health.swagger.decorator';
+import { HealthSwagger } from '../core/decorators/swagger-settings/api-gateway/health.swagger.decorator';
 
 @Controller('health')
 export class AppController {
