@@ -170,7 +170,11 @@ describe('AuthController - Login Integration Tests', () => {
         );
         expect(commandBus.execute).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: mockUser.id,
+            loginPayload: {
+              deviceName: expect.any(String),
+              ip: expect.any(String),
+              userId: mockUser.id,
+            },
           }),
         );
       });
