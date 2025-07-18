@@ -114,7 +114,10 @@ export class EmailController {
   }
 
   @EventPattern('email.password_recovery', Transport.RMQ)
-  async handlePasswordRecovery(@Payload() data: EmailInfoInputDto, @Ctx() context: RmqContext) {
+  async handlePasswordRecovery(
+    @Payload() data: EmailInfoInputDto,
+    @Ctx() context: RmqContext,
+  ) {
     const { email } = data;
 
     try {
@@ -122,7 +125,9 @@ export class EmailController {
       const result = await this.emailService.sendPasswordRecoveryEmail(data);
       this.handleMessage(context, email, !result.hasErrors());
     } catch (e: any) {
-      this.logger.error(`Unhandled exception in handlePasswordRecovery for ${data.email}: ${e}`);
+      this.logger.error(
+        `Unhandled exception in handlePasswordRecovery for ${data.email}: ${e}`,
+      );
       this.handleMessage(context, email, false);
     }
   }
