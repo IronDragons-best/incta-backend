@@ -1,6 +1,6 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
 import { AppConfigService } from '@common';
@@ -18,7 +18,7 @@ export class UsersRepository {
     this.logger.setContext('users repository');
   }
   /** Find User or throw not found exception*/
-  async findById(id: number) {
+  async findById(id: number): Promise<User | null> {
     const user = await this.usersRepository.findOne({
       where: {
         id,
@@ -32,8 +32,8 @@ export class UsersRepository {
   async findByUsernameOrEmail(usernameOrEmail: string) {
     const user = await this.usersRepository.findOne({
       where: [
-        { username: usernameOrEmail, deletedAt: IsNull() },
-        { email: usernameOrEmail, deletedAt: IsNull() },
+        { username: usernameOrEmail.toLowerCase(), deletedAt: IsNull() },
+        { email: usernameOrEmail.toLowerCase(), deletedAt: IsNull() },
       ],
       relations: ['emailConfirmationInfo', 'passwordInfo'],
     });
@@ -43,12 +43,66 @@ export class UsersRepository {
     return user;
   }
 
+  async findByEmailWithTransaction(email: string, queryRunner: QueryRunner) {
+    console.log(email);
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('LOWER(user.email) = LOWER(:email)')
+      .andWhere('user.deletedAt IS NULL')
+      .setParameter('email', email)
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
+
+  async findByEmailConfirmCodeWithTransaction(code: string, queryRunner: QueryRunner) {
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('emailInfo.confirmCode = :code', { code: code })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
+
+  async findByRecoveryCodeWithTransaction(
+    recoveryCode: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    console.log('recoveryCode', recoveryCode);
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('passwordInfo.passwordRecoveryCode = :recoveryCode')
+      .setParameters({
+        recoveryCode
+      })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    return user || null;
+  }
+
   /** Find user by login or email. Checking that user doesn't exist. */
   async findExistingByLoginAndEmail(username: string, email: string) {
     const existingUser = await this.usersRepository.findOne({
       where: [
-        { username: username, deletedAt: IsNull() },
-        { email: email, deletedAt: IsNull() },
+        { username: username.toLowerCase(), deletedAt: IsNull() },
+        { email: email.toLowerCase(), deletedAt: IsNull() },
       ],
     });
 
@@ -61,11 +115,42 @@ export class UsersRepository {
       : { existingUser, field: 'Email' };
   }
 
+  /** Find user by login or email. Checking that user doesn't exist. */
+  async findExistingByLoginAndEmailWithTransaction(
+    username: string,
+    email: string,
+    queryRunner: QueryRunner,
+  ) {
+    const existingUser: User | null = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where(
+        '(LOWER(user.username) = LOWER(:username) OR LOWER(user.email) = LOWER(:email))',
+      )
+      .andWhere('user.deletedAt IS NULL')
+      .setParameters({ username, email })
+      .setLock('pessimistic_write')
+      .getOne();
+    if (!existingUser) {
+      return null;
+    }
+    const field =
+      existingUser.username.toLowerCase() === username.toLowerCase()
+        ? 'Username'
+        : 'Email';
+
+    return { existingUser, field };
+  }
+
   /** Save changes */
   async save(user: User) {
     return await this.usersRepository.save(user);
   }
 
+  async saveWithTransaction(user: User, queryRunner: QueryRunner) {
+    return await queryRunner.manager.save(user);
+  }
   /** Delete user method */
   async deleteUser(user: User) {
     await this.usersRepository.softRemove(user);

@@ -1,28 +1,43 @@
 version: '3.8'
 
 services:
-  rabbitmq:
-    image: rabbitmq:3.12-management-alpine
-    container_name: rabbitmq
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: nestjs-app-staging
+    restart: unless-stopped
     ports:
-      - "5672:5672"    # AMQP‑порт
-      - "15672:15672"  # Порт управления
+      - "3000:3000"  # gd-main-app
+      - "3001:3001"  # files-service
+      - "3002:3002"  # notification-service
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
-      RABBITMQ_ERLANG_COOKIE: secret
+      - NODE_ENV=production
+      - FILES_PORT=3001
+      - FILES_HOST=0.0.0.0
+      - NOTIFICATION_PORT=3002
+      - NOTIFICATION_HOST=0.0.0.0
+    env_file:
+      - .env.production
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - ./logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro
     networks:
-      - rabbitmq_network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  rabbitmq_data:
+      - app-network
+    command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    extra_hosts:
+      - "incta-files-service:127.0.0.1"
+      - "incta-notifications-service:127.0.0.1"
 
 networks:
-  rabbitmq_network:
+  app-network:
+    driver: bridge
+
+volumes:
+  logs:

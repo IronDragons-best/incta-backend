@@ -14,7 +14,7 @@ export class AppConfigService extends ConfigService {
     }
     return Number.parseInt(port);
   }
-  getFilesPort(): number {
+  get filesPort(): number {
     const port = this.get<string>('FILES_PORT');
     if (!port) {
       throw new Error('Port is required');
@@ -22,7 +22,7 @@ export class AppConfigService extends ConfigService {
     return Number.parseInt(port);
   }
 
-  getFilesHost(): string {
+  get filesHost(): string {
     const host = this.get<string>('FILES_HOST');
     if (!host) {
       throw new Error('Files host is required');
@@ -30,7 +30,7 @@ export class AppConfigService extends ConfigService {
     return host;
   }
 
-  getNotificationHost(): string {
+  get notificationHost(): string {
     const host = this.get<string>('NOTIFICATION_HOST');
     if (!host) {
       throw new Error('Notification host is required');
@@ -38,7 +38,7 @@ export class AppConfigService extends ConfigService {
     return host;
   }
 
-  getNotificationPort(): number {
+  get notificationPort(): number {
     const port = this.get<string>('NOTIFICATION_PORT');
     if (!port) {
       throw new Error('Notification port is required');
@@ -46,7 +46,7 @@ export class AppConfigService extends ConfigService {
     return Number.parseInt(port);
   }
 
-  getRabbitMqHost(): string {
+  get rabbitMqHost(): string {
     const host = this.get<string>('RABBITMQ_HOST');
     if (!host) {
       throw new Error('RABBITMQ_HOST is required in main app');
@@ -62,7 +62,15 @@ export class AppConfigService extends ConfigService {
     return url;
   }
 
-  getNotificationUrl(): string {
+  get depType(): string {
+    const type = this.get<string>('DEP_TYPE');
+    if (!type) {
+      throw new Error('Dep TYPE is required');
+    }
+    return type;
+  }
+
+  notificationUrl(): string {
     const url = this.get<string>('NOTIFICATION_URL');
     if (!url) {
       throw new Error('Notification URL is required');
@@ -142,5 +150,37 @@ export class AppConfigService extends ConfigService {
     });
 
     return result;
+  }
+
+  get jwtAccessExpires(): string {
+    const expire = this.get<string>('JWT_ACCESS_EXPIRE');
+    if (!expire) {
+      throw new Error('Access token expire time is required');
+    }
+    return expire;
+  }
+
+  get jwtAccessSecret(): string {
+    const secret = this.get<string>('JWT_ACCESS_SECRET');
+    if (!secret) {
+      throw new Error('Access token secret is required');
+    }
+    return secret;
+  }
+
+  get jwtRefreshExpires(): string {
+    const expire = this.get<string>('JWT_REFRESH_EXPIRE');
+    if (!expire) {
+      throw new Error('Refresh token expire time is required');
+    }
+    return expire;
+  }
+
+  get jwtRefreshSecret(): string {
+    const secret = this.get<string>('JWT_REFRESH_SECRET');
+    if (!secret) {
+      throw new Error('Refresh secret is required');
+    }
+    return secret;
   }
 }

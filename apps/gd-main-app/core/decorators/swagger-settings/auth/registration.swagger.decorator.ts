@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { UserInputDto } from '../../../src/modules/users/interface/dto/user.input.dto';
+import { UserInputDto } from '../../../../src/modules/users/interface/dto/user.input.dto';
 import { ErrorResponseDto } from '@common';
 
 export function RegistrationSwagger() {

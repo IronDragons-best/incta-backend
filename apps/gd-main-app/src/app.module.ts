@@ -18,6 +18,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from '../core/common/shared-modules/client.module';
+import { DeviceModule } from './modules/devices/device.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { ClientsModule } from '../core/common/shared-modules/client.module';
     UsersModule,
     AuthModule,
     PostsModule,
+    DeviceModule,
   ],
   controllers: [AppController],
   providers: [AppService, RabbitInitService, AsyncLocalStorageService],

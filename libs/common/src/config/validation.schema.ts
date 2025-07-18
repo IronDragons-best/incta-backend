@@ -1,7 +1,11 @@
 import Joi from 'joi';
 
 export const validationSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string()
+    .valid('development', 'production', 'test')
+    .default('development'),
+
+  DEP_TYPE: Joi.string(),
 
   PORT: Joi.number().port().default(3000),
 
@@ -25,7 +29,12 @@ export const validationSchema = Joi.object({
 
   PG_PORT: Joi.number().port(),
 
-  FRONTEND_URL: Joi.string(),
+  PRODUCTION_URL: Joi.string(),
+
+  JWT_ACCESS_SECRET: Joi.string(),
+  JWT_ACCESS_EXPIRE: Joi.string(),
+  JWT_REFRESH_SECRET: Joi.string(),
+  JWT_REFRESH_EXPIRE: Joi.string(),
 });
 
 export const loggerValidationSchema = Joi.object({

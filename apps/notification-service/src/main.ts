@@ -22,12 +22,19 @@ async function bootstrap() {
       queue: 'email_notifications_queue',
       queueOptions: {
         durable: true,
+        exclusive: false,
+        autoDelete: false,
+        arguments: {},
       },
       exchangeOptions: {
         name: 'notification.topic',
         type: 'topic',
         durable: true,
+        autoDelete: false,
       },
+      noAck: false,
+      prefetchCount: 10,
+      persistent: true,
     },
   });
 

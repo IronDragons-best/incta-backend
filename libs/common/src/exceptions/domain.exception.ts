@@ -15,6 +15,21 @@ export abstract class DomainException extends Error {
   ) {
     super(message);
   }
+  get firstExtension(): ErrorExtension {
+    return this.extensions[0];
+  }
+
+  get firstMessage(): string {
+    return this.extensions[0]?.message || this.message;
+  }
+
+  get firstKey(): string | undefined {
+    return this.extensions[0]?.key;
+  }
+
+  get errorExtension(): ErrorExtension | undefined {
+    return this.firstExtension;
+  }
 }
 
 function ConcreteDomainExceptionFactory(

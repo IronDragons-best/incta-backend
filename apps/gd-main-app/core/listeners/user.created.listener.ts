@@ -1,17 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { UserCreatedEvent } from '../events/user.created.event';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 
 @Injectable()
 export class UserCreatedListener {
-  constructor(@Inject('NOTIFICATION_SERVICE') private readonly client: ClientProxy) {}
+  constructor(@Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy) {}
   @OnEvent('user.created')
   handleUserCreated(event: UserCreatedEvent) {
-    this.client.emit('email.registration', {
+    const record = new RmqRecordBuilder({
       login: event.userLogin,
       email: event.email,
       confirmCode: event.code,
-    });
+    })
+      .setOptions({
+        deliveryMode: 2,
+        headers: {
+          'x-retry-count': '0',
+        },
+      })
+      .build();
+    this.client.emit('email.registration', record);
   }
 }

@@ -1,8 +1,9 @@
-import { Column, Entity, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BadRequestDomainException } from '../../../../../../libs/common/src/exceptions/domain.exception';
 import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 import { EmailInfo } from './email.info.entity';
 import { PasswordInfo } from './password.info.entity';
+import { DeviceEntity } from '../../devices/domain/device.entity';
 
 export type UserDomainDtoType = {
   username: string;
@@ -25,6 +26,13 @@ export class User extends BasicEntity {
   @OneToOne(() => PasswordInfo, (p) => p.user, { cascade: true, eager: true })
   passwordInfo: PasswordInfo;
 
+  @OneToMany(() => DeviceEntity, (device) => device.user)
+  devices: DeviceEntity[];
+
+  confirmEmail() {
+    this.emailConfirmationInfo.isConfirmed = true;
+  }
+
   static createInstance(userDto: UserDomainDtoType) {
     const now = new Date();
     const user = new this();
@@ -33,14 +41,14 @@ export class User extends BasicEntity {
 
     const passwordInfo = new PasswordInfo();
 
-    user.username = userDto.username;
-    user.email = userDto.email;
+    user.username = userDto.username.toLowerCase();
+    user.email = userDto.email.toLowerCase();
 
     // Email info fill
     emailInfo.confirmCode = userDto.emailConfirmCode;
-    emailInfo.codeExpirationDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    emailInfo.codeExpirationDate = new Date(now.getTime() + 60 * 60 * 1000); // 1 час
     emailInfo.isConfirmed = false;
-    emailInfo.emailConfirmationCooldown = new Date(now.getTime() + 10 * 60 * 1000);
+    emailInfo.emailConfirmationCooldown = new Date(now.getTime() + 10 * 60 * 1000); // переотправка письма cooldown 10 минут
 
     // Password info fill
     passwordInfo.passwordHash = userDto.passwordHash;
@@ -50,12 +58,158 @@ export class User extends BasicEntity {
     return user;
   }
   static isPasswordsMatch(this: void, password: string, confirmPassword: string) {
-    if (password === confirmPassword) {
-      return true;
+    if (password !== confirmPassword) {
+      throw BadRequestDomainException.create('Passwords must match', 'confirmPassword');
     }
-    throw BadRequestDomainException.create(
-      'Password and confirm password must match.',
-      'confirmPassword',
+
+    if (password.length < 6) {
+      throw BadRequestDomainException.create(
+        'Minimum number of characters 6',
+        'password',
+      );
+    }
+
+    if (password.length > 20) {
+      throw BadRequestDomainException.create(
+        'Maximum number of characters 20',
+        'password',
+      );
+    }
+
+    const hasDigit = /[0-9]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(password);
+    const allowedSpecialChars = /^[0-9A-Za-z!"#$%&'()*+,\-.\/:;<=>?@[\\\]^_`{|}~]*$/;
+
+    if (!hasDigit || !hasLowerCase || !hasUpperCase) {
+      throw BadRequestDomainException.create(
+        'Password must contain 0-9, a-z, A-Z',
+        'password',
+      );
+    }
+
+    if (!allowedSpecialChars.test(password)) {
+      throw BadRequestDomainException.create(
+        'Password must contain 0-9, a-z, A-Z, ! " # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\ ] ^ _ { | } ~',
+        'password',
+      );
+    }
+
+    return true;
+  }
+
+  static validateUsername(username: string) {
+    if (username.length < 6) {
+      throw BadRequestDomainException.create(
+        'Minimum number of characters 6',
+        'username',
+      );
+    }
+
+    if (username.length > 30) {
+      throw BadRequestDomainException.create(
+        'Maximum number of characters 30',
+        'username',
+      );
+    }
+
+    const allowedChars = /^[0-9A-Za-z_-]+$/;
+    if (!allowedChars.test(username)) {
+      throw BadRequestDomainException.create(
+        'Username can only contain 0-9, A-Z, a-z, _, -',
+        'username',
+      );
+    }
+
+    return true;
+  }
+
+  static validatePasswordRecoveryCode(user: User, recoveryCode: string) {
+    console.log(user, 'User')
+    const { passwordInfo } = user;
+
+    if (!passwordInfo.passwordRecoveryCode || !passwordInfo.passwordRecoveryCodeExpirationDate) {
+      throw BadRequestDomainException.create(
+        'Password recovery code is not set or incomplete',
+        'recoveryCode',
+      );
+    }
+
+    const now = new Date();
+
+    if (passwordInfo.passwordRecoveryCodeExpirationDate < now) {
+      throw BadRequestDomainException.create(
+        'Password recovery code has expired',
+        'recoveryCode',
+      );
+    }
+
+    if (passwordInfo.passwordRecoveryCode !== recoveryCode) {
+      throw BadRequestDomainException.create(
+        'Invalid password recovery code',
+        'recoveryCode',
+      );
+    }
+  }
+
+  static validateEmailConfirmation(user: User, confirmCode: string) {
+    if (user.emailConfirmationInfo.isConfirmed) {
+      throw BadRequestDomainException.create('Email is already confirmed', 'code');
+    }
+    if (
+      user.emailConfirmationInfo.codeExpirationDate &&
+      user.emailConfirmationInfo.codeExpirationDate < new Date()
+    ) {
+      throw BadRequestDomainException.create('Confirmation code is expired', 'code');
+    }
+
+    if (user.emailConfirmationInfo.confirmCode !== confirmCode) {
+      throw BadRequestDomainException.create('Invalid confirmation code', 'code');
+    }
+  }
+
+  updateUserFields(userDto: UserDomainDtoType) {
+    const now = new Date();
+    this.username = userDto.username;
+    this.passwordInfo.passwordHash = userDto.passwordHash;
+    this.emailConfirmationInfo.confirmCode = userDto.emailConfirmCode;
+    this.emailConfirmationInfo.codeExpirationDate = new Date(
+      now.getTime() + 60 * 60 * 1000,
     );
+    this.emailConfirmationInfo.emailConfirmationCooldown = new Date(
+      now.getTime() + 10 * 60 * 1000,
+    );
+  }
+  isEmailConfirmed() {
+    return this.emailConfirmationInfo.isConfirmed;
+  }
+
+  setEmailConfirmationCode(confirmCode: string) {
+    this.emailConfirmationInfo.confirmCode = confirmCode;
+    this.emailConfirmationInfo.codeExpirationDate = new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000,
+    );
+    this.emailConfirmationInfo.emailConfirmationCooldown = new Date(
+      new Date().getTime() + 10 * 60 * 1000,
+    );
+  }
+
+  setPasswordRecoveryCode(recoveryCode: string) {
+    this.passwordInfo.passwordRecoveryCode = recoveryCode;
+    this.passwordInfo.passwordRecoveryCodeExpirationDate = new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000,
+    );
+  }
+
+  setPasswordRecoveryCodeNullable() {
+    this.passwordInfo.passwordRecoveryCode = null;
+    this.passwordInfo.passwordRecoveryCodeExpirationDate = null;
+  }
+
+  setPasswordHash(passwordHash: string) {
+    if (!passwordHash || passwordHash.length === 0) {
+      throw BadRequestDomainException.create('Password hash cannot be empty', 'passwordHash');
+    }
+    this.passwordInfo.passwordHash = passwordHash;
   }
 }

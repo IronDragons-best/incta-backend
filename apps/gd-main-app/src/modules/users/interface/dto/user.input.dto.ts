@@ -14,6 +14,7 @@ export class UserInputDto {
     minLength: userNameConstraints.minLength,
     maxLength: userNameConstraints.maxLength,
   })
+  @Matches(/^\S+$/, { message: 'Username or email must not contain spaces.' })
   username: string;
 
   @Matches(userEmailConstraints.pattern)
@@ -29,7 +30,10 @@ export class UserInputDto {
     minLength: userPasswordConstraints.minLength,
     maxLength: userPasswordConstraints.maxLength,
   })
-  @Matches(userPasswordConstraints.pattern)
+  @Matches(userPasswordConstraints.pattern, {
+    message:
+      'Password must contain 0-9, a-z, A-Z, ! " # $ % & \' ( ) * + , - . / : ; < = > ? @ [ \\ ] ^ _ { | } ~',
+  })
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   password: string;
 
@@ -43,6 +47,10 @@ export class UserInputDto {
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   passwordConfirmation: string;
 
+  @ApiProperty({
+    description: 'Agree to terms. Must be true.',
+    required: true,
+  })
   @IsBoolean()
   @Equals(true, { message: 'You must agree to the Terms of Service' })
   agreeToTerms: boolean;

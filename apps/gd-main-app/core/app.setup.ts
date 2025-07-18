@@ -13,10 +13,16 @@ import { RequestContextInterceptor } from '@monitoring/interceptor/request.conte
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
-    origin: sharedConfig.productionUrl || 'http://localhost:3000',
+    origin:
+      sharedConfig.depType === 'staging'
+        ? [
+            'http://localhost:3000',
+            'http://front.nodewebdev.online:3000',
+            'https://front.nodewebdev.online:3000',
+          ]
+        : sharedConfig.productionUrl,
     credentials: true,
   });
-  app.use(cookieParser());
   setupValidation(app);
   swaggerSetup(app);
   app.setGlobalPrefix('api/v1', {});
@@ -26,7 +32,7 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
   );
 
   app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
-
+  app.use(cookieParser());
   const logger = await app.resolve(CustomLogger);
   logger.setContext('NEST_INIT');
   app.useLogger(logger);

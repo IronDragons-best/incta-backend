@@ -19,6 +19,7 @@ export class AppNotification<T = any> {
     this.errors.push({ message });
     this.statusType = StatusType.NotFound;
     this.statusCode = 404;
+    return this;
   }
 
   setForbidden(message: string) {
@@ -43,10 +44,16 @@ export class AppNotification<T = any> {
     this.errors.push({ message });
     this.statusType = StatusType.ServerError; // Новый тип
     this.statusCode = 500;
+    return this;
   }
 
   setValue(value: T) {
     this.value = value;
+    return this;
+  }
+  setNoContent() {
+    this.statusType = StatusType.NoContent;
+    this.statusCode = 204;
     return this;
   }
 
@@ -70,9 +77,16 @@ export class AppNotification<T = any> {
   }
 
   // Статические методы для удобства
-  static success<T>(value: T): AppNotification<T> {
-    const notification = new AppNotification<T>();
-    notification.setValue(value);
+
+  static success<T>(value: T): AppNotification<T>;
+  static success(): AppNotification<void>;
+  static success<T>(value?: T): AppNotification<T | void> {
+    const notification = new AppNotification<T | void>();
+    if (value !== undefined) {
+      notification.setValue(value);
+    } else {
+      notification.setNoContent();
+    }
     return notification;
   }
 
