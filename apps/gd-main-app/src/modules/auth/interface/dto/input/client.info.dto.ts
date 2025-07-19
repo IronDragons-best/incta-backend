@@ -1,8 +1,7 @@
 export class ClientInfoDto {
   ip: string;
-  deviceName: string;
   browser: string;
   os: string;
-  device: string;
+  devise: string;
   userAgentString: string;
 }

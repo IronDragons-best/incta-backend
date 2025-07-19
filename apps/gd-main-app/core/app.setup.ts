@@ -10,7 +10,6 @@ import {
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 import { swaggerSetup } from './swagger.setup';
 import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
-import { UserAgentInterceptor } from './interceptors/user.agent.interceptor';
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
@@ -29,7 +28,6 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
   app.setGlobalPrefix('api/v1', {});
   app.useGlobalInterceptors(
     new NotificationInterceptor(),
-    new UserAgentInterceptor(),
     new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
   );
 
