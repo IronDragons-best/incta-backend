@@ -31,6 +31,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
 
   async execute(command: LoginCommand): Promise<AppNotification<Tokens>> {
     const notify = this.notification.create<Tokens>();
+
     const { userId, deviceName, ip } = command.loginPayload;
 
     const user = await this.usersRepository.findById(userId);
