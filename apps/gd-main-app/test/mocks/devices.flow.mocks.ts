@@ -11,4 +11,5 @@ export class MockDevicesRepository {
 export class MockDevicesQueryRepository {
   findByUserId = jest.fn();
   findActiveDevices = jest.fn();
+  findSessionsByUserId = jest.fn();
 }
