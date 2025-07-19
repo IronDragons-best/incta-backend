@@ -21,8 +21,8 @@ export class DeviceController {
   ) {}
 
   @Get()
+  @UseGuards(RefreshGuard)
   @AllUserDevicesSwagger()
-  @UseGuards(JwtAuthGuard)
   async getAllUserDevices(@ExtractUserFromRequest() user: UserContextDto) {
     return await this.devicesQueryRepository.findSessionsByUserId(user.id);
   }

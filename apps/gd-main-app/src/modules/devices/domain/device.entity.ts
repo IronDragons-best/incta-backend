@@ -56,6 +56,7 @@ export class DeviceEntity extends BasicEntity {
       deviceName: device.deviceName,
       deviceId: device.id,
       ip: device.ip,
+      sessionId: device.sessionId,
       updatedAt: device.updatedAt,
     };
   }
