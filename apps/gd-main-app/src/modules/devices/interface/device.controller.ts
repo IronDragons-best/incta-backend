@@ -11,6 +11,7 @@ import { DevicesQueryRepository } from '../infrastructure/devices.query.reposito
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteOtherDevicesCommand } from '../application/delete.device.use.case';
 import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
+import { DeleteOtherDevicesSwagger } from '../../../../core/decorators/swagger-settings/devices/delete.devices.swagger.decorator';
 
 @Controller('devices')
 export class DeviceController {
@@ -28,9 +29,9 @@ export class DeviceController {
 
   @Delete()
   @UseGuards(RefreshGuard)
+  @DeleteOtherDevicesSwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
   async terminateOtherSessions(@ExtractUserFromRequest() user: UserContextDto) {
-    console.log(user);
     return await this.commandBus.execute(
       new DeleteOtherDevicesCommand(user.id, user.sessionId),
     );

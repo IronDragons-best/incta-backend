@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DevicesRepository } from '../infrastructure/devices.repository';
 import { DeviceEntity } from '../domain/device.entity';
@@ -30,7 +29,6 @@ export class DeleteOtherDevicesUseCase
       command.userId,
       command.sessionId,
     );
-    console.log(devices);
     if (!devices) {
       this.logger.warn('Devices not found');
       return notify.setNotFound('Devices not found');
