@@ -23,5 +23,5 @@ export function AllUserDevicesSwagger() {
       description: 'Successfully retrieved all user devices.',
       type: DeviceViewDto,
     }),
-  );
+  )
 }
