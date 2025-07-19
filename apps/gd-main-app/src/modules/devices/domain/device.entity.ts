@@ -4,15 +4,12 @@ import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 
 import { User } from '../../users/domain/user.entity';
 import { DeviceViewDto } from '../interface/dto/output/device.view.dto';
-import { DeviceDomainDto } from '../../../../core/types/devices/device.type';
 
 export type DeviceDomainDtoType = {
   user: User;
   deviceName?: string;
   ip?: string;
   updatedAt?: Date;
-  tokenVersion: string;
-  sessionId: string;
 };
 
 @Entity('devices')
@@ -20,15 +17,6 @@ export class DeviceEntity extends BasicEntity {
   @ManyToOne(() => User, (user) => user.devices)
   @JoinColumn()
   user: User;
-
-  @Column()
-  userId: number;
-
-  @Column({ type: 'varchar' })
-  sessionId: string;
-
-  @Column({ type: 'varchar' })
-  tokenVersion: string;
 
   @Column({ type: 'varchar', nullable: true })
   deviceName: string | null;
@@ -45,8 +33,6 @@ export class DeviceEntity extends BasicEntity {
     device.deviceName = data.deviceName ?? null;
     device.ip = data.ip ?? null;
     device.updatedAt = data.updatedAt ?? new Date();
-    device.sessionId = data.sessionId;
-    device.tokenVersion = data.tokenVersion;
     return device;
   }
 
@@ -56,15 +42,7 @@ export class DeviceEntity extends BasicEntity {
       deviceName: device.deviceName,
       deviceId: device.id,
       ip: device.ip,
-      sessionId: device.sessionId,
       updatedAt: device.updatedAt,
     };
-  }
-
-  updateSession(updateSessionDto: DeviceDomainDto) {
-    this.ip = updateSessionDto.ip;
-    this.updatedAt = new Date();
-    this.deviceName = updateSessionDto.deviceName;
-    this.tokenVersion = updateSessionDto.tokenVersion;
   }
 }

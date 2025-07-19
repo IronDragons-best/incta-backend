@@ -22,7 +22,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh'
   validate(req: Request, payload: UserContextDto) {
     const refreshToken = req.cookies.refreshToken;
 
-    if (!payload || !payload.id || !payload.sessionId || !refreshToken) {
+    if (!payload || !payload.id || !refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 

@@ -2,7 +2,6 @@ import { AppNotification } from '@common';
 import { MockUser } from './user.flow.mocks';
 import { MockTokens } from './auth.flow.mocks';
 import { CustomLogger } from '@monitoring';
-import { DeviceEntity } from '../../src/modules/devices/domain/device.entity';
 
 export class MockEventEmitter2 {
   emit = jest.fn();
@@ -67,6 +66,7 @@ export class MockNotificationService {
   }
 }
 
+// Enhanced AppNotification mock for testing
 export class MockAppNotification<T> {
   private value: T | null = null;
   private errors: Array<{ message: string; field?: string }> = [];
@@ -81,23 +81,20 @@ export class MockAppNotification<T> {
     return this.value;
   }
 
-  setNoContent() {
+  setNoContent(): void {
     this.statusCode = 204;
     this.value = null; // Нет содержимого
     this.errors = []; // Нет ошибок
-    return this;
   }
 
-  setUnauthorized(message: string, field?: string) {
+  setUnauthorized(message: string, field?: string): void {
     this.statusCode = 401;
     this.errors.push({ message, field });
-    return this;
   }
 
-  setForbidden(message: string, field?: string) {
+  setForbidden(message: string, field?: string): void {
     this.statusCode = 403;
     this.errors.push({ message, field });
-    return this;
   }
 
   setBadRequest(message: string, field?: string): void {
@@ -105,10 +102,9 @@ export class MockAppNotification<T> {
     this.errors.push({ message, field });
   }
 
-  setNotFound(message: string, field?: string) {
+  setNotFound(message: string, field?: string): void {
     this.statusCode = 404;
     this.errors.push({ message, field });
-    return this;
   }
 
   hasErrors(): boolean {
@@ -181,17 +177,6 @@ export class MockFactory {
     isConfirmed: boolean = true,
   ): MockUser {
     return new MockUser(id, username, email, passwordHash, isConfirmed);
-  }
-  static createDeviceEntity(overrides: Partial<DeviceEntity> = {}): DeviceEntity {
-    const device = new DeviceEntity();
-    device.id = overrides.id || 1;
-    device.userId = overrides.userId || 1;
-    device.sessionId = overrides.sessionId || 'session-123';
-    device.deviceName = overrides.deviceName || 'Test Device';
-    device.ip = overrides.ip || '192.168.1.1';
-    device.updatedAt = overrides.updatedAt || new Date();
-    device.tokenVersion = overrides.tokenVersion || 'v1';
-    return device;
   }
 
   static createTokens(

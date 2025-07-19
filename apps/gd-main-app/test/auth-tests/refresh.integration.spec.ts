@@ -110,7 +110,6 @@ describe('AuthController - Refresh Token Integration Tests', () => {
     it('200 - should refresh token successfully', async () => {
       const refreshTokenPayload = {
         id: 1,
-        sessionId: 'some-session-id1',
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };

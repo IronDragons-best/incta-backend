@@ -18,9 +18,9 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: AppConfigService,
   ) {}
-  generateTokenPare(userId: number, deviceId: string) {
+  generateTokenPare(userId: number) {
     const accessToken = this.generateAccessToken(userId);
-    const refreshToken = this.generateRefreshToken(userId, deviceId);
+    const refreshToken = this.generateRefreshToken(userId);
     return { accessToken, refreshToken };
   }
   generateAccessToken(userId: number) {
@@ -33,21 +33,13 @@ export class TokenService {
     );
   }
 
-  generateRefreshToken(userId: number, sessionId: string) {
+  generateRefreshToken(userId: number) {
     return this.jwtService.sign(
-      { id: userId, sessionId: sessionId },
+      { id: userId },
       {
         secret: this.configService.jwtRefreshSecret,
         expiresIn: this.configService.jwtRefreshExpires,
       },
     );
-  }
-
-  getRefreshTokenPayload(token: string): {
-    id: number;
-    exp: string;
-    sessionId: string;
-  } {
-    return this.jwtService.decode(token);
   }
 }

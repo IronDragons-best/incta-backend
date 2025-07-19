@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AppNotification, NotificationService } from '@common';
-import { v4 as uuidv4 } from 'uuid';
+
 import { Tokens, TokenService } from './token.service';
 
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
@@ -9,7 +9,7 @@ import { DevicesQueryRepository } from '../../../devices/infrastructure/devices.
 import { DevicesRepository } from '../../../devices/infrastructure/devices.repository';
 import { DeviceEntity } from '../../../devices/domain/device.entity';
 
-export interface LoginCommandPayload {
+interface LoginCommandPayload {
   userId: number;
   deviceName: string;
   ip: string;
@@ -38,10 +38,9 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     if (!user) {
       return notify.setNotFound('User not found');
     }
-    const sessionId: string = uuidv4();
 
-    const tokens: Tokens = this.tokenService.generateTokenPare(userId, sessionId);
-    const refreshPayload = this.tokenService.getRefreshTokenPayload(tokens.refreshToken);
+    const tokens: Tokens = this.tokenService.generateTokenPare(userId);
+
     const now = new Date();
 
     const userDevice = await this.devicesQueryRepository.findByUserAndDeviceNameAndIp(
@@ -56,8 +55,6 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
         deviceName,
         ip,
         updatedAt: now,
-        tokenVersion: refreshPayload.exp,
-        sessionId: refreshPayload.sessionId,
       });
     } else {
       const newDevice = DeviceEntity.createInstance({
@@ -65,8 +62,6 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
         deviceName,
         ip,
         updatedAt: now,
-        tokenVersion: refreshPayload.exp,
-        sessionId: sessionId,
       });
       await this.devicesRepository.insertNewDevice(newDevice);
     }
