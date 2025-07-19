@@ -89,7 +89,11 @@ export class AuthController {
   @LoginSwagger()
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Req() req: Request, @ExtractUserFromRequest() user: UserContextDto) {
+  async login(
+    @Req() req: Request,
+    @ExtractUserFromRequest() user: UserContextDto,
+    @ClientInfo() clientInfo: ClientInfoDto,
+  ) {
     const forwarded = req.headers['x-forwarded-for'];
     const ip = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
 
@@ -103,6 +107,7 @@ export class AuthController {
         ip: ip || 'Unknown',
       }),
     );
+
     const tokens = result.getValue();
     if (!tokens) {
       return result;
