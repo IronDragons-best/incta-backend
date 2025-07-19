@@ -8,7 +8,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
 import { AllUserDevicesSwagger } from '../../../../core/decorators/swagger-settings/devices/all.user.devices.swagger.decorator';
 
