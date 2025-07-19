@@ -14,6 +14,9 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { NotificationService } from '@common';
 import { AsyncLocalStorageService } from '@monitoring';
 import { PassportModule } from '@nestjs/passport';
+import {
+  DeleteDeviceBySessionIdUseCase,
+} from './application/delete.device.by.session.id.use.case';
 
 @Module({
   imports: [
@@ -27,6 +30,7 @@ import { PassportModule } from '@nestjs/passport';
     DevicesRepository,
     UpdateDeviceUseCase,
     DeleteOtherDevicesUseCase,
+    DeleteDeviceBySessionIdUseCase,
     NotificationService,
     AsyncLocalStorageService,
   ],
