@@ -17,5 +17,9 @@ export function RefreshTokenSwagger() {
       status: HttpStatus.UNAUTHORIZED,
       type: ErrorResponseDto,
     }),
+    ApiResponse({
+      status: HttpStatus.TOO_MANY_REQUESTS,
+      description: 'More than 5 attempts from one IP-address during 10 seconds',
+    }),
   );
 }

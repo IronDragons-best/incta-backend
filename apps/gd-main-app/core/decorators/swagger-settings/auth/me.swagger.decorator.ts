@@ -20,5 +20,9 @@ export function MeSwagger() {
       status: HttpStatus.UNAUTHORIZED,
       description: 'User is not authenticated.',
     }),
+    ApiResponse({
+      status: HttpStatus.TOO_MANY_REQUESTS,
+      description: 'More than 5 attempts from one IP-address during 10 seconds',
+    }),
   );
 }
