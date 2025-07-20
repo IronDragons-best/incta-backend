@@ -55,11 +55,4 @@ export class UserInputDto {
   @IsBoolean()
   @Equals(true, { message: 'You must agree to the Terms of Service' })
   agreeToTerms: boolean;
-
-  @ApiProperty({
-    description: 'Captcha token',
-    example: 'captcha-token-12345',
-  })
-  @IsCaptchaRequired()
-  captchaToken: string;
 }

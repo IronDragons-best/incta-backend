@@ -19,7 +19,7 @@ export class RecaptchaService {
 
   async validateToken(token: string): Promise<RecaptchaResponse> {
     if (!this.isEnabled) {
-      return { success: true } as RecaptchaResponse; // мок
+      return { success: true } as RecaptchaResponse;
     }
 
     const result = await firstValueFrom(

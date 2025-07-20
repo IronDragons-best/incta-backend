@@ -23,11 +23,4 @@ export class LoginInputDto {
   @IsStringWithTrim(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   @Matches(userPasswordConstraints.pattern)
   password: string;
-
-  @ApiProperty({
-    description: 'Captcha token',
-    example: 'captcha-token-12345',
-  })
-  @IsCaptchaRequired()
-  captchaToken: string;
 }
