@@ -14,7 +14,6 @@ import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 export class EmailResendCommand {
   constructor(
     public readonly email: string,
-    public readonly captchaToken: string,
   ) {}
 }
 
@@ -25,7 +24,6 @@ export class EmailResendUseCase implements ICommandHandler<EmailResendCommand> {
     private readonly notification: NotificationService,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
-    private readonly recaptchaService: RecaptchaService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {
     this.logger.setContext('Email resend use case');
@@ -33,20 +31,6 @@ export class EmailResendUseCase implements ICommandHandler<EmailResendCommand> {
 
   async execute(command: EmailResendCommand) {
     const notify = this.notification.create();
-
-    let recaptchaResponse: RecaptchaResponse;
-
-    try {
-      recaptchaResponse = await this.recaptchaService.validateToken(command.captchaToken);
-    } catch (error) {
-      this.logger.error(`reCAPTCHA verification failed: ${error.message}`, error.stack);
-      return notify.setServerError('reCAPTCHA verification failed');
-    }
-
-    if (!recaptchaResponse.success) {
-      this.logger.warn(`reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`);
-      return notify.setBadRequest('Recaptcha verification failed');
-    }
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
