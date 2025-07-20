@@ -6,6 +6,8 @@ import { CustomLogger } from '@monitoring';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserCreatedEvent } from '../../../../../core/events/user.created.event';
 import { RegisteredUserDto } from '../../../users/domain/registered.user.dto';
+import { RecaptchaService } from '../recaptcha.service';
+import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export class RegistrationCommand {
   constructor(public userDto: UserInputDto) {}
@@ -18,11 +20,32 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
     private readonly notification: NotificationService,
+    private readonly recaptchaService: RecaptchaService,
   ) {
     this.logger.setContext('Registration use case');
   }
   async execute(command: RegistrationCommand) {
     const notify = this.notification.create();
+
+    if (!command.userDto.captchaToken) {
+      this.logger.warn('Captcha token is missing');
+      return notify.setBadRequest('Captcha token is required');
+    }
+
+    let recaptchaResponse: RecaptchaResponse;
+
+    try {
+      recaptchaResponse = await this.recaptchaService.validateToken(command.userDto.captchaToken);
+    } catch (error) {
+      this.logger.error(`reCAPTCHA verification failed: ${error.message}`, error.stack);
+      return notify.setServerError('reCAPTCHA verification failed');
+    }
+
+    if (!recaptchaResponse.success) {
+      this.logger.warn(`reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`);
+      return notify.setBadRequest('Recaptcha verification failed');
+    }
+
     try {
       const registrationResult: AppNotification<RegisteredUserDto> =
         await this.commandBus.execute(new CreateUserCommand(command.userDto));

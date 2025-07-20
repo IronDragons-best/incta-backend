@@ -26,6 +26,7 @@ import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-c
 import { DeviceModule } from '../devices/device.module';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
 import { HttpModule } from '@nestjs/axios';
+import { RecaptchaService } from './application/recaptcha.service';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { HttpModule } from '@nestjs/axios';
     LoginUseCase,
     LogoutUseCase,
     AuthService,
+    RecaptchaService,
     TokenService,
     LocalStrategy,
     JwtStrategy,
