@@ -207,4 +207,25 @@ export class AppConfigService extends ConfigService {
     }
     return url;
   }
+  get githubClientId(): string {
+    const clientId = this.get<string>('GITHUB_CLIENT_ID');
+    if (!clientId) {
+      throw new Error('Github CLIENT_ID is required');
+    }
+    return clientId;
+  }
+  get githubClientSecret(): string {
+    const secret = this.get<string>('GITHUB_CLIENT_SECRET');
+    if (!secret) {
+      throw new Error('Github CLIENT_SECRET is required');
+    }
+    return secret;
+  }
+  get githubCallbackURL(): string {
+    const url = this.get<string>('GITHUB_CALLBACK_URl');
+    if (!url) {
+      throw new Error('Github url is required');
+    }
+    return url;
+  }
 }

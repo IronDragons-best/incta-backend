@@ -138,8 +138,8 @@ export class UsersRepository {
     }
     const field =
       existingUser.username.toLowerCase() === username.toLowerCase()
-        ? 'Username'
-        : 'Email';
+        ? 'username'
+        : 'email';
 
     return { existingUser, field };
   }

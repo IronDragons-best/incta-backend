@@ -57,6 +57,8 @@ import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.g
 import { GoogleAuthGuard } from '../../../../core/guards/oauth2/oauth.google.guard';
 import { GoogleUser } from '../../../../core/guards/oauth2/ouath.google.strategy';
 import { GoogleOauthCommand } from '../application/use-cases/google.oauth.use-case';
+import { GithubAuthGuard } from '../../../../core/guards/oauth2/oauth.github.guard';
+import { GitHubUser } from '../../../../core/guards/oauth2/oauth.github.strategy';
 
 @Controller('auth')
 export class AuthController {
@@ -186,52 +188,47 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  @HttpCode(HttpStatus.TEMPORARY_REDIRECT) // Для корректного HTTP-кода перенаправления
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
   async googleAuth(@Req() req: Request) {}
 
+  @Get('github')
+  @UseGuards(GithubAuthGuard)
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
+  async githubAuth(@Req() req: Request) {}
+
   @Get('google/callback')
-  @UseGuards(GoogleAuthGuard) // GoogleAuthGuard обработает редирект от Google и поместит данные пользователя в req.user
-  @HttpCode(HttpStatus.OK) // Успешный HTTP-статус для ответа
-  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    // Получаем данные пользователя Google из объекта запроса, предоставленные GoogleAuthGuard
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @ClientInfo() clientInfo: ClientInfoDto,
+  ) {
     const googleUser = req.user as GoogleUser;
 
-    // Выполняем команду для обработки данных Google-пользователя (регистрация/авторизация)
-    const notification: AppNotification<User> = await this.commandBus.execute(
-      new GoogleOauthCommand(googleUser),
+    const result: AppNotification<Tokens> = await this.commandBus.execute(
+      new GoogleOauthCommand(googleUser, clientInfo),
     );
 
-    // Проверяем наличие ошибок в результате выполнения команды
-    if (notification.hasErrors()) {
-      // В случае ошибки, возвращаем соответствующий HTTP-статус и сообщение об ошибке
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(notification.getErrors());
+    if (result.hasErrors()) {
+      return result;
     }
 
-    // Получаем объект пользователя из успешного результата
-    const user = notification.getValue();
-
-    // Генерируем Access и Refresh токены для пользователя
-    // Предполагается, что ваш authService имеет метод generateTokens(userId: string)
-    const tokensNotification = await this.authService.generateTokens(user.id);
-
-    if (tokensNotification.hasErrors() || !tokensNotification.getValue()) {
-      // Если есть ошибка при генерации токенов
-      return res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .send(tokensNotification.getErrors());
+    const tokens = result.getValue();
+    if (!tokens) {
+      return result.setServerError('Something went wrong');
     }
+    return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
+  }
 
-    const { accessToken, refreshToken } = tokensNotification.getValue();
-
-    // Устанавливаем Refresh Token в HTTP-only куки
-    res.cookie('refreshToken', refreshToken, {
-      ...this.cookieOptions, // Используем ваши общие настройки для куки
-      maxAge: 7 * 24 * 60 * 60 * 1000, // Например, 7 дней (срок действия Refresh Token)
-    });
-
-    // Возвращаем Access Token в теле ответа.
-    // Если ваш фронтенд ожидает редирект на определенную страницу с токеном в URL,
-    // используйте res.redirect(`http://your-frontend.com/auth-success?accessToken=${accessToken}`);
-    return res.status(HttpStatus.OK).json({ accessToken });
+  @Get('github/callback')
+  @UseGuards(GithubAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async githubAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @ClientInfo() clientInfo: ClientInfoDto,
+  ) {
+    const githubUser = req.user as GitHubUser;
   }
 }

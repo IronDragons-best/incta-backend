@@ -236,8 +236,10 @@ export class User extends BasicEntity {
     }
   }
 
-  static generateOAuthUsername(email: string) {
-    return email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
+  static generateOAuthUsername(input: string) {
+    const baseString = input.includes('@') ? input.split('@')[0] : input;
+
+    return baseString.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
   }
 
   updateUserFields(userDto: UserDomainDtoType) {
