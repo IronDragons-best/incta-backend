@@ -6,6 +6,9 @@ import { CustomLogger } from '@monitoring';
 import { AppNotification, NotificationService } from '@common';
 import { UserInputDto } from '../../src/modules/users/interface/dto/user.input.dto';
 import { MockCustomLogger } from '../mocks/common.mocks';
+import { RecaptchaService } from '../../src/modules/auth/application/recaptcha.service';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 
 describe('RegistrationUseCase', () => {
   let useCase: RegistrationUseCase;
@@ -21,6 +24,9 @@ describe('RegistrationUseCase', () => {
       providers: [
         RegistrationUseCase,
         NotificationService,
+        RecaptchaService,
+        ConfigService,
+        { provide: HttpService, useValue: { post: jest.fn() } },
         { provide: CommandBus, useValue: commandBus },
         { provide: EventEmitter2, useValue: eventEmitter },
         { provide: CustomLogger, useClass: MockCustomLogger },
@@ -38,6 +44,7 @@ describe('RegistrationUseCase', () => {
       password: 'StrongP@ss1',
       passwordConfirmation: 'StrongP@ss1',
       agreeToTerms: true,
+      captchaToken: 'captcha-token-12345',
     };
     const regDto = { login: dto.username, email: dto.email, confirmCode: 'abc123' };
     const notification = new AppNotification<typeof regDto>().setValue(regDto);
@@ -64,6 +71,7 @@ describe('RegistrationUseCase', () => {
       password: '',
       passwordConfirmation: '',
       agreeToTerms: false,
+      captchaToken: 'captcha-token-12345'
     };
     const notification = new AppNotification().setBadRequest(
       'bad credentials',
@@ -90,6 +98,7 @@ describe('RegistrationUseCase', () => {
       password: 'p',
       passwordConfirmation: 'p',
       agreeToTerms: true,
+      captchaToken: 'captcha-token-12345'
     };
     commandBus.execute.mockRejectedValue(new Error('DB crash'));
 

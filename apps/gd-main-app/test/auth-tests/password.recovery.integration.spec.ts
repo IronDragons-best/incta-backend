@@ -10,6 +10,9 @@ import { PasswordRecoveryUseCase } from '../../src/modules/auth/application/use-
 import { UsersRepository } from '../../src/modules/users/infrastructure/users.repository';
 
 import { User } from '../../src/modules/users/domain/user.entity';
+import { ConfigService } from '@nestjs/config';
+import { RecaptchaService } from '../../src/modules/auth/application/recaptcha.service';
+import { HttpService } from '@nestjs/axios';
 
 describe('PasswordRecoveryUseCase', () => {
   let useCase: PasswordRecoveryUseCase;
@@ -32,6 +35,9 @@ describe('PasswordRecoveryUseCase', () => {
       providers: [
         PasswordRecoveryUseCase,
         NotificationService,
+        RecaptchaService,
+        ConfigService,
+        { provide: HttpService, useValue: { post: jest.fn() } },
         { provide: UsersRepository, useValue: { findByEmailWithTransaction: jest.fn(), saveWithTransaction: jest.fn() } },
         { provide: CustomLogger, useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn() } },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
@@ -52,7 +58,10 @@ describe('PasswordRecoveryUseCase', () => {
   it('should return not found if user does not exist', async () => {
     usersRepository.findByEmailWithTransaction.mockResolvedValue(null);
 
-    const result = await useCase.execute({ email: 'notfound@example.com' });
+    const result = await useCase.execute({
+      email: 'notfound@example.com',
+      captchaToken: 'captcha-token-12345'
+    });
 
     expect(result.hasErrors()).toBe(true);
     expect(result.getStatusCode()).toBe(404);
@@ -64,7 +73,10 @@ describe('PasswordRecoveryUseCase', () => {
     user.emailConfirmationInfo = { isConfirmed: false } as any;
     usersRepository.findByEmailWithTransaction.mockResolvedValue(user);
 
-    const result = await useCase.execute({ email: 'unconfirmed@example.com' });
+    const result = await useCase.execute({
+      email: 'unconfirmed@example.com',
+      captchaToken: 'captcha-token-12345'
+    });
 
     expect(result.hasErrors()).toBe(true);
     expect(result.getStatusCode()).toBe(400);
@@ -81,7 +93,10 @@ describe('PasswordRecoveryUseCase', () => {
     usersRepository.findByEmailWithTransaction.mockResolvedValue(user);
     usersRepository.saveWithTransaction.mockResolvedValue(user);
 
-    const result = await useCase.execute({ email: user.email });
+    const result = await useCase.execute({
+      email: user.email,
+      captchaToken: 'captcha-token-12345'
+    });
 
     expect(usersRepository.saveWithTransaction).toHaveBeenCalledWith(user, queryRunner);
     expect(eventEmitter.emit).toHaveBeenCalledWith(
