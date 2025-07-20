@@ -3,9 +3,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { firstValueFrom } from 'rxjs';
-import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
 
 import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
@@ -20,6 +17,8 @@ import { PasswordRecoveryEvent } from '../../../../../core/events/password.recov
 
 import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
+import { RecaptchaService } from '../recaptcha.service';
+
 export class PasswordRecoveryCommand {
   constructor(
     public readonly email: PasswordRecoveryInputDto['email'],
@@ -29,19 +28,15 @@ export class PasswordRecoveryCommand {
 
 @CommandHandler(PasswordRecoveryCommand)
 export class PasswordRecoveryUseCase {
-  private readonly recaptchaSecretKey: string;
-
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly notification: NotificationService,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
-    private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
+    private readonly recaptchaService: RecaptchaService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {
     this.logger.setContext('Password Recovery Use Case');
-    this.recaptchaSecretKey = this.configService.getOrThrow<string>('RECAPTCHA_PRIVATE_KEY');
   }
 
   async execute(command: PasswordRecoveryCommand) {
@@ -56,21 +51,7 @@ export class PasswordRecoveryUseCase {
     let recaptchaResponse: RecaptchaResponse;
 
     try {
-      const result = await firstValueFrom(
-        this.httpService.post<RecaptchaResponse>(
-          'https://www.google.com/recaptcha/api/siteverify',
-          new URLSearchParams({
-            secret: this.recaptchaSecretKey,
-            response: captchaToken,
-          }),
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          },
-        ),
-      );
-      recaptchaResponse = result.data;
+      recaptchaResponse = await this.recaptchaService.validateToken(captchaToken);
     } catch (error) {
       this.logger.error(`reCAPTCHA verification failed: ${error.message}`, error.stack);
       return notify.setServerError('reCAPTCHA verification failed');

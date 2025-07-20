@@ -1,4 +1,4 @@
-import { Equals, IsBoolean, Matches } from 'class-validator';
+import { Equals, IsBoolean, IsString, Matches } from 'class-validator';
 import {
   userEmailConstraints,
   userNameConstraints,
@@ -54,4 +54,11 @@ export class UserInputDto {
   @IsBoolean()
   @Equals(true, { message: 'You must agree to the Terms of Service' })
   agreeToTerms: boolean;
+
+  @ApiProperty({
+    description: 'Captcha token',
+    example: 'captcha-token-12345',
+  })
+  @IsString()
+  captchaToken: string;
 }

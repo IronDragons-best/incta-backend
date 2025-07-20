@@ -78,7 +78,7 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ResendEmailSwagger()
   async resendEmail(@Body() body: EmailResendInputDto) {
-    return this.commandBus.execute(new EmailResendCommand(body.email));
+    return this.commandBus.execute(new EmailResendCommand(body.email, body.captchaToken));
   }
 
   @Post('confirm-email')
@@ -110,6 +110,7 @@ export class AuthController {
         userId: user.id,
         deviceName: browser.name || 'Unknown',
         ip: ip || 'Unknown',
+        captchaToken: req.body.captchaToken,
       }),
     );
 

@@ -8,9 +8,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../../../users/domain/user.entity';
 import { EmailResendEvent } from '../../../../../core/events/email.resend.event';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { RecaptchaService } from '../recaptcha.service';
+import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export class EmailResendCommand {
-  constructor(public readonly email: string) {}
+  constructor(
+    public readonly email: string,
+    public readonly captchaToken: string,
+  ) {}
 }
 
 @CommandHandler(EmailResendCommand)
@@ -20,6 +25,7 @@ export class EmailResendUseCase implements ICommandHandler<EmailResendCommand> {
     private readonly notification: NotificationService,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
+    private readonly recaptchaService: RecaptchaService,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {
     this.logger.setContext('Email resend use case');
@@ -27,6 +33,26 @@ export class EmailResendUseCase implements ICommandHandler<EmailResendCommand> {
 
   async execute(command: EmailResendCommand) {
     const notify = this.notification.create();
+
+    if (!command.captchaToken) {
+      this.logger.warn('Captcha token is missing');
+      return notify.setBadRequest('Captcha token is required');
+    }
+
+    let recaptchaResponse: RecaptchaResponse;
+
+    try {
+      recaptchaResponse = await this.recaptchaService.validateToken(command.captchaToken);
+    } catch (error) {
+      this.logger.error(`reCAPTCHA verification failed: ${error.message}`, error.stack);
+      return notify.setServerError('reCAPTCHA verification failed');
+    }
+
+    if (!recaptchaResponse.success) {
+      this.logger.warn(`reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`);
+      return notify.setBadRequest('Recaptcha verification failed');
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();

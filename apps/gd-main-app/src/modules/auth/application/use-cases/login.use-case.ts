@@ -8,11 +8,15 @@ import { UsersRepository } from '../../../users/infrastructure/users.repository'
 import { DevicesQueryRepository } from '../../../devices/infrastructure/devices.query.repository';
 import { DevicesRepository } from '../../../devices/infrastructure/devices.repository';
 import { DeviceEntity } from '../../../devices/domain/device.entity';
+import { CustomLogger } from '@monitoring';
+import { RecaptchaService } from '../recaptcha.service';
+import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export interface LoginCommandPayload {
   userId: number;
   deviceName: string;
   ip: string;
+  captchaToken: string;
 }
 
 export class LoginCommand {
@@ -27,10 +31,28 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     private readonly usersRepository: UsersRepository,
     private readonly devicesQueryRepository: DevicesQueryRepository,
     private readonly devicesRepository: DevicesRepository,
-  ) {}
+    private readonly logger: CustomLogger,
+    private readonly recaptchaService: RecaptchaService,
+  ) {
+    this.logger.setContext('Login Use Case');
+  }
 
   async execute(command: LoginCommand): Promise<AppNotification<Tokens>> {
     const notify = this.notification.create<Tokens>();
+
+    let recaptchaResponse: RecaptchaResponse;
+
+    try {
+      recaptchaResponse = await this.recaptchaService.validateToken(command.loginPayload.captchaToken);
+    } catch (error) {
+      this.logger.error(`reCAPTCHA verification failed: ${error.message}`, error.stack);
+      return notify.setServerError('reCAPTCHA verification failed');
+    }
+
+    if (!recaptchaResponse.success) {
+      this.logger.warn(`reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`);
+      return notify.setBadRequest('Recaptcha verification failed');
+    }
 
     const { userId, deviceName, ip } = command.loginPayload;
 
