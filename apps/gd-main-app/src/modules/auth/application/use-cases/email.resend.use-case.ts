@@ -34,11 +34,6 @@ export class EmailResendUseCase implements ICommandHandler<EmailResendCommand> {
   async execute(command: EmailResendCommand) {
     const notify = this.notification.create();
 
-    if (!command.captchaToken) {
-      this.logger.warn('Captcha token is missing');
-      return notify.setBadRequest('Captcha token is required');
-    }
-
     let recaptchaResponse: RecaptchaResponse;
 
     try {

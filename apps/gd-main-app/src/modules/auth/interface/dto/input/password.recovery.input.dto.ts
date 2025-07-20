@@ -11,6 +11,10 @@ export class PasswordRecoveryInputDto {
   @IsNotEmpty()
   email: string;
 
+  @ApiProperty({
+    description: 'Captcha token to verify the request',
+    example: 'captcha-token-12345'
+  })
   @IsCaptchaRequired()
   captchaToken: string;
 }

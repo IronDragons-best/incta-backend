@@ -27,11 +27,6 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
   async execute(command: RegistrationCommand) {
     const notify = this.notification.create();
 
-    if (!command.userDto.captchaToken) {
-      this.logger.warn('Captcha token is missing');
-      return notify.setBadRequest('Captcha token is required');
-    }
-
     let recaptchaResponse: RecaptchaResponse;
 
     try {
