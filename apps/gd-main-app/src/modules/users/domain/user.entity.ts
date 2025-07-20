@@ -125,10 +125,13 @@ export class User extends BasicEntity {
   }
 
   static validatePasswordRecoveryCode(user: User, recoveryCode: string) {
-    console.log(user, 'User')
+    console.log(user, 'User');
     const { passwordInfo } = user;
 
-    if (!passwordInfo.passwordRecoveryCode || !passwordInfo.passwordRecoveryCodeExpirationDate) {
+    if (
+      !passwordInfo.passwordRecoveryCode ||
+      !passwordInfo.passwordRecoveryCodeExpirationDate
+    ) {
       throw BadRequestDomainException.create(
         'Password recovery code is not set or incomplete',
         'recoveryCode',
@@ -208,7 +211,10 @@ export class User extends BasicEntity {
 
   setPasswordHash(passwordHash: string) {
     if (!passwordHash || passwordHash.length === 0) {
-      throw BadRequestDomainException.create('Password hash cannot be empty', 'passwordHash');
+      throw BadRequestDomainException.create(
+        'Password hash cannot be empty',
+        'passwordHash',
+      );
     }
     this.passwordInfo.passwordHash = passwordHash;
   }
