@@ -3,43 +3,90 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 
 import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 
-import { EmailResendInputDto } from '../../interface/dto/input/email.resend.input.dto';
+import { PasswordRecoveryInputDto } from '../../interface/dto/input/password.recovery.input.dto';
 
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
+
 import { User } from '../../../users/domain/user.entity';
+
 import { PasswordRecoveryEvent } from '../../../../../core/events/password.recovery.event';
+
+import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export class PasswordRecoveryCommand {
   constructor(
-    public readonly email: EmailResendInputDto['email']
+    public readonly email: PasswordRecoveryInputDto['email'],
+    public readonly captchaToken: PasswordRecoveryInputDto['captchaToken'],
   ) {}
 }
 
 @CommandHandler(PasswordRecoveryCommand)
 export class PasswordRecoveryUseCase {
+  private readonly recaptchaSecretKey: string;
+
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly notification: NotificationService,
     private readonly logger: CustomLogger,
     private readonly eventEmitter: EventEmitter2,
-    @InjectDataSource() private readonly dataSource: DataSource
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {
-    this.logger.setContext(`Password Recovery Use Case`);
+    this.logger.setContext('Password Recovery Use Case');
+    this.recaptchaSecretKey = this.configService.getOrThrow<string>('RECAPTCHA_PRIVATE_KEY');
   }
 
   async execute(command: PasswordRecoveryCommand) {
     const notify = this.notification.create();
+    const { email, captchaToken } = command;
+
+    if (!captchaToken) {
+      this.logger.warn('Captcha token is missing');
+      return notify.setBadRequest('Captcha token is required');
+    }
+
+    let recaptchaResponse: RecaptchaResponse;
+
+    try {
+      const result = await firstValueFrom(
+        this.httpService.post<RecaptchaResponse>(
+          'https://www.google.com/recaptcha/api/siteverify',
+          new URLSearchParams({
+            secret: this.recaptchaSecretKey,
+            response: captchaToken,
+          }),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          },
+        ),
+      );
+      recaptchaResponse = result.data;
+    } catch (error) {
+      this.logger.error(`reCAPTCHA verification failed: ${error.message}`, error.stack);
+      return notify.setServerError('reCAPTCHA verification failed');
+    }
+
+    if (!recaptchaResponse.success) {
+      this.logger.warn(`reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`);
+      return notify.setBadRequest('Recaptcha verification failed');
+    }
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const existingUser: User | null = await this.usersRepository.findByEmailWithTransaction(command.email, queryRunner);
+      const existingUser: User | null = await this.usersRepository.findByEmailWithTransaction(email, queryRunner);
 
       if (!existingUser) {
         this.logger.warn('User Not Found');
@@ -51,24 +98,23 @@ export class PasswordRecoveryUseCase {
         return notify.setBadRequest('User email is not confirmed', 'email');
       }
 
-      const newCode = uuidv4()
-      existingUser.setPasswordRecoveryCode(newCode)
+      const newCode = uuidv4();
+      existingUser.setPasswordRecoveryCode(newCode);
       await this.usersRepository.saveWithTransaction(existingUser, queryRunner);
       await queryRunner.commitTransaction();
 
       const event = new PasswordRecoveryEvent(
         existingUser.username,
         existingUser.email,
-        newCode
-      )
+        newCode,
+      );
       this.eventEmitter.emit('email.password_recovery', event);
+
       return notify.setNoContent();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(`Error during password recovery: ${error.message}`, error.stack);
-      notify.setServerError('Internal server error occurred while password recovery');
-
-      return notify;
+      return notify.setServerError('Internal server error occurred while password recovery');
     } finally {
       await queryRunner.release();
     }
