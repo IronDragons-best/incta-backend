@@ -17,10 +17,9 @@ export function ResendEmailSwagger() {
       type: ErrorResponseDto,
       description: 'Email input has incorrect values or email already confirmed',
     }),
-
     ApiResponse({
       status: 429,
-      description: 'More than 2 attempts from one IP-address during 10 seconds',
+      description: 'More than 5 attempts from one IP-address during 10 seconds',
     }),
   );
 }

@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import type { CookieOptions, Response, Request } from 'express';
+import { SkipThrottle, ThrottlerModule } from '@nestjs/throttler';
 
 import * as UAParserNS from 'ua-parser-js';
 
@@ -55,6 +56,7 @@ import { LogoutCommand } from '../application/use-cases/logout.use-case';
 import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/auth/refresh.token.swagger.decorator';
 import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
 
+@UseGuards(ThrottlerModule)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -63,6 +65,7 @@ export class AuthController {
     @Inject('COOKIE_OPTIONS') private readonly cookieOptions: CookieOptions,
   ) {}
 
+  @SkipThrottle()
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RegistrationSwagger()
@@ -116,6 +119,7 @@ export class AuthController {
 
     return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
   }
+
   @Post('refresh-token')
   @UseInterceptors(CookieInterceptor)
   @RefreshTokenSwagger()
