@@ -4,6 +4,7 @@ import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 import { EmailInfo } from './email.info.entity';
 import { PasswordInfo } from './password.info.entity';
 import { DeviceEntity } from '../../devices/domain/device.entity';
+import { AuthProvider, UserOauthProvider } from '../../auth/domain/user.oauth2.provider';
 
 export type UserDomainDtoType = {
   username: string;
@@ -29,6 +30,65 @@ export class User extends BasicEntity {
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
 
+  @OneToMany(() => UserOauthProvider, (oauthProvider) => oauthProvider.user, {
+    cascade: true,
+    eager: true,
+  })
+  oauthProviders: UserOauthProvider[];
+
+  static createOauthInstance(
+    email: string,
+    username: string,
+    provider: AuthProvider,
+    providerId: string,
+  ): User {
+    const user = new this();
+    const emailInfo = new EmailInfo();
+    const passwordInfo = new PasswordInfo();
+    const oauthProviderEntity = new UserOauthProvider();
+
+    user.username = username;
+    user.email = email.toLowerCase();
+    oauthProviderEntity.provider = provider;
+    oauthProviderEntity.providerId = providerId;
+    oauthProviderEntity.user = user;
+
+    user.oauthProviders = [oauthProviderEntity];
+
+    // email fill
+    emailInfo.confirmCode = null;
+    emailInfo.codeExpirationDate = null;
+    emailInfo.isConfirmed = true;
+    emailInfo.emailConfirmationCooldown = null;
+    emailInfo.user = user;
+
+    // password fill
+    passwordInfo.passwordHash = null;
+    passwordInfo.passwordRecoveryCode = null;
+    passwordInfo.passwordRecoveryCodeExpirationDate = null;
+    passwordInfo.user = user;
+
+    user.emailConfirmationInfo = emailInfo;
+    user.passwordInfo = passwordInfo;
+    return user;
+  }
+
+  addProvider(provider: AuthProvider, providerId: string) {
+    if (!this.oauthProviders) {
+      this.oauthProviders = [];
+    }
+    const existingProvider = this.oauthProviders.find((p) => p.provider === provider);
+
+    if (!existingProvider) {
+      const newProvider = new UserOauthProvider();
+      newProvider.provider = provider;
+      newProvider.providerId = providerId;
+      newProvider.user = this;
+      this.oauthProviders.push(newProvider);
+    } else {
+      existingProvider.providerId = providerId;
+    }
+  }
   confirmEmail() {
     this.emailConfirmationInfo.isConfirmed = true;
   }
@@ -49,12 +109,17 @@ export class User extends BasicEntity {
     emailInfo.codeExpirationDate = new Date(now.getTime() + 60 * 60 * 1000); // 1 час
     emailInfo.isConfirmed = false;
     emailInfo.emailConfirmationCooldown = new Date(now.getTime() + 10 * 60 * 1000); // переотправка письма cooldown 10 минут
+    emailInfo.user = user;
 
     // Password info fill
     passwordInfo.passwordHash = userDto.passwordHash;
     passwordInfo.passwordRecoveryCode = null;
+    passwordInfo.user = user;
+
     user.emailConfirmationInfo = emailInfo;
     user.passwordInfo = passwordInfo;
+
+    user.oauthProviders = [];
     return user;
   }
   static isPasswordsMatch(this: void, password: string, confirmPassword: string) {
@@ -125,10 +190,13 @@ export class User extends BasicEntity {
   }
 
   static validatePasswordRecoveryCode(user: User, recoveryCode: string) {
-    console.log(user, 'User')
+    console.log(user, 'User');
     const { passwordInfo } = user;
 
-    if (!passwordInfo.passwordRecoveryCode || !passwordInfo.passwordRecoveryCodeExpirationDate) {
+    if (
+      !passwordInfo.passwordRecoveryCode ||
+      !passwordInfo.passwordRecoveryCodeExpirationDate
+    ) {
       throw BadRequestDomainException.create(
         'Password recovery code is not set or incomplete',
         'recoveryCode',
@@ -166,6 +234,10 @@ export class User extends BasicEntity {
     if (user.emailConfirmationInfo.confirmCode !== confirmCode) {
       throw BadRequestDomainException.create('Invalid confirmation code', 'code');
     }
+  }
+
+  static generateOAuthUsername(email: string) {
+    return email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
   }
 
   updateUserFields(userDto: UserDomainDtoType) {
@@ -208,7 +280,10 @@ export class User extends BasicEntity {
 
   setPasswordHash(passwordHash: string) {
     if (!passwordHash || passwordHash.length === 0) {
-      throw BadRequestDomainException.create('Password hash cannot be empty', 'passwordHash');
+      throw BadRequestDomainException.create(
+        'Password hash cannot be empty',
+        'passwordHash',
+      );
     }
     this.passwordInfo.passwordHash = passwordHash;
   }

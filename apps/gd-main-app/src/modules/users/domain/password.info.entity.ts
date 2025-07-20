@@ -4,8 +4,8 @@ import { User } from './user.entity';
 
 @Entity()
 export class PasswordInfo extends BasicEntity {
-  @Column()
-  passwordHash: string;
+  @Column({ type: 'varchar', nullable: true })
+  passwordHash: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   passwordRecoveryCode: string | null;

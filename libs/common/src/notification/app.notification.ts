@@ -15,6 +15,12 @@ export class AppNotification<T = any> {
     }
   }
 
+  addErrors(errors: Array<ErrorMessage>, status: number) {
+    errors.map((e) => this.errors.push(e));
+    this.statusCode = status;
+    return this;
+  }
+
   setNotFound(message: string) {
     this.errors.push({ message });
     this.statusType = StatusType.NotFound;

@@ -5,6 +5,7 @@ import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
 import { AppConfigService } from '@common';
 import { CustomLogger } from '@monitoring';
+import { AuthProvider } from '../../auth/domain/user.oauth2.provider';
 
 @Injectable()
 /** User Entity repository. For Create, Update, Delete operations */
@@ -88,7 +89,7 @@ export class UsersRepository {
       .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
       .where('passwordInfo.passwordRecoveryCode = :recoveryCode')
       .setParameters({
-        recoveryCode
+        recoveryCode,
       })
       .andWhere('user.deletedAt IS NULL')
       .setLock('pessimistic_write')
@@ -168,5 +169,37 @@ export class UsersRepository {
       TRUNCATE TABLE "email_info" RESTART IDENTITY CASCADE;
       `,
     );
+  }
+
+  async findByOAuthProviderIdWithTransaction(
+    provider: AuthProvider,
+    providerId: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.oauthProviders', 'oauthProvider')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('oauthProvider.provider = :provider', { provider })
+      .andWhere('oauthProvider.providerId = :providerId', { providerId })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    return user || null;
+  }
+
+  async findByUsernameWithTransaction(
+    username: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    const existingUser = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .where('LOWER(user.username) = LOWER(:username)', { username })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
+
+    return existingUser || null;
   }
 }

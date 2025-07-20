@@ -183,4 +183,28 @@ export class AppConfigService extends ConfigService {
     }
     return secret;
   }
+
+  get googleClientId(): string {
+    const clientId = this.get<string>('GOOGLE_CLIENT_ID');
+    if (!clientId) {
+      throw new Error('Google CLIENT_ID is required');
+    }
+    return clientId;
+  }
+
+  get googleClientSecret(): string {
+    const secret = this.get<string>('GOOGLE_CLIENT_SECRET');
+    if (!secret) {
+      throw new Error('Google CLIENT_SECRET is required');
+    }
+    return secret;
+  }
+
+  get googleCallbackURL(): string {
+    const url = this.get<string>('GOOGLE_CALLBACK_URL');
+    if (!url) {
+      throw new Error('Google CLIENT_CALLBACK_URL is required');
+    }
+    return url;
+  }
 }
