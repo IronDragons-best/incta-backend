@@ -25,11 +25,13 @@ import { JwtRefreshStrategy } from '../../../core/guards/refresh/jwt.refresh.str
 import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-case';
 import { DeviceModule } from '../devices/device.module';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     PassportModule,
     CqrsModule,
+    HttpModule,
     UsersModule,
     DeviceModule,
     ClientsModule,

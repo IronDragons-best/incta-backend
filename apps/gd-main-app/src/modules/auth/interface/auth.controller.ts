@@ -55,6 +55,7 @@ import { ClientInfoDto } from './dto/input/client.info.dto';
 import { LogoutCommand } from '../application/use-cases/logout.use-case';
 import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/auth/refresh.token.swagger.decorator';
 import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
+import { PasswordRecoveryInputDto } from './dto/input/password.recovery.input.dto';
 
 @UseGuards(ThrottlerModule)
 @Controller('auth')
@@ -172,8 +173,8 @@ export class AuthController {
   @Post('/password-recovery')
   @PasswordRecoverySwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() body: EmailResendInputDto) {
-    return this.commandBus.execute(new PasswordRecoveryCommand(body.email));
+  async passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
+    return this.commandBus.execute(new PasswordRecoveryCommand(body.email, body.captchaToken));
   }
 
   @Post('/new-password')
