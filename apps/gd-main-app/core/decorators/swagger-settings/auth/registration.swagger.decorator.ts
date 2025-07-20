@@ -15,7 +15,7 @@ export function RegistrationSwagger() {
     ApiResponse({
       status: 400,
       type: ErrorResponseDto,
-      description: 'Invalid input or username/password already taken',
+      description: 'Invalid input or username/email already taken',
     }),
     ApiResponse({
       status: 429,
