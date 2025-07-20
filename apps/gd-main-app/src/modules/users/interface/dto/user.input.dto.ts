@@ -6,6 +6,7 @@ import {
 } from '../../constants/user.constants';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
+import { IsCaptchaRequired } from '../../../../../core/decorators/validation/is-captcha-required';
 
 export class UserInputDto {
   @IsStringWithTrim(userNameConstraints.minLength, userNameConstraints.maxLength)
@@ -59,6 +60,6 @@ export class UserInputDto {
     description: 'Captcha token',
     example: 'captcha-token-12345',
   })
-  @IsString()
+  @IsCaptchaRequired()
   captchaToken: string;
 }
