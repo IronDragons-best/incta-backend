@@ -124,7 +124,7 @@ export class AuthController {
       new LoginCommand({
         userId: user.id,
         deviceName: browser.name || 'Unknown',
-        ip: ip || 'Unknown'
+        ip: ip || 'Unknown',
       }),
     );
 
@@ -189,7 +189,9 @@ export class AuthController {
   @PasswordRecoverySwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
-    return this.commandBus.execute(new PasswordRecoveryCommand(body.email, body.captchaToken));
+    return this.commandBus.execute(
+      new PasswordRecoveryCommand(body.email, body.captchaToken),
+    );
   }
 
   @Post('/new-password')

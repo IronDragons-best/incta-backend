@@ -107,6 +107,46 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: DEP_TYPE
+             - name: RECAPTCHA_PRIVATE_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: RECAPTCHA_PRIVATE_KEY
+             - name: RECAPTCHA_ENABLED
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: RECAPTCHA_ENABLED
+             - name: GOOGLE_CLIENT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: GOOGLE_CLIENT_ID
+             - name: GOOGLE_CLIENT_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: GOOGLE_CLIENT_SECRET
+             - name: GOOGLE_CALLBACK_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: GOOGLE_CALLBACK_URL
+             - name: GITHUB_CLIENT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: GITHUB_CLIENT_ID
+             - name: GITHUB_CLIENT_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: GITHUB_CLIENT_SECRET
+             - name: GITHUB_CALLBACK_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: GITHUB_CALLBACK_URL
              - name: PORT
                valueFrom:
                  secretKeyRef:
