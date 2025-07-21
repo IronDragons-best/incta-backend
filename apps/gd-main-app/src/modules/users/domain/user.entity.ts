@@ -250,6 +250,7 @@ export class User extends BasicEntity {
   updateUserFields(userDto: UserDomainDtoType) {
     const now = new Date();
     this.username = userDto.username;
+    this.email = userDto.email;
     this.passwordInfo.passwordHash = userDto.passwordHash;
     this.emailConfirmationInfo.confirmCode = userDto.emailConfirmCode;
     this.emailConfirmationInfo.codeExpirationDate = new Date(
