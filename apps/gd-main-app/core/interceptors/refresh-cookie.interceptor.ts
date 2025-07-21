@@ -22,7 +22,7 @@ export class CookieInterceptor implements NestInterceptor {
             response.cookie('refreshToken', data.refreshToken, {
               httpOnly: true,
               secure: !isStaging,
-              sameSite: 'lax',
+              sameSite: isStaging ? 'none' : 'lax',
             });
           }
 
@@ -36,7 +36,7 @@ export class CookieInterceptor implements NestInterceptor {
           response.cookie('refreshToken', data.refreshToken, {
             httpOnly: true,
             secure: !isStaging,
-            sameSite: 'lax',
+            sameSite: isStaging ? 'none' : 'lax',
           });
           return { accessToken: data.accessToken };
         }
