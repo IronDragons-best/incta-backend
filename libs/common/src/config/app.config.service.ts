@@ -222,7 +222,7 @@ export class AppConfigService extends ConfigService {
     return secret;
   }
   get githubCallbackURL(): string {
-    const url = this.get<string>('GITHUB_CALLBACK_URl');
+    const url = this.get<string>('GITHUB_CALLBACK_URL');
     if (!url) {
       throw new Error('Github url is required');
     }
