@@ -21,8 +21,8 @@ export class CookieInterceptor implements NestInterceptor {
           if (data.isRefreshTokenCookie && data.refreshToken) {
             response.cookie('refreshToken', data.refreshToken, {
               httpOnly: true,
-              secure: false,
-              sameSite: 'none',
+              secure: !isStaging,
+              sameSite: isStaging ? 'none' : 'lax',
             });
           }
 
@@ -35,8 +35,8 @@ export class CookieInterceptor implements NestInterceptor {
         if (data instanceof TokenResponseDto && data.isRefreshTokenCookie) {
           response.cookie('refreshToken', data.refreshToken, {
             httpOnly: true,
-            secure: false,
-            sameSite: 'none',
+            secure: !isStaging,
+            sameSite: isStaging ? 'none' : 'lax',
           });
           return { accessToken: data.accessToken };
         }
