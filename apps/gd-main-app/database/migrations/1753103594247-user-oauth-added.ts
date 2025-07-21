@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class UserOauthAdded1753064784463 implements MigrationInterface {
-    name = 'UserOauthAdded1753064784463'
+export class UserOauthAdded1753103594247 implements MigrationInterface {
+    name = 'UserOauthAdded1753103594247'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "user_oauth_provider_entity" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP, "version" integer NOT NULL DEFAULT '1', "provider" "public"."user_oauth_provider_entity_provider_enum" NOT NULL, "provider_id" character varying NOT NULL, "user_id" integer NOT NULL, CONSTRAINT "PK_569c4b23074479b1da3da306ac6" PRIMARY KEY ("id"))`);
