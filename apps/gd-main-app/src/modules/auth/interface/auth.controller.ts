@@ -100,7 +100,6 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ConfirmEmailSwagger()
   async confirmEmail(@Body() body: ConfirmCodeInputDto) {
-    console.log('s');
     return await this.commandBus.execute(new ConfirmEmailCommand(body.code));
   }
 
