@@ -25,7 +25,7 @@ import {
   UserContextDto,
   UserRefreshContextDto,
 } from '../../../../core/dto/user.context.dto';
-import { AppNotification } from '@common';
+import { AppConfigService, AppNotification } from '@common';
 import { Tokens } from '../application/use-cases/token.service';
 import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
@@ -59,12 +59,22 @@ import { GoogleUser } from '../../../../core/guards/oauth2/ouath.google.strategy
 import { GoogleOauthCommand } from '../application/use-cases/google.oauth.use-case';
 import { GithubAuthGuard } from '../../../../core/guards/oauth2/oauth.github.guard';
 import { GitHubUser } from '../../../../core/guards/oauth2/oauth.github.strategy';
+import { GithubOauthCommand } from '../application/use-cases/github.oauth.use-case';
+import {
+  GoogleAuthCallbackSwagger,
+  GoogleAuthSwagger,
+} from '../../../../core/decorators/swagger-settings/auth/oauth.google.swagger.decorator';
+import {
+  GithubAuthCallbackSwagger,
+  GithubAuthSwagger,
+} from '../../../../core/decorators/swagger-settings/auth/oauth.gitgub.swagger.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly commandBus: CommandBus,
+    private readonly configService: AppConfigService,
     @Inject('COOKIE_OPTIONS') private readonly cookieOptions: CookieOptions,
   ) {}
 
@@ -86,7 +96,6 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ConfirmEmailSwagger()
   async confirmEmail(@Body() body: ConfirmCodeInputDto) {
-    console.log('s');
     return await this.commandBus.execute(new ConfirmEmailCommand(body.code));
   }
 
@@ -187,17 +196,21 @@ export class AuthController {
   }
 
   @Get('google')
+  @GoogleAuthSwagger()
   @UseGuards(GoogleAuthGuard)
   @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
   async googleAuth(@Req() req: Request) {}
 
   @Get('github')
+  @GithubAuthSwagger()
   @UseGuards(GithubAuthGuard)
   @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
   async githubAuth(@Req() req: Request) {}
 
   @Get('google/callback')
+  @GoogleAuthCallbackSwagger()
   @UseGuards(GoogleAuthGuard)
+  @UseInterceptors(CookieInterceptor)
   @HttpCode(HttpStatus.OK)
   async googleAuthRedirect(
     @Req() req: Request,
@@ -216,13 +229,22 @@ export class AuthController {
 
     const tokens = result.getValue();
     if (!tokens) {
-      return result.setServerError('Something went wrong');
+      return result.setServerError('Something went wrong while retrieving tokens');
     }
-    return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
+    const successRedirectUrl = `${this.configService.productionUrl}/auth/callback#accessToken=${tokens.accessToken}`;
+
+    return new TokenResponseDto(
+      tokens.accessToken,
+      tokens.refreshToken,
+      true,
+      successRedirectUrl,
+    );
   }
 
   @Get('github/callback')
   @UseGuards(GithubAuthGuard)
+  @GithubAuthCallbackSwagger()
+  @UseInterceptors(CookieInterceptor)
   @HttpCode(HttpStatus.OK)
   async githubAuthRedirect(
     @Req() req: Request,
@@ -230,5 +252,24 @@ export class AuthController {
     @ClientInfo() clientInfo: ClientInfoDto,
   ) {
     const githubUser = req.user as GitHubUser;
+
+    const result: AppNotification<Tokens> = await this.commandBus.execute(
+      new GithubOauthCommand(githubUser, clientInfo),
+    );
+    if (result.hasErrors()) {
+      return result;
+    }
+    const tokens = result.getValue();
+    if (!tokens) {
+      return result.setServerError('Something went wrong while retrieving tokens');
+    }
+    const successRedirectUrl = `${this.configService.productionUrl}/auth/callback#accessToken=${tokens.accessToken}`;
+
+    return new TokenResponseDto(
+      tokens.accessToken,
+      tokens.refreshToken,
+      true,
+      successRedirectUrl,
+    );
   }
 }

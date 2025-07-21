@@ -2,15 +2,16 @@ import { GitHubUser } from '../../../../../core/guards/oauth2/oauth.github.strat
 import { ClientInfoDto } from '../../interface/dto/input/client.info.dto';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
-import { AppNotification, NotificationService } from '@common';
+import { AppNotification, AuthProvider, NotificationService } from '@common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { Tokens } from './token.service';
-import { AuthProvider } from '../../domain/user.oauth2.provider';
 import { User } from '../../../users/domain/user.entity';
 import { LoginCommand } from './login.use-case';
+import { UserProviderAddedEvent } from '../../../../../core/events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../../../../core/events/user.oauth.registered.event';
 
 export class GithubOauthCommand {
   constructor(
@@ -51,7 +52,7 @@ export class GithubOauthUseCase implements ICommandHandler<GithubOauthCommand> {
       if (user) {
         this.logger.log(`Existing user logged in via Github: ${user.email}`);
       } else {
-        user = await this.usersRepository.findByEmailWithTransaction(
+        user = await this.usersRepository.findUserWithProvider(
           githubUser.email,
           queryRunner,
         );
@@ -61,11 +62,12 @@ export class GithubOauthUseCase implements ICommandHandler<GithubOauthCommand> {
           user.addProvider(AuthProvider.GITHUB, githubUser.githubId);
           await this.usersRepository.saveWithTransaction(user, queryRunner);
 
-          this.eventEmitter.emit('user.provider.added', {
-            userId: user.id,
-            email: user.email,
-            provider: AuthProvider.GITHUB,
-          });
+          const userProviderCreatedEvent = new UserProviderAddedEvent(
+            user.username,
+            user.email,
+            AuthProvider.GITHUB,
+          );
+          this.eventEmitter.emit('user.provider.added', userProviderCreatedEvent);
         } else {
           this.logger.log(`Creating new user via Github OAuth: ${githubUser.email}`);
           const baseUsername = User.generateOAuthUsername(githubUser.username);
@@ -96,15 +98,15 @@ export class GithubOauthUseCase implements ICommandHandler<GithubOauthCommand> {
             return notification;
           }
 
-          this.eventEmitter.emit('user.provider.registered', {
-            userId: user.id,
-            email: user.email,
-            username: user.username,
-            provider: AuthProvider.GITHUB,
-            firstName: githubUser.firstName,
-          });
+          const providerRegisteredEvent = new UserProviderRegisteredEvent(
+            user.username,
+            user.email,
+            AuthProvider.GITHUB,
+          );
+          this.eventEmitter.emit('user.provider.registered', providerRegisteredEvent);
         }
       }
+      await queryRunner.commitTransaction();
 
       const loginResult: AppNotification<Tokens> = await this.commandBus.execute(
         new LoginCommand({
@@ -130,7 +132,6 @@ export class GithubOauthUseCase implements ICommandHandler<GithubOauthCommand> {
         return notification;
       }
 
-      await queryRunner.commitTransaction();
       notification.setValue(tokens);
       return notification;
     } catch (error) {

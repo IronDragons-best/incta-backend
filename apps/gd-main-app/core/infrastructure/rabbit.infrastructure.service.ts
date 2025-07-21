@@ -32,7 +32,8 @@ export class RabbitInitService implements OnModuleInit {
       'email.registration',
       'email.password_reset',
       'email.registration_resend',
-      'email.password_recovery'
+      'email.password_recovery',
+      'email.provider',
     ];
 
     for (const key of routingKeys) {

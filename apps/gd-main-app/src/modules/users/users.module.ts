@@ -14,6 +14,7 @@ import { EmailInfo } from './domain/email.info.entity';
 import { PasswordInfo } from './domain/password.info.entity';
 import { CryptoService } from './application/crypto.service';
 import { DeviceEntity } from '../devices/domain/device.entity';
+import { UserOauthProviderEntity } from '../auth/domain/user.oauth2.provider.entity';
 
 const usersServices = [
   CreateUserUseCase,
@@ -22,7 +23,15 @@ const usersServices = [
   GetAllUsersHandler,
 ];
 @Module({
-  imports: [TypeOrmModule.forFeature([User, EmailInfo, PasswordInfo, DeviceEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      UserOauthProviderEntity,
+      User,
+      EmailInfo,
+      PasswordInfo,
+      DeviceEntity,
+    ]),
+  ],
   controllers: [UsersController],
   providers: [
     ...usersServices,

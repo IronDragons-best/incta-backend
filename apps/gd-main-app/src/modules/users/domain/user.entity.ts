@@ -4,7 +4,11 @@ import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 import { EmailInfo } from './email.info.entity';
 import { PasswordInfo } from './password.info.entity';
 import { DeviceEntity } from '../../devices/domain/device.entity';
-import { AuthProvider, UserOauthProvider } from '../../auth/domain/user.oauth2.provider';
+
+import {
+  AuthProvider,
+  UserOauthProviderEntity,
+} from '../../auth/domain/user.oauth2.provider.entity';
 
 export type UserDomainDtoType = {
   username: string;
@@ -30,11 +34,11 @@ export class User extends BasicEntity {
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
 
-  @OneToMany(() => UserOauthProvider, (oauthProvider) => oauthProvider.user, {
-    cascade: true,
+  @OneToMany(() => UserOauthProviderEntity, (oauthProvider) => oauthProvider.user, {
+    cascade: ['insert', 'update'],
     eager: true,
   })
-  oauthProviders: UserOauthProvider[];
+  oauthProviders: UserOauthProviderEntity[];
 
   static createOauthInstance(
     email: string,
@@ -45,7 +49,7 @@ export class User extends BasicEntity {
     const user = new this();
     const emailInfo = new EmailInfo();
     const passwordInfo = new PasswordInfo();
-    const oauthProviderEntity = new UserOauthProvider();
+    const oauthProviderEntity = new UserOauthProviderEntity();
 
     user.username = username;
     user.email = email.toLowerCase();
@@ -80,11 +84,13 @@ export class User extends BasicEntity {
     const existingProvider = this.oauthProviders.find((p) => p.provider === provider);
 
     if (!existingProvider) {
-      const newProvider = new UserOauthProvider();
+      const newProvider = new UserOauthProviderEntity();
       newProvider.provider = provider;
       newProvider.providerId = providerId;
       newProvider.user = this;
+
       this.oauthProviders.push(newProvider);
+      this.confirmEmail();
     } else {
       existingProvider.providerId = providerId;
     }
@@ -190,7 +196,6 @@ export class User extends BasicEntity {
   }
 
   static validatePasswordRecoveryCode(user: User, recoveryCode: string) {
-    console.log(user, 'User');
     const { passwordInfo } = user;
 
     if (

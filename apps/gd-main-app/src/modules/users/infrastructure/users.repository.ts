@@ -3,9 +3,8 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
-import { AppConfigService } from '@common';
+import { AppConfigService, AuthProvider } from '@common';
 import { CustomLogger } from '@monitoring';
-import { AuthProvider } from '../../auth/domain/user.oauth2.provider';
 
 @Injectable()
 /** User Entity repository. For Create, Update, Delete operations */
@@ -45,7 +44,6 @@ export class UsersRepository {
   }
 
   async findByEmailWithTransaction(email: string, queryRunner: QueryRunner) {
-    console.log(email);
     const user = await queryRunner.manager
       .createQueryBuilder(User, 'user')
       .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
@@ -60,6 +58,32 @@ export class UsersRepository {
       return null;
     }
     return user;
+  }
+  async findUserWithProvider(
+    email: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    const userWithLock = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .where('user.email = :email', { email: email.toLowerCase() })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!userWithLock) {
+      return null;
+    }
+
+    const userWithAllProviders = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .leftJoinAndSelect('user.oauthProviders', 'oauthProvider')
+      .leftJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .leftJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('user.id = :userId', { userId: userWithLock.id })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
+
+    return userWithAllProviders || null;
   }
 
   async findByEmailConfirmCodeWithTransaction(code: string, queryRunner: QueryRunner) {

@@ -1,16 +1,22 @@
 import { GoogleUser } from '../../../../../core/guards/oauth2/ouath.google.strategy';
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
-import { AppNotification, ErrorMessage, NotificationService } from '@common';
+import {
+  AppNotification,
+  AuthProvider,
+  ErrorMessage,
+  NotificationService,
+} from '@common';
 import { CustomLogger } from '@monitoring';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { User } from '../../../users/domain/user.entity';
-import { AuthProvider } from '../../domain/user.oauth2.provider';
 import { Tokens } from './token.service';
 import { LoginCommand } from './login.use-case';
 import { ClientInfoDto } from '../../interface/dto/input/client.info.dto';
+import { UserProviderAddedEvent } from '../../../../../core/events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../../../../core/events/user.oauth.registered.event';
 
 export class GoogleOauthCommand {
   constructor(
@@ -51,7 +57,7 @@ export class GoogleOauthUseCase implements ICommandHandler<GoogleOauthCommand> {
       if (user) {
         this.logger.log(`Existing user logged in via Google: ${user.email}`);
       } else {
-        user = await this.usersRepository.findByEmailWithTransaction(
+        user = await this.usersRepository.findUserWithProvider(
           googleUser.email,
           queryRunner,
         );
@@ -61,11 +67,12 @@ export class GoogleOauthUseCase implements ICommandHandler<GoogleOauthCommand> {
           user.addProvider(AuthProvider.GOOGLE, googleUser.googleId);
           await this.usersRepository.saveWithTransaction(user, queryRunner);
 
-          this.eventEmitter.emit('user.provider.added', {
-            userId: user.id,
-            email: user.email,
-            provider: AuthProvider.GOOGLE,
-          });
+          const userProviderCreatedEvent = new UserProviderAddedEvent(
+            user.username,
+            user.email,
+            AuthProvider.GOOGLE,
+          );
+          this.eventEmitter.emit('user.provider.added', userProviderCreatedEvent);
         } else {
           this.logger.log(`Creating new user via Google OAuth: ${googleUser.email}`);
           const baseUsername = User.generateOAuthUsername(googleUser.email);
@@ -96,15 +103,16 @@ export class GoogleOauthUseCase implements ICommandHandler<GoogleOauthCommand> {
             return notification;
           }
 
-          this.eventEmitter.emit('user.provider.registered', {
-            userId: user.id,
-            email: user.email,
-            username: user.username,
-            provider: AuthProvider.GOOGLE,
-            firstName: googleUser.firstName,
-          });
+          const providerRegisteredEvent = new UserProviderRegisteredEvent(
+            user.username,
+            user.email,
+            AuthProvider.GOOGLE,
+          );
+
+          this.eventEmitter.emit('user.provider.registered', providerRegisteredEvent);
         }
       }
+      await queryRunner.commitTransaction();
 
       const loginNotification: AppNotification<Tokens> = await this.commandBus.execute(
         new LoginCommand({
@@ -113,7 +121,6 @@ export class GoogleOauthUseCase implements ICommandHandler<GoogleOauthCommand> {
           ip: clientInfo.ip,
         }),
       );
-
       if (loginNotification.hasErrors()) {
         const status = loginNotification.getStatusCode();
         const errors: Array<ErrorMessage> = loginNotification.getErrors();
@@ -129,7 +136,6 @@ export class GoogleOauthUseCase implements ICommandHandler<GoogleOauthCommand> {
         return notification;
       }
 
-      await queryRunner.commitTransaction();
       notification.setValue(tokens);
       return notification;
     } catch (error) {

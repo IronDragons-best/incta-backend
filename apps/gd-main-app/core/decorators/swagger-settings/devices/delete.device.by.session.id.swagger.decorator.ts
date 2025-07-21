@@ -26,6 +26,6 @@ export function DeleteDeviceBySessionIdSwagger() {
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
       description: 'Device session not found.',
-    })
-  )
+    }),
+  );
 }
