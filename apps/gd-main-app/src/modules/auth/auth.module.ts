@@ -27,6 +27,11 @@ import { DeviceModule } from '../devices/device.module';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
 import { HttpModule } from '@nestjs/axios';
 import { RecaptchaService } from './application/recaptcha.service';
+import { GithubOauthUseCase } from './application/use-cases/github.oauth.use-case';
+import { GoogleOauthUseCase } from './application/use-cases/google.oauth.use-case';
+import { GoogleStrategy } from '../../../core/guards/oauth2/ouath.google.strategy';
+import { GitHubStrategy } from '../../../core/guards/oauth2/oauth.github.strategy';
+import { UserProviderListeners } from '../../../core/listeners/user.provider.listener';
 
 @Module({
   imports: [
@@ -43,6 +48,8 @@ import { RecaptchaService } from './application/recaptcha.service';
     EmailResendUseCase,
     ConfirmEmailUseCase,
     RefreshTokenUseCase,
+    GithubOauthUseCase,
+    GoogleOauthUseCase,
     LoginUseCase,
     LogoutUseCase,
     AuthService,
@@ -51,11 +58,14 @@ import { RecaptchaService } from './application/recaptcha.service';
     LocalStrategy,
     JwtStrategy,
     JwtRefreshStrategy,
+    GoogleStrategy,
+    GitHubStrategy,
     UserCreatedListener,
     EmailResendListener,
     NotificationService,
     AsyncLocalStorageService,
     cookieOptionsProvider,
+    UserProviderListeners,
     PasswordRecoveryListener,
     PasswordRecoveryUseCase,
     NewPasswordUseCase,

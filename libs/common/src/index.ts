@@ -8,6 +8,7 @@ export * from './config/files.config.service';
 export * from './notification/notification.types';
 export * from './exceptions/exception.type';
 export * from './exceptions/types/error.message';
+export * from './types/common.types';
 
 // Notification
 export * from './notification/app.notification';

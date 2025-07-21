@@ -35,6 +35,14 @@ export const validationSchema = Joi.object({
   JWT_ACCESS_EXPIRE: Joi.string(),
   JWT_REFRESH_SECRET: Joi.string(),
   JWT_REFRESH_EXPIRE: Joi.string(),
+
+  // OAUTH2
+  GOOGLE_CLIENT_ID: Joi.string(),
+  GOOGLE_CLIENT_SECRET: Joi.string(),
+  GOOGLE_CALLBACK_URL: Joi.string(),
+  GITHUB_CLIENT_ID: Joi.string(),
+  GITHUB_CLIENT_SECRET: Joi.string(),
+  GITHUB_CALLBACK_URL: Joi.string(),
 });
 
 export const loggerValidationSchema = Joi.object({

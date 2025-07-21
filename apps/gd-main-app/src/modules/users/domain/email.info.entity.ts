@@ -4,8 +4,8 @@ import { User } from './user.entity';
 
 @Entity()
 export class EmailInfo extends BasicEntity {
-  @Column()
-  confirmCode: string;
+  @Column({ type: 'varchar', nullable: true })
+  confirmCode: string | null;
 
   @Column({ type: 'timestamp', nullable: true })
   codeExpirationDate: Date | null;

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { NotificationConfigService } from '@common/config/notification.config.service';
-import { EmailInfoInputDto } from '../types/email.info.input.dto';
+import { EmailInfoInputDto, OauthInputDto } from '../types/email.info.input.dto';
 import { CustomLogger } from '@monitoring';
-import { NotificationService } from '@common';
+import { AppNotification, NotificationService } from '@common';
 
 @Injectable()
 export class EmailService {
@@ -24,13 +24,17 @@ export class EmailService {
     textBody: string,
     htmlBody: string,
   ) {
-    await this.mailerService.sendMail({
-      from: `"Iron Dragon site" <${this.configService.getMailerSenderAddress()}>`,
-      to: email,
-      subject,
-      text: textBody,
-      html: htmlBody,
-    });
+    try {
+      await this.mailerService.sendMail({
+        from: `"Iron Dragon site" <${this.configService.getMailerSenderAddress()}>`,
+        to: email,
+        subject,
+        text: textBody,
+        html: htmlBody,
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async sendRegistrationEmail(data: EmailInfoInputDto) {
@@ -145,6 +149,84 @@ export class EmailService {
       this.logger.error(e);
       notify.setServerError(
         'Internal server error occurred while sending password recovery email',
+      );
+      return notify;
+    }
+  }
+
+  async sendProviderAddedEmail(data: OauthInputDto) {
+    const notify = this.notificationService.create();
+    try {
+      const subject = `Аккаунт ${data.provider} подключен к Iron Dragon`;
+
+      const textBody = [
+        `Привет ${data.login}!`,
+        '',
+        `Ваш ${data.provider} аккаунт успешно подключен к вашему профилю Iron Dragon.`,
+        `Теперь вы можете входить в систему, используя ${data.provider} авторизацию.`,
+        '',
+        `Если вы не подключали ${data.provider} аккаунт, немедленно обратитесь в службу поддержки.`,
+        '',
+        `Для вашей безопасности рекомендуем проверить активные сессии в настройках аккаунта.`,
+        '',
+        `С уважением,`,
+        `Команда Iron Dragon`,
+      ].join('\n');
+
+      const htmlBody = `
+      <p>Привет <strong>${data.login}</strong>!</p>
+      <p>Ваш <strong>${data.provider}</strong> аккаунт успешно подключен к вашему профилю <strong>Iron Dragon</strong>.</p>
+      <p>Теперь вы можете входить в систему, используя <strong>${data.provider}</strong> авторизацию.</p>
+      <p><strong>⚠️ Если вы не подключали ${data.provider} аккаунт, немедленно обратитесь в службу поддержки.</strong></p>
+      <p>Для вашей безопасности рекомендуем проверить активные сессии в настройках аккаунта.</p>
+      <p>С уважением,<br/>Команда Iron Dragon</p>
+  `;
+
+      await this.sendEmail(data.email, subject, textBody, htmlBody);
+      return notify.setNoContent();
+    } catch (e) {
+      this.logger.error(e);
+      notify.setServerError(
+        'Internal server error occurred while sending Oauth2 add email',
+      );
+      return notify;
+    }
+  }
+  async sendProviderRegistrationEmail(data: OauthInputDto) {
+    const notify = this.notificationService.create();
+
+    try {
+      const subject = 'Добро пожаловать в Iron Dragon!';
+
+      const textBody = [
+        `Привет ${data.login}!`,
+        '',
+        `Поздравляем с успешной регистрацией на Iron Dragon через ${data.provider}!`,
+        `Ваш аккаунт создан и готов к использованию.`,
+        '',
+        `Вы можете войти в систему, используя свой ${data.provider} аккаунт.`,
+        '',
+        `Если у вас есть вопросы, не стесняйтесь обращаться к нашей поддержке.`,
+        '',
+        `С уважением,`,
+        `Команда Iron Dragon`,
+      ].join('\n');
+
+      const htmlBody = `
+    <p>Привет <strong>${data.login}</strong>!</p>
+    <p>Поздравляем с успешной регистрацией на <strong>Iron Dragon</strong> через <strong>${data.provider}</strong>!</p>
+    <p>Ваш аккаунт создан и готов к использованию.</p>
+    <p>Вы можете войти в систему, используя свой <strong>${data.provider}</strong> аккаунт.</p>
+    <p>Если у вас есть вопросы, не стесняйтесь обращаться к нашей поддержке.</p>
+    <p>С уважением,<br/>Команда Iron Dragon</p>
+  `;
+      console.log('sending');
+      await this.sendEmail(data.email, subject, textBody, htmlBody);
+      return notify.setNoContent();
+    } catch (e) {
+      this.logger.error(e);
+      notify.setServerError(
+        'Internal server error occurred while sending oauth2 registration email',
       );
       return notify;
     }

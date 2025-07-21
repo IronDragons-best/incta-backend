@@ -36,7 +36,6 @@ export class DevicesRepository {
   }
 
   async findAll(userId: number, sessionId: string) {
-    console.log(sessionId);
     const devices: DeviceEntity[] = await this.devicesRepository.find({
       where: {
         userId: userId,

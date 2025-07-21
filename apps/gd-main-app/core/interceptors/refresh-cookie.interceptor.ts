@@ -14,14 +14,29 @@ export class CookieInterceptor implements NestInterceptor {
   constructor(private readonly configService: AppConfigService) {}
   intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
     const isStaging = this.configService.depType === 'staging';
+    const response: Response = context.switchToHttp().getResponse();
     return next.handle().pipe(
       map((data) => {
+        if (data instanceof TokenResponseDto && data.shouldRedirect) {
+          if (data.isRefreshTokenCookie && data.refreshToken) {
+            response.cookie('refreshToken', data.refreshToken, {
+              httpOnly: true,
+              secure: !isStaging,
+              sameSite: isStaging ? 'none' : 'lax',
+            });
+          }
+
+          if (data.redirectUrl) {
+            response.redirect(data.redirectUrl);
+          }
+          return;
+        }
+
         if (data instanceof TokenResponseDto && data.isRefreshTokenCookie) {
-          const response: Response = context.switchToHttp().getResponse();
           response.cookie('refreshToken', data.refreshToken, {
             httpOnly: true,
             secure: !isStaging,
-            sameSite: 'lax',
+            sameSite: isStaging ? 'none' : 'lax',
           });
           return { accessToken: data.accessToken };
         }

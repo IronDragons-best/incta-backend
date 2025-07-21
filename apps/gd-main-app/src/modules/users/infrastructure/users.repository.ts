@@ -3,7 +3,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { IsNull } from 'typeorm';
-import { AppConfigService } from '@common';
+import { AppConfigService, AuthProvider } from '@common';
 import { CustomLogger } from '@monitoring';
 
 @Injectable()
@@ -44,7 +44,6 @@ export class UsersRepository {
   }
 
   async findByEmailWithTransaction(email: string, queryRunner: QueryRunner) {
-    console.log(email);
     const user = await queryRunner.manager
       .createQueryBuilder(User, 'user')
       .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
@@ -59,6 +58,32 @@ export class UsersRepository {
       return null;
     }
     return user;
+  }
+  async findUserWithProvider(
+    email: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    const userWithLock = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .where('user.email = :email', { email: email.toLowerCase() })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    if (!userWithLock) {
+      return null;
+    }
+
+    const userWithAllProviders = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .leftJoinAndSelect('user.oauthProviders', 'oauthProvider')
+      .leftJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .leftJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('user.id = :userId', { userId: userWithLock.id })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
+
+    return userWithAllProviders || null;
   }
 
   async findByEmailConfirmCodeWithTransaction(code: string, queryRunner: QueryRunner) {
@@ -88,7 +113,7 @@ export class UsersRepository {
       .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
       .where('passwordInfo.passwordRecoveryCode = :recoveryCode')
       .setParameters({
-        recoveryCode
+        recoveryCode,
       })
       .andWhere('user.deletedAt IS NULL')
       .setLock('pessimistic_write')
@@ -137,8 +162,8 @@ export class UsersRepository {
     }
     const field =
       existingUser.username.toLowerCase() === username.toLowerCase()
-        ? 'Username'
-        : 'Email';
+        ? 'username'
+        : 'email';
 
     return { existingUser, field };
   }
@@ -168,5 +193,37 @@ export class UsersRepository {
       TRUNCATE TABLE "email_info" RESTART IDENTITY CASCADE;
       `,
     );
+  }
+
+  async findByOAuthProviderIdWithTransaction(
+    provider: AuthProvider,
+    providerId: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    const user = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .innerJoinAndSelect('user.oauthProviders', 'oauthProvider')
+      .innerJoinAndSelect('user.emailConfirmationInfo', 'emailInfo')
+      .innerJoinAndSelect('user.passwordInfo', 'passwordInfo')
+      .where('oauthProvider.provider = :provider', { provider })
+      .andWhere('oauthProvider.providerId = :providerId', { providerId })
+      .andWhere('user.deletedAt IS NULL')
+      .setLock('pessimistic_write')
+      .getOne();
+
+    return user || null;
+  }
+
+  async findByUsernameWithTransaction(
+    username: string,
+    queryRunner: QueryRunner,
+  ): Promise<User | null> {
+    const existingUser = await queryRunner.manager
+      .createQueryBuilder(User, 'user')
+      .where('LOWER(user.username) = LOWER(:username)', { username })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
+
+    return existingUser || null;
   }
 }

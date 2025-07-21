@@ -58,10 +58,7 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
             ? 'User with this email is already registered'
             : 'User with this username is already registered';
 
-        notification.setBadRequest(
-          errorMessage,
-          userWithTheSameLoginOrEmail.field.toLowerCase(),
-        );
+        notification.setBadRequest(errorMessage, userWithTheSameLoginOrEmail.field);
         return notification;
       }
 
