@@ -280,13 +280,11 @@ describe('AuthController - Login Integration Tests', () => {
 
         expect(response.body).toHaveProperty('errorsMessages');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(response.body.errorsMessages).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              message: 'Invalid credentials.',
-            }),
-          ]),
-        );
+        expect(response.body.errorsMessages).toEqual([
+          {
+            message: 'Invalid email or password.',
+          },
+        ]);
 
         expect(usersRepository.findByUsernameOrEmail).toHaveBeenCalledWith(
           validLoginData.email,

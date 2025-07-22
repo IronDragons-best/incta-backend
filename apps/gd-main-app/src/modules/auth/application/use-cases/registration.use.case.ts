@@ -23,6 +23,7 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
   }
   async execute(command: RegistrationCommand) {
     const notify = this.notification.create();
+
     try {
       const registrationResult: AppNotification<RegisteredUserDto> =
         await this.commandBus.execute(new CreateUserCommand(command.userDto));

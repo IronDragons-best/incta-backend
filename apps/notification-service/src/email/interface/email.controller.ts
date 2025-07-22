@@ -1,9 +1,10 @@
 import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext, Transport } from '@nestjs/microservices';
 import { EmailService } from '../application/email.service';
-import { EmailInfoInputDto } from '../types/email.info.input.dto';
+import { EmailInfoInputDto, OauthInputDto } from '../types/email.info.input.dto';
 import { Channel, Message } from 'amqplib';
 import { CustomLogger } from '@monitoring';
+import { AppNotification, OauthTemplateType } from '@common';
 
 @Controller()
 export class EmailController {
@@ -128,6 +129,25 @@ export class EmailController {
       this.logger.error(
         `Unhandled exception in handlePasswordRecovery for ${data.email}: ${e}`,
       );
+      this.handleMessage(context, email, false);
+    }
+  }
+  @EventPattern('email.provider', Transport.RMQ)
+  async handleOauthProvider(@Payload() data: OauthInputDto, @Ctx() context: RmqContext) {
+    const { template, email } = data;
+    try {
+      console.log('here');
+      this.logger.log(`Processing oath email for ${email}`);
+      let result: AppNotification;
+      if (template === OauthTemplateType.ADD_PROVIDER) {
+        result = await this.emailService.sendProviderAddedEmail(data);
+        this.handleMessage(context, email, !result.hasErrors());
+      } else if (template === OauthTemplateType.REGISTER_PROVIDER) {
+        result = await this.emailService.sendProviderRegistrationEmail(data);
+        this.handleMessage(context, email, !result.hasErrors());
+      }
+    } catch (error) {
+      this.logger.error(`Unhandled exception in handleOauthProvider: ${error}`);
       this.handleMessage(context, email, false);
     }
   }

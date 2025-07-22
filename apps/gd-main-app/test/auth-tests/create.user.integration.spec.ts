@@ -228,7 +228,7 @@ describe('CreateUserUseCase', () => {
     expect(result.hasErrors()).toBe(true);
     const errors = result.getErrors();
     expect(errors.length).toBe(1);
-    expect(errors[0].field).toBe('username');
+    expect(errors[0].field).toBe('Username');
     expect(errors[0].message).toBe('User with this username is already registered');
   });
 

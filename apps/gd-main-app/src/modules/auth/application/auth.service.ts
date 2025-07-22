@@ -28,10 +28,10 @@ export class AuthService {
     }
     const passwordIsMatch = await this.cryptoService.comparePassword(
       password,
-      user.passwordInfo.passwordHash,
+      user.passwordInfo.passwordHash!,
     );
     if (!passwordIsMatch) {
-      notify.setUnauthorized('Invalid credentials.');
+      notify.setUnauthorized('Invalid email or password.');
       return notify;
     }
     return notify.setValue({ id: user.id });

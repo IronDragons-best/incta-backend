@@ -4,7 +4,6 @@ import { DevicesRepository } from '../infrastructure/devices.repository';
 import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 
-
 export class DeleteDeviceBySessionIdCommand {
   constructor(
     public readonly userId: UserContextDto['id'],
@@ -13,8 +12,9 @@ export class DeleteDeviceBySessionIdCommand {
 }
 
 @CommandHandler(DeleteDeviceBySessionIdCommand)
-export class DeleteDeviceBySessionIdUseCase implements
-  ICommandHandler<DeleteDeviceBySessionIdCommand> {
+export class DeleteDeviceBySessionIdUseCase
+  implements ICommandHandler<DeleteDeviceBySessionIdCommand>
+{
   constructor(
     private readonly devicesRepository: DevicesRepository,
     private readonly notification: NotificationService,
@@ -27,8 +27,8 @@ export class DeleteDeviceBySessionIdUseCase implements
     const notify = this.notification.create();
     const device = await this.devicesRepository.findSessionBySessionIdAndUserId(
       command.sessionId,
-      command.userId
-    )
+      command.userId,
+    );
 
     if (!device) {
       this.logger.warn('Device not found');

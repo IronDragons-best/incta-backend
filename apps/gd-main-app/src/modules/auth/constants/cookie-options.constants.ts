@@ -15,8 +15,7 @@ export const cookieOptionsProvider = {
     return {
       httpOnly: true,
       secure: !isStaging,
-      sameSite: 'lax',
-      path: '/',
+      sameSite: isStaging ? 'none' : 'lax',
     };
   },
   inject: [AppConfigService],

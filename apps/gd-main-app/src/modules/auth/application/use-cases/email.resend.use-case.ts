@@ -8,9 +8,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../../../users/domain/user.entity';
 import { EmailResendEvent } from '../../../../../core/events/email.resend.event';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { RecaptchaService } from '../recaptcha.service';
+import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export class EmailResendCommand {
-  constructor(public readonly email: string) {}
+  constructor(
+    public readonly email: string,
+  ) {}
 }
 
 @CommandHandler(EmailResendCommand)
@@ -27,6 +31,7 @@ export class EmailResendUseCase implements ICommandHandler<EmailResendCommand> {
 
   async execute(command: EmailResendCommand) {
     const notify = this.notification.create();
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();

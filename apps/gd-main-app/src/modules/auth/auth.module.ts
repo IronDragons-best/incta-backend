@@ -25,11 +25,19 @@ import { JwtRefreshStrategy } from '../../../core/guards/refresh/jwt.refresh.str
 import { RefreshTokenUseCase } from './application/use-cases/refresh.token.use-case';
 import { DeviceModule } from '../devices/device.module';
 import { LogoutUseCase } from './application/use-cases/logout.use-case';
+import { HttpModule } from '@nestjs/axios';
+import { RecaptchaService } from './application/recaptcha.service';
+import { GithubOauthUseCase } from './application/use-cases/github.oauth.use-case';
+import { GoogleOauthUseCase } from './application/use-cases/google.oauth.use-case';
+import { GoogleStrategy } from '../../../core/guards/oauth2/ouath.google.strategy';
+import { GitHubStrategy } from '../../../core/guards/oauth2/oauth.github.strategy';
+import { UserProviderListeners } from '../../../core/listeners/user.provider.listener';
 
 @Module({
   imports: [
     PassportModule,
     CqrsModule,
+    HttpModule,
     UsersModule,
     DeviceModule,
     ClientsModule,
@@ -40,18 +48,24 @@ import { LogoutUseCase } from './application/use-cases/logout.use-case';
     EmailResendUseCase,
     ConfirmEmailUseCase,
     RefreshTokenUseCase,
+    GithubOauthUseCase,
+    GoogleOauthUseCase,
     LoginUseCase,
     LogoutUseCase,
     AuthService,
+    RecaptchaService,
     TokenService,
     LocalStrategy,
     JwtStrategy,
     JwtRefreshStrategy,
+    GoogleStrategy,
+    GitHubStrategy,
     UserCreatedListener,
     EmailResendListener,
     NotificationService,
     AsyncLocalStorageService,
     cookieOptionsProvider,
+    UserProviderListeners,
     PasswordRecoveryListener,
     PasswordRecoveryUseCase,
     NewPasswordUseCase,

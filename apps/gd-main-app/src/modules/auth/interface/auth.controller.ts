@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import type { CookieOptions, Response, Request } from 'express';
+import { SkipThrottle, ThrottlerModule } from '@nestjs/throttler';
 
 import * as UAParserNS from 'ua-parser-js';
 
@@ -25,7 +26,7 @@ import {
   UserContextDto,
   UserRefreshContextDto,
 } from '../../../../core/dto/user.context.dto';
-import { AppNotification } from '@common';
+import { AppConfigService, AppNotification } from '@common';
 import { Tokens } from '../application/use-cases/token.service';
 import { LocalAuthGuard } from '../../../../core/guards/local/local.auth.guard';
 import { CookieInterceptor } from '../../../../core/interceptors/refresh-cookie.interceptor';
@@ -54,15 +55,33 @@ import { ClientInfoDto } from './dto/input/client.info.dto';
 import { LogoutCommand } from '../application/use-cases/logout.use-case';
 import { RefreshTokenSwagger } from '../../../../core/decorators/swagger-settings/auth/refresh.token.swagger.decorator';
 import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
+import { GoogleAuthGuard } from '../../../../core/guards/oauth2/oauth.google.guard';
+import { GoogleUser } from '../../../../core/guards/oauth2/ouath.google.strategy';
+import { GoogleOauthCommand } from '../application/use-cases/google.oauth.use-case';
+import { GithubAuthGuard } from '../../../../core/guards/oauth2/oauth.github.guard';
+import { GitHubUser } from '../../../../core/guards/oauth2/oauth.github.strategy';
+import { GithubOauthCommand } from '../application/use-cases/github.oauth.use-case';
+import {
+  GoogleAuthCallbackSwagger,
+  GoogleAuthSwagger,
+} from '../../../../core/decorators/swagger-settings/auth/oauth.google.swagger.decorator';
+import {
+  GithubAuthCallbackSwagger,
+  GithubAuthSwagger,
+} from '../../../../core/decorators/swagger-settings/auth/oauth.gitgub.swagger.decorator';
+import { PasswordRecoveryInputDto } from './dto/input/password.recovery.input.dto';
 
+@UseGuards(ThrottlerModule)
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly commandBus: CommandBus,
+    private readonly configService: AppConfigService,
     @Inject('COOKIE_OPTIONS') private readonly cookieOptions: CookieOptions,
   ) {}
 
+  @SkipThrottle()
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   @RegistrationSwagger()
@@ -115,6 +134,7 @@ export class AuthController {
 
     return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
   }
+
   @Post('refresh-token')
   @UseInterceptors(CookieInterceptor)
   @RefreshTokenSwagger()
@@ -167,8 +187,10 @@ export class AuthController {
   @Post('/password-recovery')
   @PasswordRecoverySwagger()
   @HttpCode(HttpStatus.NO_CONTENT)
-  async passwordRecovery(@Body() body: EmailResendInputDto) {
-    return this.commandBus.execute(new PasswordRecoveryCommand(body.email));
+  async passwordRecovery(@Body() body: PasswordRecoveryInputDto) {
+    return this.commandBus.execute(
+      new PasswordRecoveryCommand(body.email, body.captchaToken),
+    );
   }
 
   @Post('/new-password')
@@ -177,5 +199,83 @@ export class AuthController {
   async newPassword(@Body() body: NewPasswordInputDto) {
     const { recoveryCode, newPassword } = body;
     return this.commandBus.execute(new NewPasswordCommand(newPassword, recoveryCode));
+  }
+
+  @Get('google')
+  @GoogleAuthSwagger()
+  @UseGuards(GoogleAuthGuard)
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
+  async googleAuth(@Req() req: Request) {}
+
+  @Get('github')
+  @GithubAuthSwagger()
+  @UseGuards(GithubAuthGuard)
+  @HttpCode(HttpStatus.TEMPORARY_REDIRECT)
+  async githubAuth(@Req() req: Request) {}
+
+  @Get('google/callback')
+  @GoogleAuthCallbackSwagger()
+  @UseGuards(GoogleAuthGuard)
+  @UseInterceptors(CookieInterceptor)
+  @HttpCode(HttpStatus.OK)
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @ClientInfo() clientInfo: ClientInfoDto,
+  ) {
+    const googleUser = req.user as GoogleUser;
+
+    const result: AppNotification<Tokens> = await this.commandBus.execute(
+      new GoogleOauthCommand(googleUser, clientInfo),
+    );
+
+    if (result.hasErrors()) {
+      return result;
+    }
+
+    const tokens = result.getValue();
+    if (!tokens) {
+      return result.setServerError('Something went wrong while retrieving tokens');
+    }
+    const successRedirectUrl = `${this.configService.productionUrl}/auth/callback#accessToken=${tokens.accessToken}`;
+
+    return new TokenResponseDto(
+      tokens.accessToken,
+      tokens.refreshToken,
+      true,
+      successRedirectUrl,
+    );
+  }
+
+  @Get('github/callback')
+  @UseGuards(GithubAuthGuard)
+  @GithubAuthCallbackSwagger()
+  @UseInterceptors(CookieInterceptor)
+  @HttpCode(HttpStatus.OK)
+  async githubAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @ClientInfo() clientInfo: ClientInfoDto,
+  ) {
+    const githubUser = req.user as GitHubUser;
+
+    const result: AppNotification<Tokens> = await this.commandBus.execute(
+      new GithubOauthCommand(githubUser, clientInfo),
+    );
+    if (result.hasErrors()) {
+      return result;
+    }
+    const tokens = result.getValue();
+    if (!tokens) {
+      return result.setServerError('Something went wrong while retrieving tokens');
+    }
+    const successRedirectUrl = `${this.configService.productionUrl}/auth/callback#accessToken=${tokens.accessToken}`;
+
+    return new TokenResponseDto(
+      tokens.accessToken,
+      tokens.refreshToken,
+      true,
+      successRedirectUrl,
+    );
   }
 }

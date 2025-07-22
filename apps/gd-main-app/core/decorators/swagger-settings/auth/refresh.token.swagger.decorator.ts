@@ -1,12 +1,12 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginViewDto } from '../../../../src/modules/auth/interface/dto/output/login.view.dto';
 import { ErrorResponseDto } from '@common';
 
 export function RefreshTokenSwagger() {
   return applyDecorators(
     ApiOperation({ summary: 'Refresh tokens. In cookie client must send refreshToken' }),
-    ApiBearerAuth(),
+    ApiCookieAuth('refreshToken'),
     ApiResponse({
       status: HttpStatus.OK,
       description:
@@ -16,6 +16,10 @@ export function RefreshTokenSwagger() {
     ApiResponse({
       status: HttpStatus.UNAUTHORIZED,
       type: ErrorResponseDto,
+    }),
+    ApiResponse({
+      status: HttpStatus.TOO_MANY_REQUESTS,
+      description: 'More than 5 attempts from one IP-address during 10 seconds',
     }),
   );
 }

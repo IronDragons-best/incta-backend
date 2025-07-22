@@ -42,7 +42,7 @@ describe('AuthController - Confirm Email Integration Tests', () => {
   let cryptoService: MockCryptoService;
   let tokenService: MockTokenService;
   let commandBus: MockCommandBus;
-  let notificationService: NotificationService;
+  let notificationService: NotificationService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

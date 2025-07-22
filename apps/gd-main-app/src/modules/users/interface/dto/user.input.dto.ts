@@ -1,4 +1,4 @@
-import { Equals, IsBoolean, Matches } from 'class-validator';
+import { Equals, IsBoolean, IsString, Matches } from 'class-validator';
 import {
   userEmailConstraints,
   userNameConstraints,
@@ -6,6 +6,7 @@ import {
 } from '../../constants/user.constants';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
+import { IsCaptchaRequired } from '../../../../../core/decorators/validation/is-captcha-required';
 
 export class UserInputDto {
   @IsStringWithTrim(userNameConstraints.minLength, userNameConstraints.maxLength)

@@ -1,8 +1,13 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-
-import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
-
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
 import { AllUserDevicesSwagger } from '../../../../core/decorators/swagger-settings/devices/all.user.devices.swagger.decorator';
 
@@ -15,9 +20,7 @@ import { DeleteDeviceBySessionIdCommand } from '../application/delete.device.by.
 
 import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
 import { DeleteOtherDevicesSwagger } from '../../../../core/decorators/swagger-settings/devices/delete.devices.swagger.decorator';
-import {
-  DeleteDeviceBySessionIdSwagger
-} from '../../../../core/decorators/swagger-settings/devices/delete.device.by.session.id.swagger.decorator';
+import { DeleteDeviceBySessionIdSwagger } from '../../../../core/decorators/swagger-settings/devices/delete.device.by.session.id.swagger.decorator';
 
 @Controller('devices')
 export class DeviceController {
@@ -49,13 +52,10 @@ export class DeviceController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async terminateSessionById(
     @Param('sessionId') sessionId: string,
-    @ExtractUserFromRequest() user: UserContextDto
+    @ExtractUserFromRequest() user: UserContextDto,
   ) {
     return await this.commandBus.execute(
-      new DeleteDeviceBySessionIdCommand(
-        user.id,
-        sessionId
-      )
-    )
+      new DeleteDeviceBySessionIdCommand(user.id, sessionId),
+    );
   }
 }

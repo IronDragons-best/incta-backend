@@ -17,6 +17,10 @@ export function NewPasswordSwagger() {
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,
       description: 'The request contains invalid data, or the password recovery code is invalid or has expired.',
+    }),
+    ApiResponse({
+      status: HttpStatus.TOO_MANY_REQUESTS,
+      description: 'More than 5 attempts from one IP-address during 10 seconds',
     })
   );
 }

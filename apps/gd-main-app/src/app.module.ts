@@ -19,6 +19,7 @@ import { RabbitInitService } from '../core/infrastructure/rabbit.infrastructure.
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from '../core/common/shared-modules/client.module';
 import { DeviceModule } from './modules/devices/device.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -31,6 +32,10 @@ import { DeviceModule } from './modules/devices/device.module';
       wildcard: true,
       delimiter: '.',
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 10000,
+      limit: 5
+    }]),
     MonitoringModule.forRoot('main-microservice'),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => ({
