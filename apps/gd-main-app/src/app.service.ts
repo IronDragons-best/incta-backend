@@ -29,9 +29,9 @@ export class AppService {
 
     try {
       const filesHost = this.configService.filesHost;
-
+      console.log(filesHost);
       const filesPromise: Promise<AxiosResponse<FilesCheckType>> =
-        this.http.axiosRef.get<FilesCheckType>(`${filesHost}/api/v1/health`);
+        this.http.axiosRef.get<FilesCheckType>(`${filesHost}/health`);
       const notificationPromise = firstValueFrom<NotificationCheckType>(
         this.notificationClient.send('notifications-check', { requestId }),
       );
@@ -40,6 +40,7 @@ export class AppService {
 
         notificationPromise,
       ]);
+      console.log(filesResult);
       const filesService =
         filesResult.status === 'fulfilled'
           ? filesResult.value.data
