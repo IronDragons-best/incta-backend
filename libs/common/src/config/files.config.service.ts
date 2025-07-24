@@ -6,7 +6,8 @@ export class FilesConfigService extends ConfigService {
   constructor(configService: ConfigService) {
     super(configService['internalConfig']);
   }
-  getFilesPort(): number {
+
+  get filesPort(): number {
     const port = this.get<string>('FILES_PORT');
     if (!port) {
       throw new Error('Files port is required');
@@ -14,7 +15,7 @@ export class FilesConfigService extends ConfigService {
     return Number.parseInt(port);
   }
 
-  getFilesHost(): string {
+  get filesHost(): string {
     const host = this.get<string>('FILES_HOST');
     if (!host) {
       throw new Error('Files host is required');

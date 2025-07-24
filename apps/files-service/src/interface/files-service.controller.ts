@@ -1,7 +1,15 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FilesServiceService } from '../application/files-service.service';
 import { CommandBus } from '@nestjs/cqrs';
 import { UploadFileCommand } from '../application/use-cases/upload.file.use-case';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller()
 export class FilesServiceController {
@@ -16,7 +24,10 @@ export class FilesServiceController {
   }
 
   @Post('upload')
-  uploadFile() {
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+    console.log(body);
+    console.log(file);
     const result = this.commandBus.execute(new UploadFileCommand());
     return true;
   }

@@ -10,8 +10,8 @@ async function bootstrap() {
   const configService = app.get(FilesConfigService);
 
   await filesSetup(app);
-  const port = configService.getFilesPort();
-  const host = configService.getFilesHost();
+  const port = configService.filesPort;
+  const host = configService.filesHost;
   await filesSetup(app);
   await app.listen(port);
 
