@@ -18,5 +18,6 @@ export class FilesServiceController {
   @Post('upload')
   uploadFile() {
     const result = this.commandBus.execute(new UploadFileCommand());
+    return true;
   }
 }

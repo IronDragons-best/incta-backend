@@ -9,11 +9,12 @@ async function bootstrap() {
   const app = await NestFactory.create(FilesServiceModule);
   const configService = app.get(FilesConfigService);
 
-  await filesSetup(app, configService);
+  await filesSetup(app);
   const port = configService.getFilesPort();
   const host = configService.getFilesHost();
+  await filesSetup(app);
   await app.listen(port);
 
-  console.log(`🚀 Files microservice started on ${host}`);
+  console.log(`🚀 Files microservice started on ${host}:${port}`);
 }
 bootstrap();

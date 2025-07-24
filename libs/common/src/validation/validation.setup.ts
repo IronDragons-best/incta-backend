@@ -1,5 +1,10 @@
 import { ValidationError } from 'class-validator';
-import { BadRequestException, INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  INestMicroservice,
+  ValidationPipe,
+} from '@nestjs/common';
 
 export const pipeErrorFormatter = (
   errors: ValidationError[],
@@ -22,7 +27,7 @@ export const pipeErrorFormatter = (
   return errorsForResponse;
 };
 
-export const setupValidation = (app: INestApplication) => {
+export const setupValidation = (app: INestApplication | INestMicroservice) => {
   app.useGlobalPipes(
     new ValidationPipe({
       stopAtFirstError: true,

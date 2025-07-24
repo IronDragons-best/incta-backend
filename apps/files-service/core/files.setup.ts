@@ -2,7 +2,6 @@ import { INestApplication } from '@nestjs/common';
 import {
   AllExceptionsFilter,
   DomainExceptionsFilter,
-  FilesConfigService,
   NotificationInterceptor,
   setupValidation,
 } from '@common';
@@ -10,10 +9,7 @@ import { RequestContextInterceptor } from '@monitoring/interceptor/request.conte
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 import cookieParser from 'cookie-parser';
 
-export async function filesSetup(
-  app: INestApplication,
-  configService: FilesConfigService,
-) {
+export async function filesSetup(app: INestApplication) {
   app.enableCors({
     origin: ['https://irondragon.site', 'http://localhost:3000'],
     credentials: true,
