@@ -33,6 +33,7 @@
     "start:dev:notification-service": "nest start notification-service --watch"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.850.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.1",

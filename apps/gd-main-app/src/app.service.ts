@@ -4,6 +4,7 @@ import { AppConfigService, NotificationService } from '@common';
 import { firstValueFrom } from 'rxjs';
 import { AsyncLocalStorageService, CustomLogger, REQUEST_ID_KEY } from '@monitoring';
 import { HttpService } from '@nestjs/axios';
+import { AxiosResponse } from 'axios';
 
 type FilesCheckType = {
   status: string;
@@ -13,7 +14,6 @@ type NotificationCheckType = FilesCheckType;
 @Injectable()
 export class AppService {
   constructor(
-    @Inject('FILES_SERVICE') private filesClient: ClientProxy,
     @Inject('NOTIFICATION_SERVICE') private notificationClient: ClientProxy,
     private readonly notificationService: NotificationService,
     private readonly logger: CustomLogger,
@@ -28,16 +28,21 @@ export class AppService {
     const notification = this.notificationService.create();
 
     try {
-      const [filesResult, notificationResult] = await Promise.allSettled([
-        firstValueFrom<FilesCheckType>(this.filesClient.send('files-check', { requestId })),
-        firstValueFrom<NotificationCheckType>(
-          this.notificationClient.send('notifications-check', { requestId }),
-        ),
-      ]);
+      const filesHost = this.configService.filesHost;
 
+      const filesPromise: Promise<AxiosResponse<FilesCheckType>> =
+        this.http.axiosRef.get<FilesCheckType>(`${filesHost}/api/v1/health`);
+      const notificationPromise = firstValueFrom<NotificationCheckType>(
+        this.notificationClient.send('notifications-check', { requestId }),
+      );
+      const [filesResult, notificationResult] = await Promise.allSettled([
+        filesPromise,
+
+        notificationPromise,
+      ]);
       const filesService =
         filesResult.status === 'fulfilled'
-          ? filesResult.value
+          ? filesResult.value.data
           : {
               status: 'not responding',
               timestamp: new Date().toISOString(),
@@ -53,7 +58,6 @@ export class AppService {
               status: 'not responding',
               timestamp: new Date().toISOString(),
             };
-
       const combinedResult = {
         mainService: {
           status: 'healthy',
@@ -64,6 +68,7 @@ export class AppService {
       };
 
       notification.setValue(combinedResult);
+
       return notification;
     } catch (error) {
       this.logger.error(error);

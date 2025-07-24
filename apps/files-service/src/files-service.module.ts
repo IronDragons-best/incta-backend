@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { FilesServiceController } from './files-service.controller';
-import { FilesServiceService } from './files-service.service';
+import { FilesServiceController } from './interface/files-service.controller';
+import { FilesServiceService } from './application/files-service.service';
 import { CommonModule, filesValidationSchema, SharedConfigModule } from '@common';
 import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
 
