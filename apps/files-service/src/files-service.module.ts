@@ -4,6 +4,7 @@ import { FilesServiceService } from './application/files-service.service';
 import { CommonModule, filesValidationSchema, SharedConfigModule } from '@common';
 import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
 import { UploadFileUseCase } from './application/use-cases/upload.file.use-case';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { UploadFileUseCase } from './application/use-cases/upload.file.use-case'
       appName: 'files-service',
       validationSchema: filesValidationSchema,
     }),
-
+    CqrsModule.forRoot(),
     MonitoringModule.forRoot('files-microservice'),
     CommonModule,
   ],

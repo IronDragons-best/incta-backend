@@ -14,6 +14,6 @@ async function bootstrap() {
   const host = configService.getFilesHost();
   await app.listen(port);
 
-  console.log(`🚀 Files microservice started on ${host}:${port}`);
+  console.log(`🚀 Files microservice started on ${host}`);
 }
 bootstrap();

@@ -13,7 +13,6 @@ import { RequestContextInterceptor } from '@monitoring/interceptor/request.conte
 import { UserAgentInterceptor } from './interceptors/user.agent.interceptor';
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
-  console.log(sharedConfig.depType);
   app.enableCors({
     origin:
       sharedConfig.depType === 'staging'
