@@ -5,7 +5,7 @@ export class UploadFileCommand {
 }
 
 @CommandHandler(UploadFileCommand)
-export class UploadUseCase implements ICommandHandler<UploadFileCommand> {
+export class UploadFileUseCase implements ICommandHandler<UploadFileCommand> {
   constructor() {}
   async execute(command: UploadFileCommand) {}
 }
