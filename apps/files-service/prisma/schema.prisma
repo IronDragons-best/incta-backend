@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("FILES_DATABASE_URL")
+}
+
+enum FileType {
+  PUBLIC
+  PAID
+}
+enum FileRequestStatus {
+  APPROVED
+  DENIED
+}
+
+
+model File {
+id          Int      @id @default(autoincrement())
+filename    String   // Оригинальное название файла
+s3Key       String   @unique // Ключ файла в S3
+s3Bucket    String   // Название S3 bucket
+url         String   // Полный URL для доступа к файлу
+mimeType    String   // тип файла (image/jpeg, application/pdf и другие)
+size        BigInt   // Размер файла в байтах
+type        FileType @default(PUBLIC) // Публичный или платный
+
+// Метаданные
+uploadedBy  String   // id пользователя, который загрузил файл
+
+// Временные метки
+createdAt   DateTime @default(now())
+updatedAt   DateTime @updatedAt
+
+// Связи
+requests    FileRequest[]
+}
+
+model FileRequest {
+  id          Int               @id @default(autoincrement())
+  // Связь с файлом
+  file        File              @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  fileId      Int
+
+  // Информация о запросе
+  requestedBy String            // id пользователя, который запрашивает доступ
+  status      FileRequestStatus @default(APPROVED)
+
+  // Временные метки
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("file_request")
+}

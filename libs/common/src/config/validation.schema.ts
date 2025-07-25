@@ -57,6 +57,16 @@ export const filesValidationSchema = Joi.object({
   FILES_HOST: Joi.string(),
 
   FILES_PORT: Joi.number(),
+
+  S3_URL: Joi.string(),
+
+  S3_ACCESS_SECRET_KEY: Joi.string(),
+
+  S3_ACCESS_KEY_ID: Joi.string(),
+
+  S3_SERVER: Joi.string(),
+
+  S3_REGION: Joi.string(),
 });
 
 export const notificationsValidationSchema = Joi.object({
