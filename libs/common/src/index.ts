@@ -10,6 +10,9 @@ export * from './exceptions/exception.type';
 export * from './exceptions/types/error.message';
 export * from './types/common.types';
 
+// CONSTANTS
+export * from './constants/files.constants';
+
 // Notification
 export * from './notification/app.notification';
 export * from './notification/notification.service';

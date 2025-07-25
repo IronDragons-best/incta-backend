@@ -14,7 +14,7 @@ export const cookieOptionsProvider = {
 
     return {
       httpOnly: true,
-      secure: !isStaging,
+      secure: true,
       sameSite: isStaging ? 'none' : 'lax',
     };
   },

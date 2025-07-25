@@ -4,6 +4,6 @@
     "declaration": false,
     "outDir": "../../dist/apps/files-service"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "prisma/**/*.ts"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

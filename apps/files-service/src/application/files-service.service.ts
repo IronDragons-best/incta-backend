@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NotificationService } from '@common';
-import { AsyncLocalStorageService, CustomLogger, REQUEST_ID_KEY } from '@monitoring';
+import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 
 @Injectable()
 export class FilesServiceService {

@@ -220,7 +220,6 @@ export class EmailService {
     <p>Если у вас есть вопросы, не стесняйтесь обращаться к нашей поддержке.</p>
     <p>С уважением,<br/>Команда Iron Dragon</p>
   `;
-      console.log('sending');
       await this.sendEmail(data.email, subject, textBody, htmlBody);
       return notify.setNoContent();
     } catch (e) {

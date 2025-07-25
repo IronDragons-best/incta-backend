@@ -13,11 +13,15 @@ import { RequestContextInterceptor } from '@monitoring/interceptor/request.conte
 import { UserAgentInterceptor } from './interceptors/user.agent.interceptor';
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
-  console.log(sharedConfig.depType);
   app.enableCors({
     origin:
       sharedConfig.depType === 'staging'
-        ? ['http://localhost:3000', 'http://127.0.0.1:3000']
+        ? [
+            'http://localhost:3000',
+            'http://127.0.0.1:3000',
+            'https://localhost:3000',
+            'https://127.0.0.1:3000',
+          ]
         : sharedConfig.productionUrl,
     credentials: true,
   });

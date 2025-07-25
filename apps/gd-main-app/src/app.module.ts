@@ -32,10 +32,13 @@ import { ThrottlerModule } from '@nestjs/throttler';
       wildcard: true,
       delimiter: '.',
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 10000,
-      limit: 5
-    }]),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
     MonitoringModule.forRoot('main-microservice'),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => ({

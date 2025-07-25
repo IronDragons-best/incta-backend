@@ -6,20 +6,6 @@ import { AppConfigService, SharedConfigModule } from '@common';
   imports: [
     NestClientsModule.registerAsync([
       {
-        name: 'FILES_SERVICE',
-        imports: [SharedConfigModule],
-        useFactory: (configService: AppConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.isProduction
-              ? 'incta-files-service'
-              : configService.filesHost,
-            port: configService.filesPort,
-          },
-        }),
-        inject: [AppConfigService],
-      },
-      {
         name: 'NOTIFICATION_SERVICE',
         imports: [SharedConfigModule],
         useFactory: (configService: AppConfigService) => ({
