@@ -6,7 +6,7 @@ import { ErrorResponseDto } from '@common';
 
 export function UploadFilesSwagger() {
   return applyDecorators(
-    ApiOperation({ summary: 'Update files' }),
+    ApiOperation({ summary: 'Upload files' }),
     ApiResponse({
       status: HttpStatus.OK,
       type: UploadFilesResponseDto,
