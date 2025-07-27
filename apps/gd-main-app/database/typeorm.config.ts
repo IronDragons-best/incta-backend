@@ -20,6 +20,7 @@ for (const path of envPaths) {
     break;
   }
 }
+const depType = process.env.DEP_TYPE;
 
 export default new DataSource({
   type: 'postgres',
@@ -33,9 +34,12 @@ export default new DataSource({
   namingStrategy: new SnakeNamingStrategy(),
   entities: [join(__dirname, '../src/**/*.entity.{ts,js}')],
   migrations: [join(__dirname, 'migrations/*.{ts,js}')],
-  extra: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  extra:
+    depType === 'staging'
+      ? {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        }
+      : undefined,
 });

@@ -54,26 +54,23 @@ import { ThrottlerModule } from '@nestjs/throttler';
           synchronize: false,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
-          ssl: false,
-          extra: undefined,
         };
-        // if (isStaging) {
-        //   return {
-        //     ...baseConfig,
-        //     extra: undefined,
-        //   };
-        // }
+        if (isStaging) {
+          return {
+            ...baseConfig,
+            extra: undefined,
+          };
+        }
 
-        // return {
-        //   ...baseConfig,
-        //   ssl: { rejectUnauthorized: true },
-        //   extra: {
-        //     max: 20,
-        //     idleTimeoutMillis: 30000,
-        //     connectionTimeoutMillis: 2000,
-        //   },
-        // };
-        return baseConfig;
+        return {
+          ...baseConfig,
+          ssl: { rejectUnauthorized: true },
+          extra: {
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+          },
+        };
       },
       inject: [AppConfigService],
     }),
