@@ -18,10 +18,7 @@ services:
       - FILES_HOST=0.0.0.0
       - NOTIFICATION_PORT=3002
       - NOTIFICATION_HOST=0.0.0.0
-      - MAIN_DB_HOST=postgres-main
-      - MAIN_DB_PORT=5432
-      - FILES_DB_HOST=postgres-files
-      - FILES_DB_PORT=5432
+
     env_file:
       - .env.production
     volumes:
