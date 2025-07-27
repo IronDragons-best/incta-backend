@@ -54,6 +54,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
           synchronize: false,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
+          ssl: false,
         };
         if (isStaging) {
           return {
