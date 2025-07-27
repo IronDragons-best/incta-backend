@@ -43,7 +43,6 @@ import { ThrottlerModule } from '@nestjs/throttler';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => {
         const isStaging = configService.depType === 'staging';
-        console.log(isStaging);
         const baseConfig: TypeOrmModuleOptions = {
           type: 'postgres',
           host: configService.postgresHost,
