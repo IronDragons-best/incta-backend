@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import {
   AppConfigService,
@@ -43,7 +43,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: AppConfigService) => {
         const isStaging = configService.depType === 'staging';
-        return {
+        console.log(isStaging);
+        const baseConfig: TypeOrmModuleOptions = {
           type: 'postgres',
           host: configService.postgresHost,
           port: configService.pgPort,
@@ -59,14 +60,19 @@ import { ThrottlerModule } from '@nestjs/throttler';
                 rejectUnauthorized: true,
               }
             : false,
-          // Для Neon можно также добавить:
-          extra: {
-            // Настройки пула соединений для Neon
-            max: 20,
-            idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
-          },
         };
+        if (!isStaging) {
+          return {
+            ...baseConfig,
+            extra: {
+              max: 20,
+              idleTimeoutMillis: 30000,
+              connectionTimeoutMillis: 2000,
+            },
+          };
+        }
+
+        return baseConfig;
       },
       inject: [AppConfigService],
     }),
