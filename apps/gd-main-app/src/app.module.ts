@@ -64,7 +64,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
         return {
           ...baseConfig,
-          ssl: { rejectUnauthorized: true },
+          ssl: { rejectUnauthorized: false },
           extra: {
             max: 20,
             idleTimeoutMillis: 30000,

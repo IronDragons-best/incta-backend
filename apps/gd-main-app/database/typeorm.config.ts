@@ -36,10 +36,10 @@ export default new DataSource({
   migrations: [join(__dirname, 'migrations/*.{ts,js}')],
   extra:
     depType === 'staging'
-      ? {
+      ? undefined
+      : {
           ssl: {
             rejectUnauthorized: false,
           },
-        }
-      : undefined,
+        },
 });

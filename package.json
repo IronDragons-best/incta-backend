@@ -34,8 +34,8 @@
     "dev:prisma:files:pull": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma db pull --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:studio": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma studio --schema=apps/files-service/prisma/schema.prisma",
 
-    "prisma:files:generate": "dotenv -e ./.env.production -- npx prisma generate --schema=apps/files-service/prisma/schema.prisma || npx prisma generate --schema=apps/files-service/prisma/schema.prisma",
-    "prisma:files:migrate:deploy": "dotenv -e ./.env.production -- npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma",
+    "prisma:files:generate": "dotenv -e ./.env.production -- npx prisma generate --schema=apps/files-service/prisma/schema.prisma || npx prisma generate --schema=apps/files-service/prisma/schema.prisma || dotenv -e ./env/.env.development.local -- pnpm dlx prisma generate --schema=apps/files-service/prisma/schema.prisma",
+    "prisma:files:migrate:deploy": "dotenv -e ./.env.production -- npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || dotenv -e ./env/.env.development.local -- pnpm dlx prisma migrate dev --schema=apps/files-service/prisma/schema.prisma",
     "prisma:files:pull": "pnpm dlx prisma db pull --schema=apps/files-service/prisma/schema.prisma",
 
     "start:gd-main-app": "npm run migration:run && node dist/apps/gd-main-app/main",
