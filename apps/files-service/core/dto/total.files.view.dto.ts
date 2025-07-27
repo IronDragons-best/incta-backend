@@ -38,6 +38,7 @@ export abstract class TotalFilesViewDto<T, E = T> {
   }) {
     return {
       totalFiles: data.totalFiles,
+      successUploaded: data.successUploaded,
       totalSize: data.totalSize,
       postId: data.postId,
       userId: data.userId,
