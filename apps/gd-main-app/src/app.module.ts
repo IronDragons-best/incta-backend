@@ -58,7 +58,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
         if (isStaging) {
           return {
             ...baseConfig,
-            extra: { ssl: false },
+            extra: undefined,
           };
         }
 
