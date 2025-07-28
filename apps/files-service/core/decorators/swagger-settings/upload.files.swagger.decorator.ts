@@ -1,6 +1,5 @@
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { UploadFileInputDto } from '../../../src/interface/dto/upload.files.input.dto';
 import { UploadFilesResponseDto } from '../../../src/interface/dto/upload.files.view.dto';
 import { ErrorResponseDto } from '@common';
 
@@ -21,7 +20,31 @@ export function UploadFilesSwagger() {
       description: 'If post files is already uploaded and exists',
       type: ErrorResponseDto,
     }),
-
-    ApiBody({ type: UploadFileInputDto, description: 'Images, postId, userId' }),
+    ApiOperation({ summary: 'Upload files' }),
+    ApiConsumes('multipart/form-data'),
+    ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          userId: {
+            type: 'integer',
+            example: 1,
+          },
+          postId: {
+            type: 'integer',
+            example: 1,
+          },
+          files: {
+            type: 'array',
+            items: {
+              type: 'string',
+              format: 'binary',
+            },
+            description: 'До 10 файлов',
+          },
+        },
+        required: ['userId', 'postId', 'files'],
+      },
+    }),
   );
 }
