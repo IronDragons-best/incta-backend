@@ -9,15 +9,16 @@ services:
     container_name: nestjs-app-staging
     restart: unless-stopped
     ports:
-      - "3000:3000"  # gd-main-app
-      - "3001:3001"  # files-service
-      - "3002:3002"  # notification-service
+      - "3000:3000"
+      - "3001:3001"
+      - "3002:3002"
     environment:
       - NODE_ENV=production
       - FILES_PORT=3001
       - FILES_HOST=0.0.0.0
       - NOTIFICATION_PORT=3002
       - NOTIFICATION_HOST=0.0.0.0
+
     env_file:
       - .env.production
     volumes:
@@ -25,6 +26,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       - app-network
+    depends_on:
+      - postgres-main
+      - postgres-files
     command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
     logging:
       driver: "json-file"
@@ -35,9 +39,60 @@ services:
       - "incta-files-service:127.0.0.1"
       - "incta-notifications-service:127.0.0.1"
 
+  postgres-main:
+    image: postgres:15-alpine
+    container_name: postgres-main-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: main_db
+      POSTGRES_USER: main_user
+      POSTGRES_PASSWORD: main_password
+    volumes:
+      - postgres_main_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    ports:
+      - "5432:5432"
+
+  postgres-files:
+    image: postgres:15-alpine
+    container_name: postgres-files-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: files_db
+      POSTGRES_USER: files_user
+      POSTGRES_PASSWORD: files_password
+    volumes:
+      - postgres_files_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    ports:
+      - "5433:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-staging
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    networks:
+      - app-network
+    depends_on:
+      - postgres-main
+      - postgres-files
+
 networks:
   app-network:
     driver: bridge
 
 volumes:
+  postgres_main_data:
+  postgres_files_data:
+  pgadmin_data:
   logs:

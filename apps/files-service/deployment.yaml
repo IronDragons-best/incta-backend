@@ -27,6 +27,36 @@ spec:
                  secretKeyRef:
                    name: incta-files-production-config-secret
                    key: FILES_PORT
+             - name: FILES_DATABASE_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: FILES_DATABASE_URL
+             - name: S3_REGION
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: S3_REGION
+             - name: S3_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: S3_URL
+             - name: S3_SERVER
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: S3_SERVER
+             - name: S3_ACCESS_SECRET_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: S3_ACCESS_SECRET_KEY
+             - name: S3_ACCESS_KEY_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-files-production-config-secret
+                   key: S3_ACCESS_KEY_ID
              - name: FILES_HOST
                valueFrom:
                  secretKeyRef:

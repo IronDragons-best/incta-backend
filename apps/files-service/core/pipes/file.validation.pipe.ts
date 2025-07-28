@@ -6,11 +6,10 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import {
-  FileProcessingType,
+  ALLOWED_IMAGE_TYPES,
   MAX_FILES_COUNT,
   MAX_TOTAL_SIZE,
   SINGLE_FILE_LIMIT,
-  TOTAL_SIZE_LIMIT,
   ValidatedFilesData,
 } from '@common';
 
@@ -30,21 +29,28 @@ export class FileValidationPipe
       throw new BadRequestException(`Maximum files count: ${MAX_FILES_COUNT}`);
     }
 
+    const validFiles: Express.Multer.File[] = [];
     let totalSize = 0;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      totalSize += file.size;
 
       if (!file.originalname || file.size === 0) {
-        throw new BadRequestException(`Файл ${i + 1} поврежден или пуст`);
+        continue;
+      }
+
+      if (!ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
+        continue;
       }
 
       if (file.size > SINGLE_FILE_LIMIT) {
-        throw new PayloadTooLargeException(
-          `Файл ${i + 1} (${file.originalname}) превышает лимит ${SINGLE_FILE_LIMIT / 1024 / 1024} МБ`,
-        );
+        continue;
       }
+      validFiles.push(file);
+      totalSize += file.size;
+    }
+    if (validFiles.length === 0) {
+      throw new BadRequestException('No valid files found.');
     }
 
     if (totalSize > MAX_TOTAL_SIZE) {
@@ -53,15 +59,9 @@ export class FileValidationPipe
       );
     }
 
-    const processingType =
-      totalSize > TOTAL_SIZE_LIMIT
-        ? FileProcessingType.STREAM
-        : FileProcessingType.BUFFER;
-
     return {
-      files,
+      files: validFiles,
       totalSize,
-      processingType,
     };
   }
 }

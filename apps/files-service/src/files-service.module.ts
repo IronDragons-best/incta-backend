@@ -13,6 +13,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { S3StorageAdapter } from './infrastructure/s3.storage.adapter';
 import { FilesRepository } from './infrastructure/files.repository';
 import { PrismaService } from '../prisma/prisma.service';
+import { GetFilesByPostIdHandler } from './application/query-handlers/get.files.by.post.id.query.handler';
+import { FilesQueryRepository } from './infrastructure/files.query.repository';
 
 @Module({
   imports: [
@@ -29,9 +31,11 @@ import { PrismaService } from '../prisma/prisma.service';
     FilesServiceService,
     AsyncLocalStorageService,
     UploadFilesUseCase,
+    GetFilesByPostIdHandler,
     NotificationService,
     S3StorageAdapter,
     FilesRepository,
+    FilesQueryRepository,
     PrismaService,
   ],
 })

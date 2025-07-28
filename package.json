@@ -19,23 +19,29 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/gd-main-app/test/jest-e2e.json",
+
     "build:gd-main-app": "nest build gd-main-app",
-    "build:files-service": "nest build files-service",
+    "build:files-service": "npm run prisma:files:generate && nest build files-service",
     "build:notification-service": "nest build notification-service",
+
     "add:migration": "node apps/gd-main-app/database/utils/add.migration.js",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d apps/gd-main-app/database/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d apps/gd-main-app/database/typeorm.config.ts",
+
     "dev:prisma:files:generate": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma generate --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:migrate": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma migrate dev --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:push": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma db push --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:pull": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma db pull --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:studio": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma studio --schema=apps/files-service/prisma/schema.prisma",
-    "prisma:files:generate": "pnpm dlx prisma generate --schema=apps/files-service/prisma/schema.prisma",
-    "prisma:files:migrate:deploy": "pnpm dlx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma",
+
+    "prisma:files:generate": "dotenv -e ./.env.production -- npx prisma generate --schema=apps/files-service/prisma/schema.prisma || npx prisma generate --schema=apps/files-service/prisma/schema.prisma || dotenv -e ./env/.env.development.local -- pnpm dlx prisma generate --schema=apps/files-service/prisma/schema.prisma",
+    "prisma:files:migrate:deploy": "dotenv -e ./.env.production -- npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || dotenv -e ./env/.env.development.local -- pnpm dlx prisma migrate dev --schema=apps/files-service/prisma/schema.prisma",
     "prisma:files:pull": "pnpm dlx prisma db pull --schema=apps/files-service/prisma/schema.prisma",
+
     "start:gd-main-app": "npm run migration:run && node dist/apps/gd-main-app/main",
-    "start:files-service": "node dist/apps/files-service/main",
+    "start:files-service": "npm run prisma:files:migrate:deploy && node dist/apps/files-service/main",
     "start:notification-service": "node dist/apps/notification-service/main",
+
     "start:dev:gd-main-app": "nest start gd-main-app --watch",
     "start:dev:files-service": "nest start files-service --watch",
     "start:dev:notification-service": "nest start notification-service --watch"
@@ -69,6 +75,7 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.5.0",
+    "dotenv-cli": "^9.0.0",
     "ioredis": "^5.6.1",
     "joi": "^17.13.3",
     "mongoose": "^8.16.0",
@@ -113,7 +120,6 @@
     "@types/supertest": "^6.0.2",
     "@types/winston": "^2.4.4",
     "cross-env": "^7.0.3",
-    "dotenv-cli": "^9.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
