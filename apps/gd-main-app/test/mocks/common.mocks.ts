@@ -255,3 +255,7 @@ export class MockCustomLogger implements Partial<CustomLogger> {
   debug = jest.fn();
   verbose = jest.fn();
 }
+
+export class MockHttpService {
+  post = jest.fn();
+}

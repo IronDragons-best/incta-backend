@@ -30,6 +30,14 @@ export class AppConfigService extends ConfigService {
     return host;
   }
 
+  get filesUrl(): string {
+    const url = this.get<string>('FILES_URL');
+    if (!url) {
+      throw new Error('Files URL is required');
+    }
+    return url;
+  }
+
   get notificationHost(): string {
     const host = this.get<string>('NOTIFICATION_HOST');
     if (!host) {

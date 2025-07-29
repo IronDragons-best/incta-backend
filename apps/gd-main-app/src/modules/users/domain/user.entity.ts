@@ -9,6 +9,7 @@ import {
   AuthProvider,
   UserOauthProviderEntity,
 } from '../../auth/domain/user.oauth2.provider.entity';
+import { PostEntity } from '../../posts/domain/post.entity';
 
 export type UserDomainDtoType = {
   username: string;
@@ -33,6 +34,9 @@ export class User extends BasicEntity {
 
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
+
+  @OneToMany(() => PostEntity, (post) => post.user)
+  posts: PostEntity[];
 
   @OneToMany(() => UserOauthProviderEntity, (oauthProvider) => oauthProvider.user, {
     cascade: ['insert', 'update'],
