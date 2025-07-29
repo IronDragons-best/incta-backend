@@ -36,7 +36,7 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
     const { files, totalSize, userId, postId } = command;
     const existingPost = await this.filesRepository.findByPostId(postId);
     if (existingPost) {
-      notify.setBadRequest('Files for this post is already uploaded.', 'postId');
+      return notify.setBadRequest('Files for this post is already uploaded.', 'postId');
     }
     // Общий результат загрузки, в том числе и файлы с ошибками. отдаю в контроллер через notification
     const uploadedWithErrors: any[] = [];
