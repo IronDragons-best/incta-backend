@@ -147,6 +147,11 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: GITHUB_CALLBACK_URL
+             - name: FILES_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_URL
              - name: PORT
                valueFrom:
                  secretKeyRef:

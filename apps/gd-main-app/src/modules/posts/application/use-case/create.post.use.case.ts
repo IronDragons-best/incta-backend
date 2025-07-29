@@ -69,7 +69,11 @@ export class CreatePostUseCase {
     }
   }
 
-  private async createPost(queryRunner: QueryRunner, data: CreatePostInputDto, userId: number) {
+  private async createPost(
+    queryRunner: QueryRunner,
+    data: CreatePostInputDto,
+    userId: number,
+  ) {
     const post = PostEntity.createInstance({
       title: data.title,
       shortDescription: data.shortDescription,
@@ -81,12 +85,19 @@ export class CreatePostUseCase {
     return savedPost;
   }
 
-  private async uploadFilesToService(files: Express.Multer.File[], postId: PostEntity['id'], userId: User['id']) {
+  private async uploadFilesToService(
+    files: Express.Multer.File[],
+    postId: PostEntity['id'],
+    userId: User['id'],
+  ) {
     const formData = new FormData();
     formData.append('userId', userId.toString());
     formData.append('postId', postId.toString());
     files.forEach((file) =>
-      formData.append('files', file.buffer, { filename: file.originalname, contentType: file.mimetype }),
+      formData.append('files', file.buffer, {
+        filename: file.originalname,
+        contentType: file.mimetype,
+      }),
     );
 
     const filesServiceUrl = `${this.configService.filesUrl}/api/v1/upload`;
@@ -109,7 +120,11 @@ export class CreatePostUseCase {
     return data.uploadResults;
   }
 
-  private async savePostFiles(queryRunner: QueryRunner, uploadResults: FilesViewDto[], postId: PostEntity['id']) {
+  private async savePostFiles(
+    queryRunner: QueryRunner,
+    uploadResults: FilesViewDto[],
+    postId: PostEntity['id'],
+  ) {
     for (const file of uploadResults) {
       const fileEntity = new PostFileEntity();
       fileEntity.fileName = file.originalName;
