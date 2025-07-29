@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { FilesConfigService, POST_FILES_BUCKET_NAME, ProcessedFileData } from '@common';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { FilesConfigService, ProcessedFileData } from '@common';
+import { DeleteObjectsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { CustomLogger } from '@monitoring';
+import { sanitizeFileName } from '../../core/utils/sanitize.file.name';
 
 @Injectable()
 export class S3StorageAdapter {
   private s3Client: S3Client;
-  private bucketName: string = POST_FILES_BUCKET_NAME;
+  private bucketName: string = this.configService.postPhotosBucketName;
   constructor(
     private readonly configService: FilesConfigService,
     private readonly logger: CustomLogger,
@@ -28,7 +29,8 @@ export class S3StorageAdapter {
     userId: number,
     postId: number,
   ): Promise<{ filename: string; url: string; key: string }> {
-    const key = `uploads/users/${userId}/posts/${postId}/${Date.now()}-${encodeURIComponent(file.originalName)}-${postId}`;
+    // Очищаем имя файла от символов и пробелов
+    const { key, filename } = this.generateS3Key(file.originalName, userId, postId);
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
@@ -40,7 +42,7 @@ export class S3StorageAdapter {
     await this.s3Client.send(command);
 
     return {
-      filename: `${Date.now()}-${encodeURIComponent(file.originalName)}-${postId}`,
+      filename: filename,
       url: `http://${this.configService.s3Server}/${this.bucketName}/${key}`,
       key,
     };
@@ -51,7 +53,7 @@ export class S3StorageAdapter {
     userId: number,
     postId: number,
   ): Promise<{ filename: string; url: string; key: string }> {
-    const key = `uploads/users/${userId}/posts/${postId}/${Date.now()}-${encodeURIComponent(file.originalName)}-${postId}`;
+    const { key, filename } = this.generateS3Key(file.originalName, userId, postId);
 
     if (!file.stream) {
       throw new Error('Stream is required for stream upload');
@@ -76,9 +78,36 @@ export class S3StorageAdapter {
     const result = await upload.done();
 
     return {
-      filename: `${Date.now()}-${encodeURIComponent(file.originalName)}-${postId}`,
+      filename: filename,
       url: result.Location!,
       key,
     };
+  }
+
+  async deleteMultipleObjects(keys: string[]): Promise<void> {
+    const command = new DeleteObjectsCommand({
+      Bucket: this.bucketName,
+      Delete: {
+        Objects: keys.map((key) => ({ Key: key })),
+        Quiet: false,
+      },
+    });
+
+    try {
+      const result = await this.s3Client.send(command);
+      if (result.Errors && result.Errors.length > 0) {
+        this.logger.warn(`Some files failed to delete: ${JSON.stringify(result.Errors)}`);
+      }
+    } catch (error) {
+      this.logger.error('Bulk delete from S3 failed', error);
+      throw error;
+    }
+  }
+
+  private generateS3Key(fileName: string, userId: number, postId: number) {
+    const sanitized = sanitizeFileName(fileName);
+    const filename = `${Date.now()}-${sanitized}-${postId}`;
+    const key = `uploads/users/${userId}/posts/${postId}/${filename}`;
+    return { key, filename };
   }
 }

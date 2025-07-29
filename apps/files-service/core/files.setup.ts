@@ -15,7 +15,6 @@ export async function filesSetup(app: INestApplication) {
     origin: ['https://irondragon.site', 'http://localhost:3000'],
     credentials: true,
   });
-  app.setGlobalPrefix('api/v1', {});
   app.use(cookieParser());
 
   app.useGlobalInterceptors(
@@ -25,6 +24,8 @@ export async function filesSetup(app: INestApplication) {
   app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
   setupValidation(app);
   swaggerSetupFiles(app);
+  app.setGlobalPrefix('api/v1', {});
+
   const logger = await app.resolve(CustomLogger);
   logger.setContext('FILES_NEST_INIT');
   app.useLogger(logger);

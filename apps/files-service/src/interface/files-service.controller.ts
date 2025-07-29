@@ -19,6 +19,7 @@ import { FileValidationPipe } from '../../core/pipes/file.validation.pipe';
 import { UploadFilesCommand } from '../application/use-cases/upload-files-use.case';
 import { AppNotification } from '@common';
 import { UploadFilesSwagger } from '../../core/decorators/swagger-settings/upload.files.swagger.decorator';
+import { UploadFileInputDto } from './dto/upload.files.input.dto';
 
 @Controller()
 export class FilesServiceController {
@@ -44,7 +45,7 @@ export class FilesServiceController {
   @UploadFilesSwagger()
   async uploadFiles(
     @UploadedFiles(FileValidationPipe) validatedData: ValidatedFilesData,
-    @Body() body: { userId: number; postId: number },
+    @Body() body: UploadFileInputDto,
   ) {
     const { files, totalSize } = validatedData;
     const processedFiles = files.map((file: Express.Multer.File) => {

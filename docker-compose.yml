@@ -14,10 +14,7 @@ services:
       - "3002:3002"
     environment:
       - NODE_ENV=production
-      - FILES_PORT=3001
-      - FILES_HOST=0.0.0.0
-      - NOTIFICATION_PORT=3002
-      - NOTIFICATION_HOST=0.0.0.0
+
 
     env_file:
       - .env.production

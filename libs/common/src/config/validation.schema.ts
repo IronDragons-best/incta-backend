@@ -67,6 +67,8 @@ export const filesValidationSchema = Joi.object({
   S3_SERVER: Joi.string(),
 
   S3_REGION: Joi.string(),
+
+  POST_FILES_BUCKET_NAME: Joi.string(),
 });
 
 export const notificationsValidationSchema = Joi.object({
