@@ -4,7 +4,6 @@ import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 
 import { PostFileEntity } from './post.file.entity';
 import { User } from '../../users/domain/user.entity';
-import { CreatePostInputDto } from '../interface/dto/input/create.post.input.dto';
 import { PostViewDto } from '../interface/dto/output/post.view.dto';
 
 export type PostDomainDtoType = {
@@ -45,8 +44,8 @@ export class PostEntity extends BasicEntity {
       userId: post.userId,
       title: post.title,
       shortDescription: post.shortDescription,
-      previewImages: post.files.map(file => file.fileUrl),
+      previewImages: post.files.map((file) => file.fileUrl),
       createdAt: post.createdAt,
-    }
+    };
   }
 }
