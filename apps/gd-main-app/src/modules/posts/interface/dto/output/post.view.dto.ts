@@ -15,22 +15,19 @@ export class PostViewDto {
 
   @ApiProperty({
     description: 'Title of the post.',
-    example: 'Understanding TypeScript Decorators'
+    example: 'Understanding TypeScript Decorators',
   })
   title: string;
 
   @ApiProperty({
     description: 'Content of the post.',
-    example: 'This post explains how to use decorators in TypeScript...'
+    example: 'This post explains how to use decorators in TypeScript...',
   })
   shortDescription: string;
 
   @ApiProperty({
     description: 'Preview images of the post.',
-    example: [
-      'https://example.com/image1.jpg',
-      'https://example.com/image2.jpg'
-    ],
+    example: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
   })
   previewImages: string[];
 

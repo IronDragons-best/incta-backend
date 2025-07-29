@@ -20,9 +20,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from '../core/common/shared-modules/client.module';
 import { DeviceModule } from './modules/devices/device.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { OwnershipModule } from '../core/guards/ownership/ownership.module';
 
 @Module({
   imports: [
+    OwnershipModule,
+
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',
       validationSchema: validationSchema,

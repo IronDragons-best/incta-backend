@@ -11,29 +11,23 @@ import { PostsService } from './application/post.service';
 import { CreatePostUseCase } from './application/use-case/create.post.use.case';
 
 import { PostsQueryRepository } from './infrastructure/posts.query.repository';
-import { PostsRepository } from './infrastructure/posts.repository';
 import { NotificationService, AppConfigService } from '@common';
+import { UpdatePostUseCase } from './application/use-case/update.post.use-case';
+import { PostsRepository } from './infrastructure/posts.repository';
 
-const useCases = [
-  CreatePostUseCase
-]
+const useCases = [CreatePostUseCase];
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      PostEntity,
-      PostFileEntity
-    ]),
-    HttpModule
-  ],
+  imports: [TypeOrmModule.forFeature([PostEntity, PostFileEntity]), HttpModule],
   controllers: [PostsController],
   providers: [
     PostsQueryRepository,
     PostsRepository,
     PostsService,
     NotificationService,
+    UpdatePostUseCase,
     AppConfigService,
-    ...useCases
+    ...useCases,
   ],
   exports: [],
 })

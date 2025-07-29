@@ -9,18 +9,18 @@ export class CreatePostInputDto {
     required: true,
     type: String,
     minLength: 1,
-    maxLength: 30
+    maxLength: 30,
   })
   @IsString()
   @Trim()
   @Length(1, 30)
-  title: string
+  title: string;
 
   @ApiProperty({
     description: 'shortDescription',
     example: 'short description of post',
     type: String,
-    required: true
+    required: true,
   })
   shortDescription: string;
 
@@ -29,9 +29,9 @@ export class CreatePostInputDto {
     type: 'array',
     items: {
       type: 'string',
-      format: 'binary'
+      format: 'binary',
     },
-    required: true
+    required: true,
   })
-  files: any[]
+  files: any[];
 }

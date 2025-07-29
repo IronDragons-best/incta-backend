@@ -2,11 +2,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { QueryRunner, Repository } from 'typeorm';
 
-
 import { PostEntity } from '../domain/post.entity';
 import { PostFileEntity } from '../domain/post.file.entity';
+import { User } from '../../users/domain/user.entity';
+import { IOwnershipRepository } from '../../../../core/guards/ownership/ownership.repository.interface';
 
-export class PostsRepository {
+export class PostsRepository implements IOwnershipRepository {
   constructor(
     @InjectRepository(PostEntity)
     private readonly postsRepository: Repository<PostEntity>,
@@ -34,5 +35,33 @@ export class PostsRepository {
       where: { id },
       relations: ['files', 'user'],
     });
+  }
+
+  async findByIdWithTransaction(id: number, queryRunner: QueryRunner) {
+    const post = await queryRunner.manager
+      .createQueryBuilder(PostEntity, 'post_entity')
+      .innerJoinAndSelect(User, 'user')
+      .where('post.id = :id', { id })
+      .setLock('pessimistic_write')
+      .getOne();
+    if (!post) {
+      return null;
+    }
+    return post;
+  }
+
+  async saveWithTransaction(post: PostEntity, queryRunner: QueryRunner) {
+    await queryRunner.manager.save(post);
+  }
+
+  async checkOwnership(postId: number, userId: number): Promise<boolean> {
+    const post = await this.postsRepository.findOne({
+      where: { id: postId },
+      select: ['id', 'userId'],
+    });
+    if (!post) {
+      return false;
+    }
+    return post.userId === userId;
   }
 }

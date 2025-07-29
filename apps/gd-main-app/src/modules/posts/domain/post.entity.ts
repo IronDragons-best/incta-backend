@@ -48,4 +48,8 @@ export class PostEntity extends BasicEntity {
       createdAt: post.createdAt,
     };
   }
+  updateDescription(newDescription: string) {
+    this.shortDescription = newDescription;
+    return this;
+  }
 }

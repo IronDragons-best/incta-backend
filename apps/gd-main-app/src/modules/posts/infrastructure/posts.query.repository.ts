@@ -9,11 +9,16 @@ import { User } from '../../users/domain/user.entity';
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectRepository(PostEntity) private readonly postsRepository: Repository<PostEntity>,
-    @InjectRepository(PostFileEntity) private readonly postFilesRepository: Repository<PostFileEntity>,
+    @InjectRepository(PostEntity)
+    private readonly postsRepository: Repository<PostEntity>,
+    @InjectRepository(PostFileEntity)
+    private readonly postFilesRepository: Repository<PostFileEntity>,
   ) {}
 
-  async getPostByIdWithUserId(id: PostEntity['id'], userId: User['id']): Promise<PostEntity | null> {
+  async getPostByIdWithUserId(
+    id: PostEntity['id'],
+    userId: User['id'],
+  ): Promise<PostEntity | null> {
     const post = await this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
@@ -26,6 +31,6 @@ export class PostsQueryRepository {
       return null;
     }
 
-    return post
+    return post;
   }
 }
