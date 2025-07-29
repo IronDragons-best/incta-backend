@@ -32,8 +32,6 @@ export interface SkippedFileInfo {
   size?: number;
 }
 
-export const POST_FILES_BUCKET_NAME = 'post-photos';
-
 export const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
   'image/jpg',

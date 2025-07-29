@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { NotificationService, POST_FILES_BUCKET_NAME, ProcessedFileData } from '@common';
+import { FilesConfigService, NotificationService, ProcessedFileData } from '@common';
 import { CustomLogger } from '@monitoring';
 import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
 import { FilesRepository } from '../../infrastructure/files.repository';
@@ -27,6 +27,7 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
     private readonly fileAdapter: S3StorageAdapter,
     private readonly filesRepository: FilesRepository,
     private readonly queryBus: QueryBus,
+    private readonly configService: FilesConfigService,
   ) {
     this.logger.setContext('UploadFilesUseCase');
   }
@@ -54,7 +55,7 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
           filename: result.filename,
           url: result.url,
           s3Key: result.key,
-          s3Bucket: POST_FILES_BUCKET_NAME,
+          s3Bucket: this.configService.postPhotosBucketName,
           uploadedBy: userId,
           postId: postId,
           size: fileData.size,
@@ -74,9 +75,18 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
         }
       }
     }
-    if (uploadedFiles.length > 0) {
-      await this.filesRepository.saveMany(uploadedFiles);
+
+    try {
+      if (uploadedFiles.length > 0) {
+        await this.filesRepository.saveMany(uploadedFiles);
+      }
+    } catch (e) {
+      this.logger.error(`Files entities save error ${e}`);
+      const keysToDelete = uploadedFiles.map((file) => file.s3Key);
+      await this.fileAdapter.deleteMultipleObjects(keysToDelete);
+      return notify.setServerError('Failed to save uploaded file information.');
     }
+
     const query = new GetFilesByPostIdQuery(postId);
     const savedFiles: FilesViewDto[] = await this.queryBus.execute(query);
     const totalViewDto = TotalFilesViewDto.mapToView({

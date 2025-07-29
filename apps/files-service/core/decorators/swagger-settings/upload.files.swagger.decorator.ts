@@ -7,7 +7,7 @@ export function UploadFilesSwagger() {
   return applyDecorators(
     ApiOperation({ summary: 'Upload files' }),
     ApiResponse({
-      status: HttpStatus.OK,
+      status: HttpStatus.CREATED,
       type: UploadFilesResponseDto,
     }),
     ApiResponse({
