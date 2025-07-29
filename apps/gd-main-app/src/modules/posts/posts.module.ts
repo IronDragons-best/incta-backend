@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { HttpModule } from '@nestjs/axios';
 
 import { PostsController } from './interface/posts.controller';
 
@@ -11,23 +12,27 @@ import { CreatePostUseCase } from './application/use-case/create.post.use.case';
 
 import { PostsQueryRepository } from './infrastructure/posts.query.repository';
 import { PostsRepository } from './infrastructure/posts.repository';
-import { NotificationService } from '@common';
+import { NotificationService, AppConfigService } from '@common';
 
 const useCases = [
   CreatePostUseCase
 ]
 
 @Module({
-  imports: [TypeOrmModule.forFeature([
-    PostEntity,
-    PostFileEntity
-  ])],
+  imports: [
+    TypeOrmModule.forFeature([
+      PostEntity,
+      PostFileEntity
+    ]),
+    HttpModule
+  ],
   controllers: [PostsController],
   providers: [
     PostsQueryRepository,
     PostsRepository,
     PostsService,
     NotificationService,
+    AppConfigService,
     ...useCases
   ],
   exports: [],

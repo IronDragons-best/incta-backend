@@ -9,11 +9,15 @@ import {
   Body,
   UploadedFiles,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors, BadRequestException, NotFoundException,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+
+import { MAX_FILES_COUNT, SINGLE_FILE_LIMIT, ValidatedFilesData } from '@common';
+
+import { FileValidationPipe } from '../../../../../files-service/core/pipes/file.validation.pipe';
 
 import { PostsService } from '../application/post.service';
 
@@ -26,11 +30,20 @@ import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.g
 import { CreatePostCommand } from '../application/use-case/create.post.use.case';
 
 import { CreatePostInputDto } from './dto/input/create.post.input.dto';
+import { UserContextDto } from '../../../../core/dto/user.context.dto';
+
+import {
+  ExtractUserFromRequest
+} from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
+import { PostsQueryRepository } from '../infrastructure/posts.query.repository';
+import { PostEntity } from '../domain/post.entity';
+
 
 @Controller('posts')
 export class PostsController {
   constructor(
     @Inject(CommandBus) protected commandBus: CommandBus,
+    @Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository,
     @Inject(PostsService) protected postsService: PostsService,
   ) {}
 
@@ -38,27 +51,21 @@ export class PostsController {
   @Post('create-post')
   @UseGuards(RefreshGuard)
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FilesInterceptor('files', 10, {
-    limits: {
-      fileSize: 10 * 1024 * 1024, // 10 MB
-    }
-  }))
+  @UseInterceptors(FilesInterceptor('files', MAX_FILES_COUNT, { limits: { fileSize: SINGLE_FILE_LIMIT } }))
   @HttpCode(HttpStatus.CREATED)
   @CreatePostSwaggerDecorator()
   async createPost(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles(FileValidationPipe) files: ValidatedFilesData,
     @Body() body: CreatePostInputDto,
-    @Req() req
+    @ExtractUserFromRequest() user: UserContextDto,
   ) {
-    console.log("🚀 ~ createPost ~ files: ", files);
-    const userId = req.user.id;
-    return this.commandBus.execute(
-      new CreatePostCommand(
-        body,
-        files,
-        userId
-      )
-    );
+    const postRes = await this.commandBus.execute(new CreatePostCommand(body, files.files, user.id));
+    if (postRes.hasErrors()) {
+      return postRes;
+    }
+    const post = await this.postsQueryRepository.getPostByIdWithUserId(postRes.getValue().id, user.id);
+    if (!post) throw new NotFoundException('Created post not found');
+    return PostEntity.mapToDomainDto(post);
   }
 
   // @Get()

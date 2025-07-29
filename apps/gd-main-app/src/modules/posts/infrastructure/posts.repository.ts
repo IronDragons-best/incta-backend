@@ -20,7 +20,6 @@ export class PostsRepository {
     files: PostFileEntity[],
   ): Promise<PostEntity> {
     const savedPost = await queryRunner.manager.save(PostEntity, post);
-    console.log("🚀 ~ savePostWithFiles ~ savedPost: ", savedPost);
 
     for (const file of files) {
       file.post = savedPost;
