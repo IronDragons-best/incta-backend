@@ -50,7 +50,7 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
       try {
         const result: { filename: string; url: string; key: string } =
           await this.fileAdapter.uploadWithBuffer(fileData, userId, postId);
-
+        console.log('after save: ', result.filename);
         const fileEntity = FileEntity.createInstance({
           filename: result.filename,
           url: result.url,
