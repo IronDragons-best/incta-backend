@@ -23,12 +23,13 @@ const useCases = [CreatePostUseCase];
   providers: [
     PostsQueryRepository,
     PostsRepository,
+
     PostsService,
     NotificationService,
     UpdatePostUseCase,
     AppConfigService,
     ...useCases,
   ],
-  exports: [],
+  exports: [PostsRepository],
 })
 export class PostsModule {}

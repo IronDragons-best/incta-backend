@@ -37,13 +37,15 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
         command.postId,
         queryRunner,
       );
-
       if (!post) {
         this.logger.warn('Post not found');
         return notify.setNotFound('Post not Found');
       }
       post.updateDescription(command.description);
+
       await this.postsRepository.saveWithTransaction(post, queryRunner);
+
+      await queryRunner.commitTransaction();
       return notify.setValue({ id: post.id });
     } catch (error) {
       let message: string;

@@ -5,19 +5,25 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  SetMetadata,
 } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { IOwnershipRepository } from './ownership.repository.interface';
 
 export const OWNERSHIP_KEY = 'ownership';
 
 export interface OwnershipConfig {
-  repository: string;
+  repository: RepositoryToken;
   paramName?: string;
 }
 
+export type RepositoryToken = string | symbol | (new (...args: any[]) => any);
+
+/** Передаем репозиторий, который будем использовать для проверки. В репозитории добавляем метод checkOwnership
+ * Репозиторий при этом должен имплементировать IOwnershipRepository */
 export const CheckOwnership = (config: OwnershipConfig) => {
-  return Reflect.metadata(OWNERSHIP_KEY, config);
+  return SetMetadata(OWNERSHIP_KEY, config);
 };
 
 @Injectable()
@@ -28,12 +34,18 @@ export class OwnershipGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const config = this.reflector.get<OwnershipConfig>(
-      OWNERSHIP_KEY,
+    console.log('GUARD started');
+
+    // Используем getAllAndOverride для более надежного получения метаданных
+    const config = this.reflector.getAllAndOverride<OwnershipConfig>(OWNERSHIP_KEY, [
       context.getHandler(),
-    );
+      context.getClass(),
+    ]);
+
+    console.log('Config:', config);
 
     if (!config) {
+      console.log('No config found, allowing access');
       return true;
     }
 
@@ -51,21 +63,26 @@ export class OwnershipGuard implements CanActivate {
     }
 
     try {
-      const repository = this.moduleRef.get(config.repository, { strict: false });
+      const repository: IOwnershipRepository = this.moduleRef.get(config.repository, {
+        strict: false,
+      });
+
+      console.log(repository);
 
       if (!repository) {
+        console.log('!repository');
         throw new InternalServerErrorException(
-          `Repository '${config.repository}' not found`,
+          `Repository '${String(config.repository)}' not found`,
         );
       }
 
       // Проверяем что репозиторий реализует нужный метод
       if (typeof repository.checkOwnership !== 'function') {
         throw new InternalServerErrorException(
-          `Repository '${config.repository}' does not implement checkOwnership method`,
+          `Repository '${String(config.repository)}' does not implement checkOwnership method`,
         );
       }
-
+      console.log('hsad');
       const isOwner = await repository.checkOwnership(resourceId, user.id);
       if (!isOwner) {
         throw new ForbiddenException('You are not the owner of this resource');

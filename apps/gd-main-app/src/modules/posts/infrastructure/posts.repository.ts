@@ -4,7 +4,6 @@ import { QueryRunner, Repository } from 'typeorm';
 
 import { PostEntity } from '../domain/post.entity';
 import { PostFileEntity } from '../domain/post.file.entity';
-import { User } from '../../users/domain/user.entity';
 import { IOwnershipRepository } from '../../../../core/guards/ownership/ownership.repository.interface';
 
 export class PostsRepository implements IOwnershipRepository {
@@ -40,8 +39,8 @@ export class PostsRepository implements IOwnershipRepository {
   async findByIdWithTransaction(id: number, queryRunner: QueryRunner) {
     const post = await queryRunner.manager
       .createQueryBuilder(PostEntity, 'post_entity')
-      .innerJoinAndSelect(User, 'user')
-      .where('post.id = :id', { id })
+      .innerJoinAndSelect('post_entity.user', 'user')
+      .where('post_entity.id = :id', { id })
       .setLock('pessimistic_write')
       .getOne();
     if (!post) {
@@ -59,9 +58,13 @@ export class PostsRepository implements IOwnershipRepository {
       where: { id: postId },
       select: ['id', 'userId'],
     });
+
+    console.log(post);
     if (!post) {
+      console.log('returning false');
       return false;
     }
+    console.log('why');
     return post.userId === userId;
   }
 }

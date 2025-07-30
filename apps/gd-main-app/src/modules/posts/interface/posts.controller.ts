@@ -30,8 +30,6 @@ import { PostsService } from '../application/post.service';
 
 import { CreatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/create.post.swagger.decorator';
 
-import { RefreshGuard } from '../../../../core/guards/refresh/jwt.refresh.auth.guard';
-
 import { CreatePostCommand } from '../application/use-case/create.post.use.case';
 
 import { CreatePostInputDto } from './dto/input/create.post.input.dto';
@@ -47,6 +45,8 @@ import {
   OwnershipGuard,
 } from '../../../../core/guards/ownership/ownership.guard';
 import { UpdatePostCommand } from '../application/use-case/update.post.use-case';
+import { UpdatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/update.post.swagger.decorator';
+import { PostsRepository } from '../infrastructure/posts.repository';
 
 @Controller('posts')
 export class PostsController {
@@ -57,7 +57,7 @@ export class PostsController {
   ) {}
 
   @Post('create-post')
-  @UseGuards(RefreshGuard)
+  @UseGuards(JwtAuthGuard)
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FilesInterceptor('files', MAX_FILES_COUNT, {
@@ -87,7 +87,8 @@ export class PostsController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, OwnershipGuard)
-  @CheckOwnership({ repository: 'PostsRepository' })
+  @CheckOwnership({ repository: PostsRepository })
+  @UpdatePostSwaggerDecorator()
   async updatePost(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdatePostInputDto,
@@ -105,6 +106,7 @@ export class PostsController {
       data.id,
       user.id,
     );
+    console.log(updatedPost);
     if (!updatedPost) throw new NotFoundException('Updated post not found');
     return PostEntity.mapToDomainDto(updatedPost);
   }
