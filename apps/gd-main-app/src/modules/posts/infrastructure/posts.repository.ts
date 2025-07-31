@@ -59,12 +59,9 @@ export class PostsRepository implements IOwnershipRepository {
       select: ['id', 'userId'],
     });
 
-    console.log(post);
     if (!post) {
-      console.log('returning false');
       return false;
     }
-    console.log('why');
     return post.userId === userId;
   }
 }
