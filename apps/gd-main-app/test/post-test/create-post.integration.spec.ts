@@ -2,58 +2,101 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { CqrsModule } from '@nestjs/cqrs';
+import { CommandBus, CqrsModule } from '@nestjs/cqrs';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
 import request from 'supertest';
 import cookieParser from 'cookie-parser';
 
-import { 
-  AppConfigService, 
-  NotificationInterceptor, 
-  NotificationService 
+import {
+  AppConfigService,
+  NotificationInterceptor,
+  NotificationService,
+  AppNotification,
 } from '@common';
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 
 import { PostsController } from '../../src/modules/posts/interface/posts.controller';
 import { PostsRepository } from '../../src/modules/posts/infrastructure/posts.repository';
 import { PostsQueryRepository } from '../../src/modules/posts/infrastructure/posts.query.repository';
-import { CreatePostUseCase } from '../../src/modules/posts/application/use-case/create.post.use.case';
 import { PostsService } from '../../src/modules/posts/application/post.service';
+import { CreatePostUseCase } from '../../src/modules/posts/application/use-case/create.post.use.case';
 import { PostEntity } from '../../src/modules/posts/domain/post.entity';
 import { PostFileEntity } from '../../src/modules/posts/domain/post.file.entity';
 
-import { JwtRefreshStrategy } from '../../core/guards/refresh/jwt.refresh.strategy';
-import { RefreshGuard } from '../../core/guards/refresh/jwt.refresh.auth.guard';
+import { JwtStrategy } from '../../core/guards/local/jwt.strategy';
+import { JwtAuthGuard } from '../../core/guards/local/jwt-auth-guard';
 
-import { MockAppConfigService, MockCommandBus, MockHttpService } from '../mocks/common.mocks';
+import { MockAppConfigService, MockHttpService } from '../mocks/common.mocks';
 import { MockPostsRepository, MockPostsQueryRepository, MockDataSource } from '../mocks/post.flow.mocks';
 import { DataSource } from 'typeorm';
-import { TokenService } from '../../src/modules/auth/application/use-cases/token.service';
+import { AuthService } from '../../src/modules/auth/application/auth.service';
+import { LocalStrategy } from '../../core/guards/local/local.strategy';
+import { LocalAuthGuard } from '../../core/guards/local/local.auth.guard';
+import { UsersRepository } from '../../src/modules/users/infrastructure/users.repository';
+import { MockUsersRepository } from '../mocks/user.flow.mocks';
+import { CryptoService } from '../../src/modules/users/application/crypto.service';
+import { MockCryptoService } from '../mocks/auth.flow.mocks';
 
 describe('Create Post Integration Tests', () => {
   let app: INestApplication;
   let postsRepository: MockPostsRepository;
-  let postsQueryRepository: MockPostsQueryRepository ;
+  let postsQueryRepository: MockPostsQueryRepository;
   let httpService: MockHttpService;
   let jwtService: JwtService;
-  let commandBus: MockCommandBus;
+  let commandBus: { execute: jest.Mock; publish: jest.Mock };
+  let createPostUseCase: jest.Mocked<CreatePostUseCase>;
+
   let notificationService: NotificationService;
+  let cryptoService: MockCryptoService;
 
   beforeEach(async () => {
+    const commandBusMock = {
+      execute: jest.fn(),
+      publish: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         PassportModule,
-        JwtModule.register({}),
+        JwtModule.register({
+          secret: 'testAccessSecret',
+          signOptions: { expiresIn: '1h' },
+        }),
         CqrsModule,
-        HttpModule
+        HttpModule,
       ],
       controllers: [PostsController],
       providers: [
-        CreatePostUseCase,
+        AuthService,
+        LocalStrategy,
+        LocalAuthGuard,
+        JwtStrategy,
+        JwtAuthGuard,
+        {
+          provide: CreatePostUseCase,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
         PostsService,
-        NotificationService,
+        {
+          provide: NotificationService,
+          useValue: {
+            create: jest.fn().mockReturnValue(new AppNotification()),
+            success: jest.fn(),
+            error: jest.fn(),
+            notFound: jest.fn(),
+            unauthorized: jest.fn(),
+            forbidden: jest.fn(),
+            badRequest: jest.fn(),
+          },
+        },
         NotificationInterceptor,
+        {
+          provide: CryptoService,
+          useClass: MockCryptoService,
+        },
         {
           provide: CustomLogger,
           useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn(), log: jest.fn() },
@@ -70,34 +113,28 @@ describe('Create Post Integration Tests', () => {
           provide: HttpService,
           useClass: MockHttpService,
         },
-        JwtRefreshStrategy,
-        RefreshGuard,
-        JwtService,
         {
           provide: AppConfigService,
           useClass: MockAppConfigService,
+        },
+        {
+          provide: UsersRepository,
+          useClass: MockUsersRepository,
         },
         {
           provide: AsyncLocalStorageService,
           useValue: { get: jest.fn(), set: jest.fn() },
         },
         {
-          provide: 'CommandBus',
-          useClass: MockCommandBus,
+          provide: CommandBus,
+          useValue: commandBusMock,
         },
         {
           provide: DataSource,
           useClass: MockDataSource,
         },
-        {
-          provide: TokenService,
-          useValue: {
-            verifyToken: jest.fn(),
-            signToken: jest.fn(),
-          },
-        },
+        JwtService,
       ],
-
     }).compile();
 
     app = module.createNestApplication();
@@ -116,8 +153,17 @@ describe('Create Post Integration Tests', () => {
     postsQueryRepository = module.get<MockPostsQueryRepository>(PostsQueryRepository);
     httpService = module.get<MockHttpService>(HttpService);
     jwtService = module.get<JwtService>(JwtService);
-    commandBus = module.get<MockCommandBus>('CommandBus');
+    commandBus = commandBusMock;
+    createPostUseCase = module.get<CreatePostUseCase>(CreatePostUseCase) as jest.Mocked<CreatePostUseCase>;
+    cryptoService = module.get<MockCryptoService>(CryptoService);
     notificationService = module.get<NotificationService>(NotificationService);
+
+    commandBus.execute.mockImplementation((command) => {
+      if (command.constructor.name === 'CreatePostCommand') {
+        return createPostUseCase.execute(command);
+      }
+      return Promise.resolve(AppNotification.success({}));
+    });
   });
 
   afterEach(async () => {
@@ -128,20 +174,13 @@ describe('Create Post Integration Tests', () => {
   describe('POST /posts/create-post', () => {
     it('201 - should successfully create a post', async () => {
       const userId = 1;
-      const sessionId = 'test-session-123';
 
-      const refreshTokenPayload = {
-        id: userId,
-        sessionId: sessionId,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 3600,
-      };
+      const tokenPayload = { id: userId };
 
-      const validRefreshToken = jwtService.sign(refreshTokenPayload, {
-        secret: 'testRefreshSecret',
+      const validAccessToken = jwtService.sign(tokenPayload, {
+        secret: 'testAccessSecret',
+        expiresIn: '1h',
       });
-
-      const refreshCookie = `refreshToken=${validRefreshToken}; SameSite=lax; HttpOnly`;
 
       const postData = {
         title: 'Test Post Title',
@@ -160,35 +199,30 @@ describe('Create Post Integration Tests', () => {
       httpService.post = jest.fn().mockReturnValue(of({
         data: {
           uploadResults: [
-            {
-              originalName: 'test-file.jpg',
-              uploadedUrl: 'https://example.com/files/test-file.jpg',
-            }
+            { originalName: 'test-file.jpg', uploadedUrl: 'https://example.com/files/test-file.jpg' }
           ],
           errors: []
         }
       }));
 
-      commandBus.execute.mockResolvedValue({
-        hasErrors: () => false,
-        getValue: () => createdPost,
-      });
+      const successNotification = AppNotification.success(createdPost);
+      createPostUseCase.execute.mockResolvedValue(successNotification);
 
       postsQueryRepository.getPostByIdWithUserId.mockResolvedValue(createdPost);
 
       const response = await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Cookie', refreshCookie)
+        .set('Authorization', `Bearer ${validAccessToken}`)
         .set('Content-Type', 'multipart/form-data')
         .field('title', postData.title)
         .field('shortDescription', postData.shortDescription)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
-          contentType: 'image/jpeg'
+          contentType: 'image/jpeg',
         })
         .expect(201);
 
-      expect(commandBus.execute).toHaveBeenCalled();
+      expect(createPostUseCase.execute).toHaveBeenCalled();
       expect(postsQueryRepository.getPostByIdWithUserId).toHaveBeenCalledWith(createdPost.id, userId);
       expect(response.body).toEqual(expect.objectContaining({
         id: createdPost.id,
@@ -199,20 +233,11 @@ describe('Create Post Integration Tests', () => {
 
     it('201 - should successfully create a post with files', async () => {
       const userId = 1;
-      const sessionId = 'test-session-123';
 
-      const refreshTokenPayload = {
-        id: userId,
-        sessionId: sessionId,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 3600,
-      };
-
-      const validRefreshToken = jwtService.sign(refreshTokenPayload, {
-        secret: 'testRefreshSecret',
-      });
-
-      const refreshCookie = `refreshToken=${validRefreshToken}; SameSite=lax; HttpOnly`;
+      const validAccessToken = jwtService.sign(
+        { id: userId },
+        { secret: 'testAccessSecret', expiresIn: '1h' },
+      );
 
       const postData = {
         title: 'Test Post with Files',
@@ -235,68 +260,59 @@ describe('Create Post Integration Tests', () => {
 
       createdPost.files = [postFile];
 
-      httpService.post = jest.fn().mockReturnValue(of({
-        data: {
-          uploadResults: [
-            {
-              originalName: 'test-file.jpg',
-              uploadedUrl: 'https://example.com/files/test-file.jpg',
-            }
-          ],
-          errors: []
-        }
-      }));
+      httpService.post = jest.fn().mockReturnValue(
+        of({
+          data: {
+            uploadResults: [
+              { originalName: 'test-file.jpg', uploadedUrl: 'https://example.com/files/test-file.jpg' },
+            ],
+            errors: [],
+          },
+        }),
+      );
 
-      commandBus.execute.mockResolvedValue({
-        hasErrors: () => false,
-        getValue: () => createdPost,
-      });
+      const successNotification = AppNotification.success(createdPost);
+      createPostUseCase.execute.mockResolvedValue(successNotification);
 
       postsQueryRepository.getPostByIdWithUserId.mockResolvedValue(createdPost);
 
       const response = await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Cookie', refreshCookie)
+        .set('Authorization', `Bearer ${validAccessToken}`)
         .set('Content-Type', 'multipart/form-data')
         .field('title', postData.title)
         .field('shortDescription', postData.shortDescription)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
-          contentType: 'image/jpeg'
+          contentType: 'image/jpeg',
         })
         .expect(201);
 
-      expect(commandBus.execute).toHaveBeenCalled();
+      expect(createPostUseCase.execute).toHaveBeenCalled();
       expect(postsQueryRepository.getPostByIdWithUserId).toHaveBeenCalledWith(createdPost.id, userId);
-      expect(response.body).toEqual(expect.objectContaining({
-        id: createdPost.id,
-        title: createdPost.title,
-        shortDescription: createdPost.shortDescription,
-        files: expect.arrayContaining([
-          expect.objectContaining({
-            fileName: postFile.fileName,
-            fileUrl: postFile.fileUrl,
-          })
-        ])
-      }));
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: createdPost.id,
+          title: createdPost.title,
+          shortDescription: createdPost.shortDescription,
+          userId: createdPost.userId,
+          previewImages: expect.arrayContaining([postFile.fileUrl]),
+        }),
+      );
     });
 
     it('400 - should return bad request when title is missing', async () => {
       const userId = 1;
-      const sessionId = 'test-session-123';
 
-      const refreshTokenPayload = {
+      const accessTokenPayload = {
         id: userId,
-        sessionId: sessionId,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 3600,
       };
 
-      const validRefreshToken = jwtService.sign(refreshTokenPayload, {
-        secret: 'testRefreshSecret',
+      const validAccessToken = jwtService.sign(accessTokenPayload, {
+        secret: 'testAccessSecret',
+        expiresIn: '1h',
       });
-
-      const refreshCookie = `refreshToken=${validRefreshToken}; SameSite=lax; HttpOnly`;
 
       httpService.post = jest.fn().mockReturnValue(of({
         data: {
@@ -307,15 +323,15 @@ describe('Create Post Integration Tests', () => {
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Cookie', refreshCookie)
+        .set('Authorization', `Bearer ${validAccessToken}`)
         .set('Content-Type', 'multipart/form-data')
         .field('shortDescription', 'Test description without title')
         .expect(400);
 
-      expect(commandBus.execute).not.toHaveBeenCalled();
+      expect(createPostUseCase.execute).not.toHaveBeenCalled();
     });
 
-    it('401 - should return unauthorized when refresh token is missing', async () => {
+    it('401 - should return unauthorized when access token is missing', async () => {
       httpService.post = jest.fn().mockReturnValue(of({
         data: {
           uploadResults: [],
@@ -330,11 +346,11 @@ describe('Create Post Integration Tests', () => {
         .field('shortDescription', 'Test description')
         .expect(401);
 
-      expect(commandBus.execute).not.toHaveBeenCalled();
+      expect(createPostUseCase.execute).not.toHaveBeenCalled();
     });
 
-    it('401 - should return unauthorized when refresh token is invalid', async () => {
-      const invalidCookie = 'refreshToken=invalid-token; HttpOnly; SameSite=lax';
+    it('401 - should return unauthorized when access token is invalid', async () => {
+      const invalidToken = 'invalid-token';
 
       httpService.post = jest.fn().mockReturnValue(of({
         data: {
@@ -345,14 +361,13 @@ describe('Create Post Integration Tests', () => {
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Cookie', invalidCookie)
+        .set('Authorization', `Bearer ${invalidToken}`)
         .set('Content-Type', 'multipart/form-data')
         .field('title', 'Test Post')
         .field('shortDescription', 'Test description')
         .expect(401);
 
-      expect(commandBus.execute).not.toHaveBeenCalled();
+      expect(createPostUseCase.execute).not.toHaveBeenCalled();
     });
-
   });
 });

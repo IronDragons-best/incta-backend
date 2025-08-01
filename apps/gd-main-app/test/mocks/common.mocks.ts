@@ -27,6 +27,9 @@ export class MockAppConfigService {
   get jwtRefreshExpires() {
     return '7d';
   }
+  get filesUrl() {
+    return 'http://localhost:3001';
+  }
 }
 
 export class MockCommandBus {

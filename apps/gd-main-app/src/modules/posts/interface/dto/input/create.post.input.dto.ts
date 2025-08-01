@@ -22,6 +22,8 @@ export class CreatePostInputDto {
     type: String,
     required: true,
   })
+  @IsString()
+  @Trim()
   shortDescription: string;
 
   @ApiProperty({
