@@ -15,6 +15,12 @@ import { FilesRepository } from './infrastructure/files.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { GetFilesByPostIdHandler } from './application/query-handlers/get.files.by.post.id.query.handler';
 import { FilesQueryRepository } from './infrastructure/files.query.repository';
+import { DeletePostFilesUseCase } from './application/use-cases/delete-post-files.use.case';
+
+const useCases = [
+  DeletePostFilesUseCase,
+  UploadFilesUseCase,
+]
 
 @Module({
   imports: [
@@ -30,13 +36,13 @@ import { FilesQueryRepository } from './infrastructure/files.query.repository';
   providers: [
     FilesServiceService,
     AsyncLocalStorageService,
-    UploadFilesUseCase,
     GetFilesByPostIdHandler,
     NotificationService,
     S3StorageAdapter,
     FilesRepository,
     FilesQueryRepository,
     PrismaService,
+    ...useCases
   ],
 })
 export class FilesServiceModule {}

@@ -21,4 +21,12 @@ export class FilesRepository extends PrismaService {
       where: { postId },
     });
   }
+
+  async findManyByPostId(postId: number) {
+    return this.file.findMany({ where: { postId } });
+  }
+
+  async deleteManyByPostId(postId: number) {
+    return this.file.deleteMany({ where: { postId } });
+  }
 }
