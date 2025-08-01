@@ -41,7 +41,7 @@ import { MockCryptoService } from '../mocks/auth.flow.mocks';
 describe('Create Post Integration Tests', () => {
   let app: INestApplication;
   let postsRepository: MockPostsRepository;
-  let postsQueryRepository: MockPostsQueryRepository;
+  let postsQueryRepository: MockPostsQueryRepository ;
   let httpService: MockHttpService;
   let jwtService: JwtService;
   let commandBus: { execute: jest.Mock; publish: jest.Mock };
@@ -135,6 +135,7 @@ describe('Create Post Integration Tests', () => {
         },
         JwtService,
       ],
+
     }).compile();
 
     app = module.createNestApplication();
@@ -218,7 +219,7 @@ describe('Create Post Integration Tests', () => {
         .field('shortDescription', postData.shortDescription)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
-          contentType: 'image/jpeg',
+          contentType: 'image/jpeg'
         })
         .expect(201);
 
@@ -284,7 +285,7 @@ describe('Create Post Integration Tests', () => {
         .field('shortDescription', postData.shortDescription)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
-          contentType: 'image/jpeg',
+          contentType: 'image/jpeg'
         })
         .expect(201);
 
