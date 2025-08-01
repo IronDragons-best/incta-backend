@@ -1,7 +1,11 @@
 import {
   Body,
   Controller,
+  HttpCode,
+  HttpStatus,
+  Delete,
   Get,
+  Param,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -20,6 +24,8 @@ import { UploadFilesCommand } from '../application/use-cases/upload-files-use.ca
 import { AppNotification } from '@common';
 import { UploadFilesSwagger } from '../../core/decorators/swagger-settings/upload.files.swagger.decorator';
 import { UploadFileInputDto } from './dto/upload.files.input.dto';
+import { DeletePostFilesSwagger } from '../../core/decorators/swagger-settings/delete.post.files.swagger.decorator';
+import { DeletePostFilesCommand } from '../application/use-cases/delete-post-files.use.case';
 
 @Controller()
 export class FilesServiceController {
@@ -31,6 +37,13 @@ export class FilesServiceController {
   @Get('health')
   check() {
     return this.filesServiceService.check();
+  }
+
+  @Delete('delete-post-files/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeletePostFilesSwagger()
+  async deletePostFiles(@Param('postId') postId: string) {
+    return await this.commandBus.execute(new DeletePostFilesCommand(+postId));
   }
 
   @Post('upload')
