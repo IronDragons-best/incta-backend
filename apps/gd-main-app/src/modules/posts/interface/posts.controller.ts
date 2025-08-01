@@ -12,6 +12,7 @@ import {
   NotFoundException,
   Put,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
@@ -47,6 +48,7 @@ import {
 import { UpdatePostCommand } from '../application/use-case/update.post.use-case';
 import { UpdatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/update.post.swagger.decorator';
 import { PostsRepository } from '../infrastructure/posts.repository';
+import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
 
 @Controller('posts')
 export class PostsController {
@@ -94,29 +96,29 @@ export class PostsController {
     @Body() body: UpdatePostInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
-    console.log('1. Inside updatePost controller, id:', id, 'body:', body);
     const updateResult: AppNotification<{ id: number }> = await this.commandBus.execute(
       new UpdatePostCommand(user.id, id, body.description),
     );
-    console.log('2. After commandBus.execute, updateResult:', updateResult);
     const data = updateResult.getValue();
-    console.log('3. After getValue, data:', data);
 
     if (!data) {
-      console.log(
-        '4. !data is true, returning updateResult. This should lead to an error.',
-      );
       return updateResult;
     }
     const updatedPost = await this.postsQueryRepository.getPostByIdWithUserId(
       data.id,
       user.id,
     );
-    console.log('5. After getPostByIdWithUserId, updatedPost:', updatedPost);
 
     if (!updatedPost) throw new NotFoundException('Updated post not found');
-    console.log('7. Returning mapped post.');
     return PostEntity.mapToDomainDto(updatedPost);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard, OwnershipGuard)
+  @CheckOwnership({ repository: PostsRepository })
+  async deletePostById(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.commandBus.execute(new DeletePostCommand(id));
   }
 
   // @Get()

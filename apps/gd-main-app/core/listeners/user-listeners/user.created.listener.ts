@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EmailResendEvent } from '../events/email.resend.event';
+import { UserCreatedEvent } from '../../events/user.created.event';
+import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 
 @Injectable()
-export class EmailResendListener {
+export class UserCreatedListener {
   constructor(@Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy) {}
-  @OnEvent('email.registration_resend')
-  handleEmailResend(event: EmailResendEvent) {
+  @OnEvent('user.created')
+  handleUserCreated(event: UserCreatedEvent) {
     const record = new RmqRecordBuilder({
       login: event.userLogin,
       email: event.email,
@@ -20,6 +20,6 @@ export class EmailResendListener {
         },
       })
       .build();
-    this.client.emit('email.registration_resend', record);
+    this.client.emit('email.registration', record);
   }
 }
