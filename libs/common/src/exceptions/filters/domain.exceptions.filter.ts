@@ -10,10 +10,17 @@ export class DomainExceptionsFilter extends BaseExceptionFilter {
     const ctx = host.switchToHttp();
     const response: Response = ctx.getResponse<Response>();
 
-    const errorsMessages = exception.extensions.map((ext) => ({
-      message: ext.message,
-      field: ext.key || 'none',
-    }));
+    const errorsMessages = exception.extensions.map((ext) => {
+      const errorMessage: { message: string; field?: string } = {
+        message: ext.message,
+      };
+
+      if (ext.key && ext.key.trim()) {
+        errorMessage.field = ext.key;
+      }
+
+      return errorMessage;
+    });
 
     const statusCode = this.calculateHttpCode(exception);
     const errorResponse = this.formatMultipleErrors(errorsMessages);

@@ -26,17 +26,29 @@ export class DeletePostUseCase {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    const existingPost = await this.postsRepository.findByIdWithTransaction(
-      command.id,
-      queryRunner,
-    );
+    try {
+      const existingPost = await this.postsRepository.findByIdWithTransaction(
+        command.id,
+        queryRunner,
+      );
 
-    if (!existingPost) {
-      return notify.setNotFound('Post not found');
+      if (!existingPost) {
+        this.logger.warn(`Post not found. Post id: ${command.id}`);
+        return notify.setNotFound('Post not found.');
+      }
+
+      await this.postsRepository.softDelete(existingPost, queryRunner);
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(error.message);
+      } else {
+        this.logger.error(error);
+      }
+      return notify.setServerError('Something went wrong while trying to delete post.');
     }
 
-    await this.postsRepository.softDelete(existingPost, queryRunner);
-
     this.eventBus.publish(new PostDeletedEvent(command.id));
+    return notify.setNoContent();
   }
 }

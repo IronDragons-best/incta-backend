@@ -49,6 +49,7 @@ import { UpdatePostCommand } from '../application/use-case/update.post.use-case'
 import { UpdatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/update.post.swagger.decorator';
 import { PostsRepository } from '../infrastructure/posts.repository';
 import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
+import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/posts/delete.post.swagger.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -115,10 +116,11 @@ export class PostsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @DeletePostSwagger()
   @UseGuards(JwtAuthGuard, OwnershipGuard)
   @CheckOwnership({ repository: PostsRepository })
   async deletePostById(@Param('id', ParseIntPipe) id: number) {
-    const result = await this.commandBus.execute(new DeletePostCommand(id));
+    return await this.commandBus.execute(new DeletePostCommand(id));
   }
 
   // @Get()

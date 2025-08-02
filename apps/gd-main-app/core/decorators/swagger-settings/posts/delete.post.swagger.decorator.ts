@@ -1,8 +1,6 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiBody,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -10,19 +8,18 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UpdatePostInputDto } from '../../../../src/modules/posts/interface/dto/input/update.post.input.dto';
-import { ErrorResponseDto, WithoutFieldErrorResponseDto } from '@common';
+import {
+  ErrorMessageBaseDto,
+  ErrorResponseDto,
+  WithoutFieldErrorResponseDto,
+} from '@common';
 
-export function UpdatePostSwaggerDecorator() {
+export function DeletePostSwagger() {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: 'Update post description',
-      description: 'This endpoint allows you to update existing posts description field',
-    }),
-    ApiBody({
-      description: 'new description',
-      type: UpdatePostInputDto,
+      summary: 'Delete existing post',
+      description: 'this endpoint deletes a post by post id.',
     }),
     ApiParam({
       name: 'id',
@@ -31,12 +28,8 @@ export function UpdatePostSwaggerDecorator() {
       required: true,
     }),
     ApiResponse({
-      status: HttpStatus.OK,
-      description: 'Description successfully updated',
-    }),
-    ApiBadRequestResponse({
-      description: 'Description is invalid or empty',
-      type: ErrorResponseDto,
+      status: HttpStatus.NO_CONTENT,
+      description: 'Post successfully deleted',
     }),
     ApiUnauthorizedResponse({
       description: 'User is not authenticated or token expired',

@@ -64,7 +64,7 @@ export class PostsRepository implements IOwnershipRepository {
     });
 
     if (!post) {
-      return false;
+      return true;
     }
     return post.userId === userId;
   }

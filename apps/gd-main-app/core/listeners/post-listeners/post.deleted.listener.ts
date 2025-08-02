@@ -4,19 +4,27 @@ import { HttpService } from '@nestjs/axios';
 import { CustomLogger } from '@monitoring';
 import { firstValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
+import { AppConfigService } from '@common';
 
 @EventsHandler(PostDeletedEvent)
-export class PostDeletedHandler implements IEventHandler<PostDeletedEvent> {
+export class PostDeletedListener implements IEventHandler<PostDeletedEvent> {
+  private get filesUrl(): string {
+    return this.configService.filesUrl;
+  }
+
   constructor(
     private readonly httpService: HttpService,
     private readonly logger: CustomLogger,
+    private readonly configService: AppConfigService,
   ) {
-    this.logger.setContext('PostDeletedHandler');
+    this.logger.setContext('PostDeletedListener');
   }
 
   async handle(event: PostDeletedEvent) {
     try {
+      console.log('start deleting');
       await this.deleteFiles(event);
+      console.log('end deleting');
     } catch (error) {
       const errorMessage =
         error instanceof AxiosError
@@ -47,8 +55,9 @@ export class PostDeletedHandler implements IEventHandler<PostDeletedEvent> {
   }
 
   private async deleteFiles(event: PostDeletedEvent): Promise<void> {
+    const url = `${this.filesUrl}/api/v1/delete-post-files/${event.postId}`;
     await firstValueFrom(
-      this.httpService.delete(`/files/posts/${event.postId}`, {
+      this.httpService.delete(url, {
         timeout: 10000, // 10 секунд таймаут для повторной попытки
       }),
     );

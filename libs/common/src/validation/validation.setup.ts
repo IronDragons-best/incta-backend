@@ -8,7 +8,7 @@ import {
 
 export const pipeErrorFormatter = (
   errors: ValidationError[],
-  errorMessage?: { message: string; field: string }[],
+  errorMessage?: { message: string; field?: string }[],
 ) => {
   const errorsForResponse = errorMessage || [];
   for (const error of errors) {
@@ -17,10 +17,15 @@ export const pipeErrorFormatter = (
     } else if (error.constraints) {
       const constraintKeys = Object.keys(error.constraints);
       for (const key of constraintKeys) {
-        errorsForResponse.push({
+        const errorObj: { message: string; field?: string } = {
           message: error.constraints[key],
-          field: error.property,
-        });
+        };
+
+        if (error.property && error.property.trim()) {
+          errorObj.field = error.property;
+        }
+
+        errorsForResponse.push(errorObj);
       }
     }
   }
