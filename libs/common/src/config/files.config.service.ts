@@ -70,6 +70,7 @@ export class FilesConfigService extends ConfigService {
   }
   get postPhotosBucketName(): string {
     const bucketName = this.get<string>('POST_FILES_BUCKET_NAME');
+    console.log(bucketName);
     if (!bucketName) {
       throw new Error('POST_FILES_BUCKET_NAME is required');
     }
