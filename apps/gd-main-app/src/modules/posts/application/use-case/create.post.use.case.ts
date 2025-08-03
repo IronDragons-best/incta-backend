@@ -10,7 +10,6 @@ import { NotificationService, AppConfigService } from '@common';
 import FormData from 'form-data';
 
 import { CreatePostInputDto } from '../../interface/dto/input/create.post.input.dto';
-import { FilesViewDto } from '../../../../../../files-service/src/interface/dto/upload.files.view.dto';
 
 import { User } from '../../../users/domain/user.entity';
 
@@ -20,6 +19,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 
 import { PostEntity } from '../../domain/post.entity';
 import { PostFileEntity } from '../../domain/post.file.entity';
+import { FileViewDto } from '../../../../../../files-service/src/interface/dto/file.view.dto';
 
 export class CreatePostCommand {
   constructor(
@@ -122,7 +122,7 @@ export class CreatePostUseCase {
 
   private async savePostFiles(
     queryRunner: QueryRunner,
-    uploadResults: FilesViewDto[],
+    uploadResults: FileViewDto[],
     postId: PostEntity['id'],
   ) {
     for (const file of uploadResults) {

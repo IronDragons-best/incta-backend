@@ -27,7 +27,11 @@ import { UploadFileInputDto } from './dto/upload.files.input.dto';
 import { DeletePostFilesSwagger } from '../../core/decorators/swagger-settings/delete.post.files.swagger.decorator';
 import { DeletePostFilesCommand } from '../application/use-cases/delete-post-files.use.case';
 import { GetFilesByUserIdQuery } from '../application/query-handlers/get.files.by.user.id.query-handler';
-import { GetUsersFilesSwaggerDecorator } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
+import { GetUsersFilesSwagger } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
+import { GetFilesByPostIdQuery } from '../application/query-handlers/get.files.by.post.id.query.handler';
+import { FileViewDto } from './dto/file.view.dto';
+import { FilesByUserIdViewDto } from './dto/files.by.user.id.view-dto';
+import { GetPostFilesSwagger } from '../../core/decorators/swagger-settings/get.post.files.swagger.decorator';
 
 @Controller()
 export class FilesServiceController {
@@ -43,10 +47,31 @@ export class FilesServiceController {
   }
 
   @Get('files/:userId')
-  @GetUsersFilesSwaggerDecorator()
+  @GetUsersFilesSwagger()
   @HttpCode(HttpStatus.OK)
   async getUsersFiles(@Param('userId') userId: number) {
-    return this.queryBus.execute(new GetFilesByUserIdQuery(userId));
+    const result: AppNotification<FileViewDto[]> = await this.queryBus.execute(
+      new GetFilesByUserIdQuery(userId),
+    );
+    const files = result.getValue();
+    if (!files) {
+      return result;
+    }
+    return FilesByUserIdViewDto.mapToView(files, userId);
+  }
+
+  @Get('files/:userId/post/:postId')
+  @GetPostFilesSwagger()
+  @HttpCode(HttpStatus.OK)
+  async getPostFiles(@Param('postId') postId: number, @Param('userId') userId: number) {
+    const result: AppNotification<FileViewDto[]> = await this.queryBus.execute(
+      new GetFilesByPostIdQuery(postId, userId),
+    );
+    const files = result.getValue();
+    if (!files) {
+      return result;
+    }
+    return FilesByUserIdViewDto.mapToView(files, userId);
   }
 
   @Delete('delete-post-files/:postId')

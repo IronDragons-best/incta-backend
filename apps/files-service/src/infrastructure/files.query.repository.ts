@@ -4,10 +4,14 @@ import { FileFromDatabaseDtoType } from '../../core/types/file.types';
 
 @Injectable()
 export class FilesQueryRepository extends PrismaService {
-  async getManyByPostId(postId: number) {
+  async getManyByUserIdAndPostId(
+    userId: number,
+    postId: number,
+  ): Promise<FileFromDatabaseDtoType[] | null> {
     const files = await this.file.findMany({
       where: {
         postId: postId,
+        uploadedBy: userId,
       },
       orderBy: {
         createdAt: 'asc',

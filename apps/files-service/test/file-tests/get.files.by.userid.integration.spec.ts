@@ -5,11 +5,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
 import request from 'supertest';
 import { GetFilesByUserIdQuery } from '../../src/application/query-handlers/get.files.by.user.id.query-handler';
+import { NotificationService } from '@common';
 
 describe('Get Files by User ID', () => {
   let app: INestApplication;
   let queryBus: jest.Mocked<QueryBus>;
   let controller: FilesServiceController;
+  let notificationService: NotificationService;
 
   const mockQueryBus = {
     execute: jest.fn(),
@@ -30,6 +32,7 @@ describe('Get Files by User ID', () => {
         { provide: FilesServiceService, useValue: mockFilesService },
         { provide: QueryBus, useValue: mockQueryBus },
         { provide: CommandBus, useValue: mockCommandBus },
+        NotificationService,
       ],
     }).compile();
 
@@ -44,6 +47,7 @@ describe('Get Files by User ID', () => {
 
     controller = module.get(FilesServiceController);
     queryBus = module.get(QueryBus);
+    notificationService = module.get(NotificationService);
   });
 
   afterEach(async () => {
@@ -57,31 +61,34 @@ describe('Get Files by User ID', () => {
     const mockUserId = 1;
 
     it('200 успешное получение файлов пользователя', async () => {
+      const files = [
+        {
+          id: 1,
+          postId: 1,
+          originalName: 'image1.jpg',
+          key: 's3-key-1',
+          uploadedUrl: 'https://some-url.com/image1.jpg',
+          size: 12344532,
+        },
+        {
+          id: 2,
+          postId: 2,
+          originalName: 'image2.jpg',
+          key: 's3-key-2',
+          uploadedUrl: 'https://some-url.com/image2.jpg',
+          size: 22314332,
+        },
+      ];
+
       const mockResponse = {
+        files: files,
         totalFiles: 2,
         totalSize: 34658864,
-        uploadedBy: mockUserId,
-        files: [
-          {
-            id: 1,
-            postId: 1,
-            originalName: 'image1.jpg',
-            key: 's3-key-1',
-            uploadedUrl: 'https://some-url.com/image1.jpg',
-            size: 12344532,
-          },
-          {
-            id: 2,
-            postId: 2,
-            originalName: 'image2.jpg',
-            key: 's3-key-2',
-            uploadedUrl: 'https://some-url.com/image2.jpg',
-            size: 22314332,
-          },
-        ],
+        uploadedBy: 1,
       };
 
-      queryBus.execute.mockResolvedValue(mockResponse);
+      const notify = notificationService.create();
+      queryBus.execute.mockResolvedValue(notify.setValue(files));
 
       const result = await request(app.getHttpServer())
         .get(`/files/${mockUserId}`)
@@ -96,14 +103,17 @@ describe('Get Files by User ID', () => {
     });
 
     it('200 пустой массив когда у пользователя нет файлов', async () => {
+      const files = [];
       const mockEmptyResponse = {
+        files,
         totalFiles: 0,
         totalSize: 0,
-        uploadedBy: mockUserId,
-        files: [],
+        uploadedBy: 1,
       };
 
-      queryBus.execute.mockResolvedValue(mockEmptyResponse);
+      const notify = notificationService.create();
+
+      queryBus.execute.mockResolvedValue(notify.setValue(files));
 
       const result = await request(app.getHttpServer())
         .get(`/files/${mockUserId}`)

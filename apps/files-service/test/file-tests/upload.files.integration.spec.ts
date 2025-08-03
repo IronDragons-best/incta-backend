@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileValidationPipe } from '../../core/pipes/file.validation.pipe';
-import { FilesViewDto } from '../../src/interface/dto/upload.files.view.dto';
 import { AppNotification } from '@common';
 import { UploadFilesCommand } from '../../src/application/use-cases/upload-files-use.case';
 
@@ -53,11 +52,12 @@ describe('FilesServiceController', () => {
       uploadResults: [
         {
           id: '1',
+          postId: 1,
           originalName: 'test.jpg',
           key: 'files/1/1/test.jpg',
           uploadedUrl: 'https://s3.amazonaws.com/bucket/files/1/1/test.jpg',
           size: 1024,
-        } as FilesViewDto,
+        },
       ],
       errors: [],
     };

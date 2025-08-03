@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export abstract class TotalFilesViewDto<T, E = T> {
+export abstract class TotalUploadedFilesViewDto<T, E = T> {
   @ApiProperty({ default: 2 })
   totalFiles: number;
 

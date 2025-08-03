@@ -3,8 +3,11 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { NotificationConfigService } from '@common/config/notification.config.service';
 import { EmailInfoInputDto, OauthInputDto } from '../types/email.info.input.dto';
 import { CustomLogger } from '@monitoring';
-import { AppNotification, NotificationService } from '@common';
-
+import { NotificationService } from '@common';
+export enum EmailType {
+  CONFIRM = 'CONFIRM',
+  PASSWORD = 'PASSWORD',
+}
 @Injectable()
 export class EmailService {
   constructor(
@@ -14,10 +17,11 @@ export class EmailService {
     private readonly notificationService: NotificationService,
   ) {}
 
-  private generateLink(code: string): string {
-    return `${this.configService.getProductionUrl()}/confirm-registration?code=${code}`;
+  private generateLink(type: EmailType, code: string): string {
+    return type === EmailType.CONFIRM
+      ? `${this.configService.getProductionUrl()}/confirm-registration?code=${code}`
+      : `${this.configService.getProductionUrl()}/new-password?code=${code}`;
   }
-
   private async sendEmail(
     email: string,
     subject: string,
@@ -40,7 +44,7 @@ export class EmailService {
   async sendRegistrationEmail(data: EmailInfoInputDto) {
     const notify = this.notificationService.create();
     try {
-      const link = this.generateLink(data.confirmCode);
+      const link = this.generateLink(EmailType.CONFIRM, data.confirmCode);
 
       const subject = 'Завершите регистрацию на Iron Dragon';
 
@@ -79,7 +83,7 @@ export class EmailService {
   async resendEmail(data: EmailInfoInputDto) {
     const notify = this.notificationService.create();
     try {
-      const link = this.generateLink(data.confirmCode);
+      const link = this.generateLink(EmailType.CONFIRM, data.confirmCode);
 
       const subject = 'Продолжите регистрацию на Iron Dragon';
 
@@ -117,7 +121,7 @@ export class EmailService {
   async sendPasswordRecoveryEmail(data: EmailInfoInputDto) {
     const notify = this.notificationService.create();
     try {
-      const link = this.generateLink(data.confirmCode);
+      const link = this.generateLink(EmailType.PASSWORD, data.confirmCode);
 
       const subject = 'Восстановление пароля на Iron Dragon';
 

@@ -8,11 +8,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import {
-  ErrorMessageBaseDto,
-  ErrorResponseDto,
-  WithoutFieldErrorResponseDto,
-} from '@common';
+import { WithoutFieldErrorResponseDto } from '@common';
 
 export function DeletePostSwagger() {
   return applyDecorators(
