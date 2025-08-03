@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { FilesServiceController } from '../../src/interface/files-service.controller';
 import { FilesServiceService } from '../../src/application/files-service.service';
@@ -17,6 +17,7 @@ describe('FilesController', () => {
       providers: [
         { provide: FilesServiceService, useValue: {} },
         { provide: CommandBus, useValue: commandBus },
+        { provide: QueryBus, useClass: QueryBus },
       ],
     }).compile();
 
@@ -24,7 +25,9 @@ describe('FilesController', () => {
   });
 
   const expectCommandCalledWith = (postId: string) => {
-    expect(commandBus.execute).toHaveBeenCalledWith(expect.objectContaining({ postId: +postId }));
+    expect(commandBus.execute).toHaveBeenCalledWith(
+      expect.objectContaining({ postId: +postId }),
+    );
   };
 
   describe('DELETE /delete', () => {
@@ -53,10 +56,12 @@ describe('FilesController', () => {
 
       const result = await controller.deletePostFiles(postId);
 
-      expect(result).toEqual(expect.objectContaining({
-        statusCode: 404,
-        errors: [{ message: 'Files not found' }],
-      }));
+      expect(result).toEqual(
+        expect.objectContaining({
+          statusCode: 404,
+          errors: [{ message: 'Files not found' }],
+        }),
+      );
       expectCommandCalledWith(postId);
     });
 

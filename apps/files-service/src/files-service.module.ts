@@ -16,11 +16,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { GetFilesByPostIdHandler } from './application/query-handlers/get.files.by.post.id.query.handler';
 import { FilesQueryRepository } from './infrastructure/files.query.repository';
 import { DeletePostFilesUseCase } from './application/use-cases/delete-post-files.use.case';
+import { GetFilesByUserIdHandler } from './application/query-handlers/get.files.by.user.id.query-handler';
 
-const useCases = [
-  DeletePostFilesUseCase,
-  UploadFilesUseCase,
-]
+const useCases = [DeletePostFilesUseCase, UploadFilesUseCase];
 
 @Module({
   imports: [
@@ -34,6 +32,7 @@ const useCases = [
   ],
   controllers: [FilesServiceController],
   providers: [
+    GetFilesByUserIdHandler,
     FilesServiceService,
     AsyncLocalStorageService,
     GetFilesByPostIdHandler,
@@ -42,7 +41,7 @@ const useCases = [
     FilesRepository,
     FilesQueryRepository,
     PrismaService,
-    ...useCases
+    ...useCases,
   ],
 })
 export class FilesServiceModule {}

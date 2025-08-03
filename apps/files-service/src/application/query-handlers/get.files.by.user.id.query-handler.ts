@@ -1,0 +1,52 @@
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { FilesQueryRepository } from '../../infrastructure/files.query.repository';
+import { NotificationService } from '@common';
+import { CustomLogger } from '@monitoring';
+import {
+  FilesViewDto,
+  GetFilesByUserIdViewDto,
+} from '../../interface/dto/get.files.by.user.id.view-dto';
+import { FileFromDatabaseDtoType } from '../../../core/types/file.types';
+
+export class GetFilesByUserIdQuery {
+  constructor(public userId: number) {}
+}
+
+@QueryHandler(GetFilesByUserIdQuery)
+export class GetFilesByUserIdHandler implements IQueryHandler<GetFilesByUserIdQuery> {
+  constructor(
+    private readonly filesQueryRepository: FilesQueryRepository,
+    private readonly notification: NotificationService,
+    private readonly logger: CustomLogger,
+  ) {
+    this.logger.setContext('GetFilesByUserIdHandler');
+  }
+  async execute(query: GetFilesByUserIdQuery) {
+    const notify = this.notification.create();
+
+    try {
+      const files: FileFromDatabaseDtoType[] | null =
+        await this.filesQueryRepository.getManyByUserId(query.userId);
+
+      if (!files) {
+        const viewResponse = GetFilesByUserIdViewDto.mapToView([], query.userId);
+        return notify.setValue(viewResponse);
+      }
+
+      const viewFiles: FilesViewDto[] = FilesViewDto.mapToView(files);
+
+      const viewResponse = GetFilesByUserIdViewDto.mapToView(viewFiles, query.userId);
+
+      return notify.setValue(viewResponse);
+    } catch (error) {
+      let message: string;
+      if (error instanceof Error) {
+        message = `Something went wrong while getting files. Error: ${error.message}`;
+      } else {
+        message = `Something went wrong while getting files. Error: ${error}`;
+      }
+      this.logger.error(message);
+      notify.setServerError('Something went wrong');
+    }
+  }
+}

@@ -1,4 +1,6 @@
 import { FileRequestEntity } from './file.request.entity';
+import { FileType as PrismaFileType } from '@prisma/client';
+
 import {
   CreateFileDtoType,
   FileAccessType,
@@ -14,7 +16,7 @@ export class FileEntity {
     public url: string,
     public mimeType: string,
     public size: number,
-    public type: FileAccessType,
+    public type: PrismaFileType,
     public uploadedBy: number,
     public postId: number,
     public createdAt: Date,

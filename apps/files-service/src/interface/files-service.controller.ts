@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesServiceService } from '../application/files-service.service';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   MAX_FILES_COUNT,
@@ -26,17 +26,27 @@ import { UploadFilesSwagger } from '../../core/decorators/swagger-settings/uploa
 import { UploadFileInputDto } from './dto/upload.files.input.dto';
 import { DeletePostFilesSwagger } from '../../core/decorators/swagger-settings/delete.post.files.swagger.decorator';
 import { DeletePostFilesCommand } from '../application/use-cases/delete-post-files.use.case';
+import { GetFilesByUserIdQuery } from '../application/query-handlers/get.files.by.user.id.query-handler';
+import { GetUsersFilesSwaggerDecorator } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
 
 @Controller()
 export class FilesServiceController {
   constructor(
     private readonly filesServiceService: FilesServiceService,
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get('health')
   check() {
     return this.filesServiceService.check();
+  }
+
+  @Get('files/:userId')
+  @GetUsersFilesSwaggerDecorator()
+  @HttpCode(HttpStatus.OK)
+  async getUsersFiles(@Param('userId') userId: number) {
+    return this.queryBus.execute(new GetFilesByUserIdQuery(userId));
   }
 
   @Delete('delete-post-files/:postId')

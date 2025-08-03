@@ -1,7 +1,7 @@
 import { FilesServiceController } from '../../src/interface/files-service.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileValidationPipe } from '../../core/pipes/file.validation.pipe';
 import { FilesViewDto } from '../../src/interface/dto/upload.files.view.dto';
 import { AppNotification } from '@common';
@@ -21,6 +21,7 @@ describe('FilesServiceController', () => {
       providers: [
         { provide: FilesServiceService, useValue: filesService },
         { provide: CommandBus, useValue: commandBus },
+        QueryBus,
         FileValidationPipe,
       ],
     }).compile();
