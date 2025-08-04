@@ -13,6 +13,7 @@ import {
   Put,
   ParseIntPipe,
   Get, Query,
+  Delete,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
@@ -52,6 +53,8 @@ import { PostsRepository } from '../infrastructure/posts.repository';
 import { GetPostByIdSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.post.by.id.swagger.decorator';
 import { GetPostsSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.posts.swagger.decorator';
 import { QueryPostsInputDto } from './dto/input/query.posts.input.dto';
+import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
+import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/posts/delete.post.swagger.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -103,6 +106,7 @@ export class PostsController {
       new UpdatePostCommand(user.id, id, body.description),
     );
     const data = updateResult.getValue();
+
     if (!data) {
       return updateResult;
     }
@@ -135,4 +139,14 @@ export class PostsController {
     }
     return result
   }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeletePostSwagger()
+  @UseGuards(JwtAuthGuard, OwnershipGuard)
+  @CheckOwnership({ repository: PostsRepository })
+  async deletePostById(@Param('id', ParseIntPipe) id: number) {
+    return await this.commandBus.execute(new DeletePostCommand(id));
+  }
+
 }

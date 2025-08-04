@@ -34,15 +34,11 @@ export class OwnershipGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log('GUARD started');
-
     // Используем getAllAndOverride для более надежного получения метаданных
     const config = this.reflector.getAllAndOverride<OwnershipConfig>(OWNERSHIP_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-
-    console.log('Config:', config);
 
     if (!config) {
       console.log('No config found, allowing access');
@@ -67,8 +63,6 @@ export class OwnershipGuard implements CanActivate {
         strict: false,
       });
 
-      console.log(repository);
-
       if (!repository) {
         console.log('!repository');
         throw new InternalServerErrorException(
@@ -82,7 +76,6 @@ export class OwnershipGuard implements CanActivate {
           `Repository '${String(config.repository)}' does not implement checkOwnership method`,
         );
       }
-      console.log('hsad');
       const isOwner = await repository.checkOwnership(resourceId, user.id);
       if (!isOwner) {
         throw new ForbiddenException('You are not the owner of this resource');

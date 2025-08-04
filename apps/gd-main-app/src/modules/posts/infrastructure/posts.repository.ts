@@ -53,18 +53,19 @@ export class PostsRepository implements IOwnershipRepository {
     await queryRunner.manager.save(post);
   }
 
+  async softDelete(post: PostEntity, queryRunner: QueryRunner) {
+    await queryRunner.manager.softRemove(post);
+  }
+
   async checkOwnership(postId: number, userId: number): Promise<boolean> {
     const post = await this.postsRepository.findOne({
       where: { id: postId },
       select: ['id', 'userId'],
     });
 
-    console.log(post);
     if (!post) {
-      console.log('returning false');
-      return false;
+      return true;
     }
-    console.log('why');
     return post.userId === userId;
   }
 }

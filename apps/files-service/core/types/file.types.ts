@@ -1,3 +1,5 @@
+import { FileType as PrismaFileType } from '@prisma/client';
+
 export enum FileRequestStatusType {
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
@@ -33,7 +35,7 @@ export type FileFromDatabaseDtoType = {
   url: string;
   mimeType: string;
   size: number;
-  type: FileAccessType;
+  type: PrismaFileType;
   uploadedBy: number;
   postId: number;
   createdAt: Date;

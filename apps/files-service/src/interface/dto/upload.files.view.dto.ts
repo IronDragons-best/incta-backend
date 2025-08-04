@@ -1,33 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FileEntity } from '../../domain/file.entity';
-import { TotalFilesViewDto } from '../../../core/dto/total.files.view.dto';
-
-export class FilesViewDto {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty({ default: 'file-original-name' })
-  originalName: string;
-
-  @ApiProperty({ default: 'key' })
-  key: string;
-
-  @ApiProperty({ default: 'https://some-url.com' })
-  uploadedUrl: string;
-
-  @ApiProperty({ default: 12324 })
-  size: number;
-
-  static mapToView(this: void, item: FileEntity): FilesViewDto {
-    return {
-      id: item.id.toString(),
-      originalName: item.filename,
-      key: item.s3Key,
-      uploadedUrl: item.url,
-      size: item.size,
-    };
-  }
-}
+import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
+import { FileViewDto } from './file.view.dto';
 
 export class UploadErrorDto {
   @ApiProperty({ default: 'file-name' })
@@ -49,16 +22,16 @@ export class UploadErrorDto {
     };
   }
 }
-export class UploadFilesResponseDto extends TotalFilesViewDto<
-  FilesViewDto,
+export class UploadFilesResponseDto extends TotalUploadedFilesViewDto<
+  FileViewDto,
   UploadErrorDto
 > {
   @ApiProperty({
     isArray: true,
-    type: FilesViewDto,
+    type: FileViewDto,
     description: 'Успешно загруженные файлы',
   })
-  uploadResults: FilesViewDto[];
+  uploadResults: FileViewDto[];
 
   @ApiProperty({
     isArray: true,

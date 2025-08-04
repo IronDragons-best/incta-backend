@@ -1,13 +1,18 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
-import { FilesConfigService, NotificationService, ProcessedFileData } from '@common';
+import {
+  AppNotification,
+  FilesConfigService,
+  NotificationService,
+  ProcessedFileData,
+} from '@common';
 import { CustomLogger } from '@monitoring';
 import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
 import { FilesRepository } from '../../infrastructure/files.repository';
 import { FileEntity } from '../../domain/file.entity';
 import { FileAccessType } from '../../../core/types/file.types';
 import { GetFilesByPostIdQuery } from '../query-handlers/get.files.by.post.id.query.handler';
-import { FilesViewDto } from '../../interface/dto/upload.files.view.dto';
-import { TotalFilesViewDto } from '../../../core/dto/total.files.view.dto';
+import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
+import { FileViewDto } from '../../interface/dto/file.view.dto';
 
 export class UploadFilesCommand {
   constructor(
@@ -86,9 +91,16 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
       return notify.setServerError('Failed to save uploaded file information.');
     }
 
-    const query = new GetFilesByPostIdQuery(postId);
-    const savedFiles: FilesViewDto[] = await this.queryBus.execute(query);
-    const totalViewDto = TotalFilesViewDto.mapToView({
+    const savedFilesResult: AppNotification<FileViewDto[]> = await this.queryBus.execute(
+      new GetFilesByPostIdQuery(postId, userId),
+    );
+
+    const savedFiles: FileViewDto[] | null = savedFilesResult.getValue();
+    if (!savedFiles || savedFiles.length === 0) {
+      return notify.setNotFound('Files not found');
+    }
+
+    const totalViewDto = TotalUploadedFilesViewDto.mapToView({
       totalFiles: files.length,
       successUploaded: savedFiles.length,
       totalSize: totalSize,
