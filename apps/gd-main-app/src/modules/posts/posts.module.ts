@@ -12,8 +12,16 @@ import { UpdatePostUseCase } from './application/use-case/update.post.use-case';
 import { PostsRepository } from './infrastructure/posts.repository';
 import { DeletePostUseCase } from './application/use-case/delete.post.use-case';
 import { PostDeletedListener } from '../../../core/listeners/post-listeners/post.deleted.listener';
+import { GetPostByIdHandler } from './application/use-case/get.post.by.id.query';
+import { GetPostsHandler } from './application/use-case/get-posts.query';
 
-const useCases = [CreatePostUseCase, UpdatePostUseCase, DeletePostUseCase];
+const useCases = [
+  CreatePostUseCase,
+  UpdatePostUseCase,
+  DeletePostUseCase,
+  GetPostByIdHandler,
+  GetPostsHandler
+];
 
 @Module({
   imports: [TypeOrmModule.forFeature([PostEntity, PostFileEntity]), HttpModule],

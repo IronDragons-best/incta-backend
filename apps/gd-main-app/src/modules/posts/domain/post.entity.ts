@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 
 import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 
@@ -13,8 +13,10 @@ export type PostDomainDtoType = {
 };
 
 @Entity()
+@Index(['userId', 'createdAt'])
 export class PostEntity extends BasicEntity {
   @Column()
+  @Index()
   title: string;
 
   @Column()
@@ -25,6 +27,7 @@ export class PostEntity extends BasicEntity {
   user: User;
 
   @Column()
+  @Index()
   userId: number;
 
   @OneToMany(() => PostFileEntity, (file) => file.post, { cascade: true })
@@ -41,7 +44,10 @@ export class PostEntity extends BasicEntity {
   static mapToDomainDto(post: PostEntity): PostViewDto {
     return {
       id: post.id,
-      userId: post.userId,
+      user: {
+        userId: post.user.id,
+        username: post.user.username,
+      },
       title: post.title,
       shortDescription: post.shortDescription,
       previewImages: post.files.map((file) => file.fileUrl),

@@ -12,9 +12,10 @@ import {
   NotFoundException,
   Put,
   ParseIntPipe,
+  Get, Query,
   Delete,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
@@ -46,10 +47,16 @@ import {
   OwnershipGuard,
 } from '../../../../core/guards/ownership/ownership.guard';
 import { UpdatePostCommand } from '../application/use-case/update.post.use-case';
+
 import { UpdatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/update.post.swagger.decorator';
 import { PostsRepository } from '../infrastructure/posts.repository';
+import { GetPostByIdSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.post.by.id.swagger.decorator';
+import { GetPostsSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.posts.swagger.decorator';
+import { QueryPostsInputDto } from './dto/input/query.posts.input.dto';
 import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
 import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/posts/delete.post.swagger.decorator';
+import { GetPostByIdQuery } from '../application/use-case/get.post.by.id.query';
+import { GetPostsQuery } from '../application/use-case/get-posts.query';
 
 @Controller('posts')
 export class PostsController {
@@ -57,6 +64,7 @@ export class PostsController {
     @Inject(CommandBus) protected commandBus: CommandBus,
     @Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository,
     @Inject(PostsService) protected postsService: PostsService,
+    @Inject(QueryBus) protected queryBus: QueryBus,
   ) {}
 
   @Post('create-post')
@@ -105,13 +113,28 @@ export class PostsController {
     if (!data) {
       return updateResult;
     }
+
     const updatedPost = await this.postsQueryRepository.getPostByIdWithUserId(
       data.id,
       user.id,
     );
-
+    console.log(updatedPost);
     if (!updatedPost) throw new NotFoundException('Updated post not found');
     return PostEntity.mapToDomainDto(updatedPost);
+  }
+
+  @Get('/:id')
+  @GetPostByIdSwaggerDecorator()
+  async getPostById(@Param('id') id: number) {
+    return await this.queryBus.execute(new GetPostByIdQuery(id));
+  }
+
+  @Get()
+  @GetPostsSwaggerDecorator()
+  async getPosts(
+    @Query() query: QueryPostsInputDto
+  ) {
+    return await this.queryBus.execute(new GetPostsQuery(query))
   }
 
   @Delete(':id')
@@ -123,15 +146,4 @@ export class PostsController {
     return await this.commandBus.execute(new DeletePostCommand(id));
   }
 
-  // @Get()
-  // @ApiResponse({ status: 200, description: 'Success' })
-  // async getPosts() {
-  //   return this.postsService.findPosts();
-  // }
-  // @Get(':id')
-  // @ApiResponse({ status: 201, description: 'Success' })
-  // @ApiResponse({ status: 404, description: 'Not Found' })
-  // async getPostById(@Param('id') id: string) {
-  //   return await this.postsService.findPostById(id);
-  // }
 }
