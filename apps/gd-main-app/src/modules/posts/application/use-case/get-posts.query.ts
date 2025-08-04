@@ -6,6 +6,8 @@ import { AppConfigService, NotificationService } from '@common';
 import { HttpService } from '@nestjs/axios';
 import { PostViewDto } from '../../interface/dto/output/post.view.dto';
 import { PagedResponse } from '../../../../../core/common/pagination/paged.response';
+import { firstValueFrom } from 'rxjs';
+import { PostEntity } from '../../domain/post.entity';
 
 export class GetPostsQuery {
   constructor(
@@ -36,10 +38,47 @@ export class GetPostsHandler implements IQueryHandler<GetPostsQuery> {
         return notify.setNotFound('No posts found');
       }
 
-      return posts
+      await Promise.all(posts.items.map(async post => {
+        if (!post.files || post.files.length === 0) {
+          const imagesFiles = await this.getPreviewImageUrl(post.user.id, post.id);
+          if (imagesFiles) {
+            post.files = imagesFiles.map(file => ({
+              id: file.id,
+              fileName: file.originalName,
+              fileUrl: file.uploadedUrl,
+            }));
+          } else {
+            this.logger.warn(`No preview image found for post ${post.id}`);
+          }
+        }
+      }));
+
+      return {
+        ...posts,
+        items: posts.items.map(post => PostEntity.mapToDomainDto(post)),
+      }
     } catch (error) {
       this.logger.error(`Error retrieving posts: ${error.message}`);
       return notify.setServerError('Internal Server Error occurred while retrieving posts');
     }
+  }
+
+  private async getPreviewImageUrl(userId: number, postId: number) {
+    const filesServiceUrl = `${this.configService.filesUrl}/api/v1/files/${userId}/post/${postId}`;
+
+    const { data } = await firstValueFrom(
+      this.httpService.get(filesServiceUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }),
+    );
+
+    if (!data || !data.files) {
+      this.logger.warn(`No preview image found for post ${postId}`);
+      return null;
+    }
+
+    return data.files;
   }
 }
