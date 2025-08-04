@@ -62,8 +62,13 @@ COPY --from=builder /app/libs ./libs
 COPY --from=builder /app/tsconfig*.json ./
 COPY --from=builder /app/nest-cli.json ./
 
+# Copy the New Relic configuration file
+COPY newrelic.js ./
+
 # Copy the startup script
 COPY start-services.sh ./start-services.sh
+
+
 
 # Create a non-root user
 RUN addgroup -g 1001 -S nodejs

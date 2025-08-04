@@ -19,15 +19,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/gd-main-app/test/jest-e2e.json",
-
     "build:gd-main-app": "nest build gd-main-app",
     "build:files-service": "npm run prisma:files:generate && nest build files-service",
     "build:notification-service": "nest build notification-service",
-
     "add:migration": "node apps/gd-main-app/database/utils/add.migration.js",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d apps/gd-main-app/database/typeorm.config.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d apps/gd-main-app/database/typeorm.config.ts",
-
     "dev:prisma:files:generate": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma generate --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:migrate": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma migrate dev --schema=apps/files-service/prisma/schema.prisma",
     "dev:prisma:files:push": "dotenv -e ./env/.env.development.local -- pnpm dlx prisma db push --schema=apps/files-service/prisma/schema.prisma",
@@ -36,11 +33,9 @@
     "prisma:files:generate": "npx prisma generate --schema=apps/files-service/prisma/schema.prisma",
     "prisma:files:migrate:deploy": "dotenv -e ./.env.production -- npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || npx prisma migrate deploy --schema=apps/files-service/prisma/schema.prisma || dotenv -e ./env/.env.development.local -- pnpm dlx prisma migrate dev --schema=apps/files-service/prisma/schema.prisma",
     "prisma:files:pull": "pnpm dlx prisma db pull --schema=apps/files-service/prisma/schema.prisma",
-
-    "start:gd-main-app": "npm run migration:run && node dist/apps/gd-main-app/main",
-    "start:files-service": "npm run prisma:files:migrate:deploy && node dist/apps/files-service/main",
-    "start:notification-service": "node dist/apps/notification-service/main",
-
+    "start:gd-main-app": "npm run migration:run && node -r newrelic dist/apps/gd-main-app/main",
+    "start:files-service": "npm run prisma:files:migrate:deploy && node -r newrelic dist/apps/files-service/main",
+    "start:notification-service": "node -r newrelic dist/apps/notification-service/main",
     "start:dev:gd-main-app": "nest start gd-main-app --watch",
     "start:dev:files-service": "nest start files-service --watch",
     "start:dev:notification-service": "nest start notification-service --watch"
@@ -79,6 +74,7 @@
     "ioredis": "^5.6.1",
     "joi": "^17.13.3",
     "mongoose": "^8.16.0",
+    "newrelic": "^13.0.0",
     "nodemailer": "^7.0.4",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
@@ -112,6 +108,7 @@
     "@types/jest": "^29.5.14",
     "@types/joi": "^17.2.3",
     "@types/multer": "^2.0.0",
+    "@types/newrelic": "^9.14.8",
     "@types/node": "^22.10.7",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-jwt": "^4.0.1",

@@ -1,9 +1,10 @@
+import 'newrelic';
+import { NotificationInterceptor } from '@common';
 import { config } from 'dotenv';
 import { Transport } from '@nestjs/microservices';
 import { NestFactory } from '@nestjs/core';
 import { NotificationServiceModule } from './notification-service.module';
 import { NotificationConfigService } from '@common/config/notification.config.service';
-import { NotificationInterceptor } from '@common';
 import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 config();

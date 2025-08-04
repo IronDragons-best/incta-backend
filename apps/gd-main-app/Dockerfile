@@ -20,6 +20,8 @@ WORKDIR /home/node/dist/${SERVICE}
 
 
 COPY --chown=node package*.json ./
+# Копируем New Relic конфиг
+COPY --chown=node newrelic.js ./
 
 RUN npm install
 

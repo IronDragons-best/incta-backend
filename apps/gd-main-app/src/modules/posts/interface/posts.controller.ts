@@ -12,7 +12,8 @@ import {
   NotFoundException,
   Put,
   ParseIntPipe,
-  Get, Query,
+  Get,
+  Query,
   Delete,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -118,7 +119,6 @@ export class PostsController {
       data.id,
       user.id,
     );
-    console.log(updatedPost);
     if (!updatedPost) throw new NotFoundException('Updated post not found');
     return PostEntity.mapToDomainDto(updatedPost);
   }
@@ -131,10 +131,8 @@ export class PostsController {
 
   @Get()
   @GetPostsSwaggerDecorator()
-  async getPosts(
-    @Query() query: QueryPostsInputDto
-  ) {
-    return await this.queryBus.execute(new GetPostsQuery(query))
+  async getPosts(@Query() query: QueryPostsInputDto) {
+    return await this.queryBus.execute(new GetPostsQuery(query));
   }
 
   @Delete(':id')
@@ -145,5 +143,4 @@ export class PostsController {
   async deletePostById(@Param('id', ParseIntPipe) id: number) {
     return await this.commandBus.execute(new DeletePostCommand(id));
   }
-
 }

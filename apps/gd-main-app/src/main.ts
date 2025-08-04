@@ -1,7 +1,8 @@
+import 'newrelic';
+import { AppConfigService } from '@common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { appSetup } from '../core/app.setup';
-import { AppConfigService } from '@common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 
