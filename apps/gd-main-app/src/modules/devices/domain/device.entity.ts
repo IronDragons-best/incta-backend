@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, Index } from 'typeorm';
 
 import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
 
@@ -16,12 +16,14 @@ export type DeviceDomainDtoType = {
 };
 
 @Entity('devices')
+@Index(['userId', 'createdAt'])
 export class DeviceEntity extends BasicEntity {
   @ManyToOne(() => User, (user) => user.devices)
   @JoinColumn()
   user: User;
 
   @Column()
+  @Index()
   userId: number;
 
   @Column({ type: 'varchar' })
@@ -37,6 +39,7 @@ export class DeviceEntity extends BasicEntity {
   ip: string | null;
 
   @Column({ type: 'timestamp', nullable: true })
+  @Index()
   updatedAt: Date;
 
   static createInstance(data: DeviceDomainDtoType): DeviceEntity {

@@ -15,7 +15,7 @@ import {
   Get, Query,
   Delete,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
@@ -55,6 +55,7 @@ import { GetPostsSwaggerDecorator } from '../../../../core/decorators/swagger-se
 import { QueryPostsInputDto } from './dto/input/query.posts.input.dto';
 import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
 import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/posts/delete.post.swagger.decorator';
+import { GetPostByIdQuery } from '../application/use-case/get.post.by.id.query';
 
 @Controller('posts')
 export class PostsController {
@@ -62,6 +63,7 @@ export class PostsController {
     @Inject(CommandBus) protected commandBus: CommandBus,
     @Inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository,
     @Inject(PostsService) protected postsService: PostsService,
+    @Inject(QueryBus) protected queryBus: QueryBus,
   ) {}
 
   @Post('create-post')
@@ -123,9 +125,7 @@ export class PostsController {
   @Get('/:id')
   @GetPostByIdSwaggerDecorator()
   async getPostById(@Param('id') id: number) {
-    const post = await this.postsQueryRepository.getPostById(id);
-    if (!post) throw new NotFoundException('Post not found');
-    return PostEntity.mapToDomainDto(post);
+    return await this.queryBus.execute(new GetPostByIdQuery(id));
   }
 
   @Get()

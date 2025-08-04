@@ -1,5 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+
+class PostUserDto {
+  @ApiProperty({
+    description: 'Unique identifier of the user.',
+    example: 15,
+  })
+  userId: number;
+
+  @ApiProperty({
+    description: 'Username of the user.',
+    example: 'test user',
+  })
+  username: string;
+}
+
 export class PostViewDto {
   @ApiProperty({
     description: 'Unique identifier of the post.',
@@ -8,10 +23,10 @@ export class PostViewDto {
   id: number;
 
   @ApiProperty({
-    description: 'User id of the user who created the post.',
-    example: 15,
+    description: 'User who created the post.',
+    type: PostUserDto,
   })
-  userId: number;
+  user: PostUserDto;
 
   @ApiProperty({
     description: 'Title of the post.',
