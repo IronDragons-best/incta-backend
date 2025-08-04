@@ -56,6 +56,7 @@ import { QueryPostsInputDto } from './dto/input/query.posts.input.dto';
 import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
 import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/posts/delete.post.swagger.decorator';
 import { GetPostByIdQuery } from '../application/use-case/get.post.by.id.query';
+import { GetPostsQuery } from '../application/use-case/get-posts.query';
 
 @Controller('posts')
 export class PostsController {
@@ -133,11 +134,7 @@ export class PostsController {
   async getPosts(
     @Query() query: QueryPostsInputDto
   ) {
-    const result = await this.postsQueryRepository.getPostsFromQuery(query);
-    if (!result.items || result.items.length === 0) {
-      throw new NotFoundException('No posts found');
-    }
-    return result
+    return await this.queryBus.execute(new GetPostsQuery(query))
   }
 
   @Delete(':id')
