@@ -12,7 +12,6 @@ import { QueryPostsInputDto } from '../interface/dto/input/query.posts.input.dto
 import { PaginationBuilder } from '../../../../core/common/pagination/pagination.builder';
 
 import { PagedResponse } from '../../../../core/common/pagination/paged.response';
-import { PostViewDto } from '../interface/dto/output/post.view.dto';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -59,7 +58,7 @@ export class PostsQueryRepository {
     return post;
   }
 
-  async getPostsFromQuery(query: QueryPostsInputDto): Promise<PagedResponse<PostViewDto>> {
+  async getPostsFromQuery(query: QueryPostsInputDto): Promise<PagedResponse<PostEntity>> {
     const allowedSortFields = ['createdAt', 'title', 'updatedAt'];
     const pagination = PaginationBuilder.build(query, allowedSortFields);
 
@@ -82,8 +81,6 @@ export class PostsQueryRepository {
 
     const [items, totalCount] = await qb.getManyAndCount();
 
-    const mappedItems = items.map(item => PostEntity.mapToDomainDto(item));
-
-    return new PagedResponse(mappedItems, totalCount, pagination.pageNumber, pagination.pageSize);
+    return new PagedResponse(items, totalCount, pagination.pageNumber, pagination.pageSize);
   }
 }
