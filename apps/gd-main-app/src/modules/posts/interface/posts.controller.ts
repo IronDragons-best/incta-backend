@@ -12,6 +12,7 @@ import {
   NotFoundException,
   Put,
   ParseIntPipe,
+  Get, Query,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
@@ -45,8 +46,12 @@ import {
   OwnershipGuard,
 } from '../../../../core/guards/ownership/ownership.guard';
 import { UpdatePostCommand } from '../application/use-case/update.post.use-case';
+
 import { UpdatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/update.post.swagger.decorator';
 import { PostsRepository } from '../infrastructure/posts.repository';
+import { GetPostByIdSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.post.by.id.swagger.decorator';
+import { GetPostsSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.posts.swagger.decorator';
+import { QueryPostsInputDto } from './dto/input/query.posts.input.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -111,15 +116,23 @@ export class PostsController {
     return PostEntity.mapToDomainDto(updatedPost);
   }
 
-  // @Get()
-  // @ApiResponse({ status: 200, description: 'Success' })
-  // async getPosts() {
-  //   return this.postsService.findPosts();
-  // }
-  // @Get(':id')
-  // @ApiResponse({ status: 201, description: 'Success' })
-  // @ApiResponse({ status: 404, description: 'Not Found' })
-  // async getPostById(@Param('id') id: string) {
-  //   return await this.postsService.findPostById(id);
-  // }
+  @Get('/:id')
+  @GetPostByIdSwaggerDecorator()
+  async getPostById(@Param('id') id: number) {
+    const post = await this.postsQueryRepository.getPostById(id);
+    if (!post) throw new NotFoundException('Post not found');
+    return PostEntity.mapToDomainDto(post);
+  }
+
+  @Get()
+  @GetPostsSwaggerDecorator()
+  async getPosts(
+    @Query() query: QueryPostsInputDto
+  ) {
+    const result = await this.postsQueryRepository.getPostsFromQuery(query);
+    if (!result.items || result.items.length === 0) {
+      throw new NotFoundException('No posts found');
+    }
+    return result
+  }
 }

@@ -4,7 +4,15 @@ import { Repository } from 'typeorm';
 
 import { PostEntity } from '../domain/post.entity';
 import { PostFileEntity } from '../domain/post.file.entity';
+
 import { User } from '../../users/domain/user.entity';
+
+import { QueryPostsInputDto } from '../interface/dto/input/query.posts.input.dto';
+
+import { PaginationBuilder } from '../../../../core/common/pagination/pagination.builder';
+
+import { PagedResponse } from '../../../../core/common/pagination/paged.response';
+import { PostViewDto } from '../interface/dto/output/post.view.dto';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -32,5 +40,50 @@ export class PostsQueryRepository {
     }
 
     return post;
+  }
+
+  async getPostById(
+    id: PostEntity['id']
+  ): Promise<PostEntity | null> {
+    const post = await this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.files', 'files')
+      .where('post.id = :id', { id })
+      .getOne();
+
+    if (!post) {
+      return null;
+    }
+
+    return post;
+  }
+
+  async getPostsFromQuery(query: QueryPostsInputDto): Promise<PagedResponse<PostViewDto>> {
+    const allowedSortFields = ['createdAt', 'title', 'updatedAt'];
+    const pagination = PaginationBuilder.build(query, allowedSortFields);
+
+    const qb = this.postsRepository.createQueryBuilder('post')
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.files', 'files')
+
+
+    if (query.userId) {
+      qb.andWhere('post.userId = :userId', { userId: query.userId });
+    }
+
+    if (query.description) {
+      qb.andWhere('post.description LIKE :description', { description: `%${query.description}%` });
+    }
+
+    qb.orderBy(`post.${pagination.sortBy}`, pagination.sortDirection);
+
+    qb.skip(pagination.offset).take(pagination.pageSize);
+
+    const [items, totalCount] = await qb.getManyAndCount();
+
+    const mappedItems = items.map(item => PostEntity.mapToDomainDto(item));
+
+    return new PagedResponse(mappedItems, totalCount, pagination.pageNumber, pagination.pageSize);
   }
 }
