@@ -23,6 +23,10 @@ export function GetPostByIdSwaggerDecorator() {
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
       description: 'Post not found.',
+    }),
+    ApiResponse({
+      status: HttpStatus.BAD_REQUEST,
+      description: 'Invalid post ID.',
     })
   )
 }
