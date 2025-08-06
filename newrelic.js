@@ -1,8 +1,17 @@
 
 'use strict';
 // для dev окружения берем из файлика. если нет файлика будет скип и возьмет из окружения
-require('dotenv').config({ path: './env/.env.development.local' });
+const fs = require('fs');
+const dotenv = require('dotenv');
 
+const localEnvPath = './env/.env.development.local';
+const defaultEnvPath = './env/.env.development';
+
+if (fs.existsSync(localEnvPath)) {
+  dotenv.config({ path: localEnvPath });
+} else {
+  dotenv.config({ path: defaultEnvPath });
+}
 
 console.log(process.env.NODE_ENV);
 exports.config = {

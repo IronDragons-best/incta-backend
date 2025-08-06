@@ -8,12 +8,7 @@ import { of } from 'rxjs';
 import request from 'supertest';
 import cookieParser from 'cookie-parser';
 
-import {
-  AppConfigService,
-  NotificationInterceptor,
-  NotificationService,
-  AppNotification,
-} from '@common';
+import { AppConfigService, NotificationInterceptor, NotificationService, AppNotification } from '@common';
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 
 import { PostsController } from '../../src/modules/posts/interface/posts.controller';
@@ -23,32 +18,58 @@ import { PostsService } from '../../src/modules/posts/application/post.service';
 import { CreatePostUseCase } from '../../src/modules/posts/application/use-case/create.post.use.case';
 import { PostEntity } from '../../src/modules/posts/domain/post.entity';
 import { PostFileEntity } from '../../src/modules/posts/domain/post.file.entity';
-
 import { JwtStrategy } from '../../core/guards/local/jwt.strategy';
 import { JwtAuthGuard } from '../../core/guards/local/jwt-auth-guard';
-
-import { MockAppConfigService, MockHttpService } from '../mocks/common.mocks';
-import { MockPostsRepository, MockPostsQueryRepository, MockDataSource } from '../mocks/post.flow.mocks';
-import { DataSource } from 'typeorm';
 import { AuthService } from '../../src/modules/auth/application/auth.service';
 import { LocalStrategy } from '../../core/guards/local/local.strategy';
 import { LocalAuthGuard } from '../../core/guards/local/local.auth.guard';
 import { UsersRepository } from '../../src/modules/users/infrastructure/users.repository';
-import { MockUsersRepository } from '../mocks/user.flow.mocks';
 import { CryptoService } from '../../src/modules/users/application/crypto.service';
+import { DataSource } from 'typeorm';
+
+import { MockAppConfigService, MockHttpService } from '../mocks/common.mocks';
+import { MockPostsRepository, MockPostsQueryRepository, MockDataSource } from '../mocks/post.flow.mocks';
+import { MockUsersRepository } from '../mocks/user.flow.mocks';
 import { MockCryptoService } from '../mocks/auth.flow.mocks';
 
 describe('Create Post Integration Tests', () => {
   let app: INestApplication;
-  let postsRepository: MockPostsRepository;
-  let postsQueryRepository: MockPostsQueryRepository ;
+  let postsQueryRepository: MockPostsQueryRepository;
   let httpService: MockHttpService;
   let jwtService: JwtService;
   let commandBus: { execute: jest.Mock; publish: jest.Mock };
   let createPostUseCase: jest.Mocked<CreatePostUseCase>;
 
-  let notificationService: NotificationService;
-  let cryptoService: MockCryptoService;
+  const createValidToken = (userId: number): string => {
+    return jwtService.sign({ id: userId }, { secret: 'testAccessSecret', expiresIn: '1h' });
+  };
+
+  const createMockPost = (id: number, userId: number, title: string, description: string, files: PostFileEntity[] = []): PostEntity => {
+    const post = new PostEntity();
+    post.id = id;
+    post.title = title;
+    post.shortDescription = description;
+    post.userId = userId;
+    (post as any).user = { id: userId, username: 'test-user' };
+    post.createdAt = new Date();
+    post.updatedAt = new Date();
+    post.files = files;
+    return post;
+  };
+
+  const createMockPostFile = (id: number, fileName: string, fileUrl: string): PostFileEntity => {
+    const file = new PostFileEntity();
+    file.id = id;
+    file.fileName = fileName;
+    file.fileUrl = fileUrl;
+    return file;
+  };
+
+  const setupFileServiceMock = (uploadResults: any[] = []) => {
+    httpService.post = jest.fn().mockReturnValue(of({
+      data: { uploadResults, errors: [] }
+    }));
+  };
 
   beforeEach(async () => {
     const commandBusMock = {
@@ -73,13 +94,12 @@ describe('Create Post Integration Tests', () => {
         LocalAuthGuard,
         JwtStrategy,
         JwtAuthGuard,
+        PostsService,
+        JwtService,
         {
           provide: CreatePostUseCase,
-          useValue: {
-            execute: jest.fn(),
-          },
+          useValue: { execute: jest.fn() },
         },
-        PostsService,
         {
           provide: NotificationService,
           useValue: {
@@ -133,7 +153,6 @@ describe('Create Post Integration Tests', () => {
           provide: DataSource,
           useClass: MockDataSource,
         },
-        JwtService,
       ],
 
     }).compile();
@@ -150,14 +169,11 @@ describe('Create Post Integration Tests', () => {
     app.use(cookieParser());
     await app.init();
 
-    postsRepository = module.get<MockPostsRepository>(PostsRepository);
     postsQueryRepository = module.get<MockPostsQueryRepository>(PostsQueryRepository);
     httpService = module.get<MockHttpService>(HttpService);
     jwtService = module.get<JwtService>(JwtService);
     commandBus = commandBusMock;
     createPostUseCase = module.get<CreatePostUseCase>(CreatePostUseCase) as jest.Mocked<CreatePostUseCase>;
-    cryptoService = module.get<MockCryptoService>(CryptoService);
-    notificationService = module.get<NotificationService>(NotificationService);
 
     commandBus.execute.mockImplementation((command) => {
       if (command.constructor.name === 'CreatePostCommand') {
@@ -175,40 +191,12 @@ describe('Create Post Integration Tests', () => {
   describe('POST /posts/create-post', () => {
     it('201 - should successfully create a post', async () => {
       const userId = 1;
+      const validAccessToken = createValidToken(userId);
+      const postData = { title: 'Test Post Title', shortDescription: 'Test post description' };
+      const createdPost = createMockPost(99, userId, postData.title, postData.shortDescription);
 
-      const tokenPayload = { id: userId };
-
-      const validAccessToken = jwtService.sign(tokenPayload, {
-        secret: 'testAccessSecret',
-        expiresIn: '1h',
-      });
-
-      const postData = {
-        title: 'Test Post Title',
-        shortDescription: 'Test post description',
-      };
-
-      const createdPost = new PostEntity();
-      createdPost.id = 1;
-      createdPost.title = postData.title;
-      createdPost.shortDescription = postData.shortDescription;
-      createdPost.userId = userId;
-      createdPost.createdAt = new Date();
-      createdPost.updatedAt = new Date();
-      createdPost.files = [];
-
-      httpService.post = jest.fn().mockReturnValue(of({
-        data: {
-          uploadResults: [
-            { originalName: 'test-file.jpg', uploadedUrl: 'https://example.com/files/test-file.jpg' }
-          ],
-          errors: []
-        }
-      }));
-
-      const successNotification = AppNotification.success(createdPost);
-      createPostUseCase.execute.mockResolvedValue(successNotification);
-
+      setupFileServiceMock([{ originalName: 'test-file.jpg', uploadedUrl: 'https://example.com/files/test-file.jpg' }]);
+      createPostUseCase.execute.mockResolvedValue(AppNotification.success(createdPost));
       postsQueryRepository.getPostByIdWithUserId.mockResolvedValue(createdPost);
 
       const response = await request(app.getHttpServer())
@@ -250,6 +238,7 @@ describe('Create Post Integration Tests', () => {
       createdPost.title = postData.title;
       createdPost.shortDescription = postData.shortDescription;
       createdPost.userId = userId;
+      (createdPost as any).user = { id: userId, username: 'test-user' };
       createdPost.createdAt = new Date();
       createdPost.updatedAt = new Date();
 
@@ -297,10 +286,15 @@ describe('Create Post Integration Tests', () => {
           id: createdPost.id,
           title: createdPost.title,
           shortDescription: createdPost.shortDescription,
-          userId: createdPost.userId,
           previewImages: expect.arrayContaining([postFile.fileUrl]),
+          user: expect.objectContaining({
+            userId: createdPost.userId,
+            username: 'test-user',
+          }),
+          createdAt: expect.any(String),
         }),
       );
+
     });
 
     it('400 - should return bad request when title is missing', async () => {
@@ -324,8 +318,8 @@ describe('Create Post Integration Tests', () => {
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Authorization', `Bearer ${validAccessToken}`)
-        .set('Content-Type', 'multipart/form-data')
+        .set('Authorization',`Bearer ${validAccessToken}`)
+    .set('Content-Type', 'multipart/form-data')
         .field('shortDescription', 'Test description without title')
         .expect(400);
 

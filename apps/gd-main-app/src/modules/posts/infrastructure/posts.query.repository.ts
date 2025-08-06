@@ -72,7 +72,7 @@ export class PostsQueryRepository {
     }
 
     if (query.description) {
-      qb.andWhere('post.description LIKE :description', { description: `%${query.description}%` });
+      qb.andWhere('post.shortDescription LIKE :description', { description: `%${query.description}%` });
     }
 
     qb.orderBy(`post.${pagination.sortBy}`, pagination.sortDirection);

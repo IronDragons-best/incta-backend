@@ -124,8 +124,7 @@ export class PostsController {
   }
 
   @Get('/:id')
-  @GetPostByIdSwaggerDecorator()
-  async getPostById(@Param('id') id: number) {
+  async getPostById(@Param('id', ParseIntPipe) id: number) {
     return await this.queryBus.execute(new GetPostByIdQuery(id));
   }
 
