@@ -38,7 +38,10 @@
     "start:notification-service": "node -r newrelic dist/apps/notification-service/main",
     "start:dev:gd-main-app": "nest start gd-main-app --watch",
     "start:dev:files-service": "nest start files-service --watch",
-    "start:dev:notification-service": "nest start notification-service --watch"
+    "start:dev:notification-service": "nest start notification-service --watch",
+
+    "docker:dev:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:dev:down": "docker-compose -f docker-compose.dev.yml down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.850.0",

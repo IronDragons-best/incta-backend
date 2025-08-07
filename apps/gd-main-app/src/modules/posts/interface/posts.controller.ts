@@ -51,7 +51,6 @@ import { UpdatePostCommand } from '../application/use-case/update.post.use-case'
 
 import { UpdatePostSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/update.post.swagger.decorator';
 import { PostsRepository } from '../infrastructure/posts.repository';
-import { GetPostByIdSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.post.by.id.swagger.decorator';
 import { GetPostsSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.posts.swagger.decorator';
 import { QueryPostsInputDto } from './dto/input/query.posts.input.dto';
 import { DeletePostCommand } from '../application/use-case/delete.post.use-case';
@@ -83,14 +82,15 @@ export class PostsController {
     @Body() body: CreatePostInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
-    const postRes: AppNotification = await this.commandBus.execute(
+    const postRes: AppNotification<PostEntity> = await this.commandBus.execute(
       new CreatePostCommand(body, files.files, user.id),
     );
     if (postRes.hasErrors()) {
       return postRes;
     }
+
     const post = await this.postsQueryRepository.getPostByIdWithUserId(
-      postRes.getValue().id,
+      postRes.getValue()!.id,
       user.id,
     );
     if (!post) throw new NotFoundException('Created post not found');

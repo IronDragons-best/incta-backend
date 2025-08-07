@@ -21,6 +21,7 @@ import { ClientsModule } from '../core/common/shared-modules/client.module';
 import { DeviceModule } from './modules/devices/device.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { OwnershipModule } from '../core/guards/ownership/ownership.module';
+import { ProfileModule } from './modules/profiles/profile.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { OwnershipModule } from '../core/guards/ownership/ownership.module';
     AuthModule,
     PostsModule,
     DeviceModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService, RabbitInitService, AsyncLocalStorageService],
