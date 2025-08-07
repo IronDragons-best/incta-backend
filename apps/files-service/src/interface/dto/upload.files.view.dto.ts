@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
-import { FileViewDto } from './file.view.dto';
+import { FileViewDto } from '@common/dto/file.view.dto';
 
 export class UploadErrorDto {
   @ApiProperty({ default: 'file-name' })

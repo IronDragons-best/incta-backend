@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
 import {
   AppNotification,
+  FileAccessType,
   FilesConfigService,
   NotificationService,
   ProcessedFileData,
@@ -9,10 +10,9 @@ import { CustomLogger } from '@monitoring';
 import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
 import { FilesRepository } from '../../infrastructure/files.repository';
 import { FileEntity } from '../../domain/file.entity';
-import { FileAccessType } from '../../../core/types/file.types';
 import { GetFilesByPostIdQuery } from '../query-handlers/get.files.by.post.id.query.handler';
 import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
-import { FileViewDto } from '../../interface/dto/file.view.dto';
+import { FileViewDto } from '@common/dto/file.view.dto';
 
 export class UploadFilesCommand {
   constructor(
@@ -63,6 +63,7 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
           uploadedBy: userId,
           postId: postId,
           size: fileData.size,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           type: fileData.accessType ? fileData.accessType : FileAccessType.PUBLIC,
           mimeType: fileData.mimeType,
         });

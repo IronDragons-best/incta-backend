@@ -4,11 +4,13 @@ export * from './config/app.config.service';
 export * from './config/shared.config.module';
 export * from './config/validation.schema';
 export * from './config/files.config.service';
+
 // TYPES
 export * from './notification/notification.types';
 export * from './exceptions/exception.type';
 export * from './exceptions/types/error.message';
 export * from './types/common.types';
+export * from './types/files.types';
 
 // CONSTANTS
 export * from './constants/files.constants';
@@ -33,3 +35,6 @@ export * from './validation/validation.setup';
 
 // Decorators
 export * from './decorators/notification.interceptor.decorator';
+
+// Pipes
+export * from './pipes/file.validation.pipe';

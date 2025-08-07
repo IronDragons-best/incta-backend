@@ -1,6 +1,6 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { FileFromDatabaseDtoType } from '../../core/types/file.types';
+import { FileFromDatabaseDtoType } from '@common';
 
 @Injectable()
 export class FilesQueryRepository extends PrismaService {
@@ -20,7 +20,7 @@ export class FilesQueryRepository extends PrismaService {
     if (!files.length) {
       return null;
     }
-    return files;
+    return files as unknown as FileFromDatabaseDtoType[];
   }
 
   async getManyByUserId(userId: number): Promise<FileFromDatabaseDtoType[] | null> {
@@ -35,6 +35,6 @@ export class FilesQueryRepository extends PrismaService {
     if (!files.length) {
       return null;
     }
-    return files;
+    return files as unknown as FileFromDatabaseDtoType[];
   }
 }

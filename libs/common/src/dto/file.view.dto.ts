@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FileFromDatabaseDtoType } from '../../../core/types/file.types';
+import { FileFromDatabaseDtoType } from '@common/types/files.types';
 
 export class FileViewDto {
   @ApiProperty({ default: 1, description: 'File ID' })

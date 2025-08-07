@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FileViewDto } from './file.view.dto';
+import { FileViewDto } from '@common/dto/file.view.dto';
 
 export class FilesByUserIdViewDto {
   @ApiProperty({ default: 1, description: 'Total files count' })

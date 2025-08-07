@@ -19,7 +19,7 @@ import {
   SINGLE_FILE_LIMIT,
   ValidatedFilesData,
 } from '@common/constants/files.constants';
-import { FileValidationPipe } from '../../core/pipes/file.validation.pipe';
+import { FileValidationPipe } from '@common/pipes/file.validation.pipe';
 import { UploadFilesCommand } from '../application/use-cases/upload-files-use.case';
 import { AppNotification } from '@common';
 import { UploadFilesSwagger } from '../../core/decorators/swagger-settings/upload.files.swagger.decorator';
@@ -29,7 +29,7 @@ import { DeletePostFilesCommand } from '../application/use-cases/delete-post-fil
 import { GetFilesByUserIdQuery } from '../application/query-handlers/get.files.by.user.id.query-handler';
 import { GetUsersFilesSwagger } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
 import { GetFilesByPostIdQuery } from '../application/query-handlers/get.files.by.post.id.query.handler';
-import { FileViewDto } from './dto/file.view.dto';
+import { FileViewDto } from '@common/dto/file.view.dto';
 import { FilesByUserIdViewDto } from './dto/files.by.user.id.view-dto';
 import { GetPostFilesSwagger } from '../../core/decorators/swagger-settings/get.post.files.swagger.decorator';
 

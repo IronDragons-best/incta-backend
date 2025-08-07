@@ -3,7 +3,7 @@ import {
   CreateFileRequestDtoType,
   FileRequestFromDatabase,
   FileRequestStatusType,
-} from '../../core/types/file.types';
+} from '@common';
 
 export class FileRequestEntity {
   constructor(

@@ -19,7 +19,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 
 import { PostEntity } from '../../domain/post.entity';
 import { PostFileEntity } from '../../domain/post.file.entity';
-import { FileViewDto } from '../../../../../../files-service/src/interface/dto/file.view.dto';
+import { FileViewDto } from '@common/dto/file.view.dto';
 
 export class CreatePostCommand {
   constructor(

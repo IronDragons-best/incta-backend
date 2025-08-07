@@ -2,7 +2,7 @@ import { FilesServiceController } from '../../src/interface/files-service.contro
 import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { FileValidationPipe } from '../../core/pipes/file.validation.pipe';
+import { FileValidationPipe } from '@common/pipes/file.validation.pipe';
 import { AppNotification } from '@common';
 import { UploadFilesCommand } from '../../src/application/use-cases/upload-files-use.case';
 

@@ -1,11 +1,6 @@
 import { FileRequestEntity } from './file.request.entity';
 import { FileType as PrismaFileType } from '@prisma/client';
-
-import {
-  CreateFileDtoType,
-  FileAccessType,
-  FileFromDatabaseDtoType,
-} from '../../core/types/file.types';
+import { FileAccessType, FileFromDatabaseDtoType } from '@common';
 
 export class FileEntity {
   constructor(
@@ -24,9 +19,17 @@ export class FileEntity {
     public requests?: FileRequestEntity[],
   ) {}
 
-  static createInstance(
-    data: CreateFileDtoType,
-  ): Omit<FileEntity, 'id' | 'createdAt' | 'updatedAt' | 'requests'> {
+  static createInstance(data: {
+    filename: string;
+    url: string;
+    s3Key: string;
+    s3Bucket: string;
+    uploadedBy: number;
+    postId: number;
+    size: number;
+    type: PrismaFileType;
+    mimeType: string;
+  }): Omit<FileEntity, 'id' | 'createdAt' | 'updatedAt' | 'requests'> {
     return {
       filename: data.filename,
       s3Key: data.s3Key,

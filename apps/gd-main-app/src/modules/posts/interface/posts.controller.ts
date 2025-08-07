@@ -27,7 +27,7 @@ import {
   ValidatedFilesData,
 } from '@common';
 
-import { FileValidationPipe } from '../../../../../files-service/core/pipes/file.validation.pipe';
+import { FileValidationPipe } from '@common/pipes/file.validation.pipe';
 
 import { PostsService } from '../application/post.service';
 

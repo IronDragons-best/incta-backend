@@ -1,9 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FilesQueryRepository } from '../../infrastructure/files.query.repository';
-import { NotificationService } from '@common';
+import { FileFromDatabaseDtoType, NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
-import { FileFromDatabaseDtoType } from '../../../core/types/file.types';
-import { FileViewDto } from '../../interface/dto/file.view.dto';
+import { FileViewDto } from '@common/dto/file.view.dto';
 
 export class GetFilesByUserIdQuery {
   constructor(public userId: number) {}

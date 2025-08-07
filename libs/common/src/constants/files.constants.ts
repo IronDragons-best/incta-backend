@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { FileAccessType } from '../../../../apps/files-service/core/types/file.types';
+import { FileAccessType } from '@common/types/files.types';
 
 export const SINGLE_FILE_LIMIT = 20 * 1024 * 1024; // 20 МБ - максимальный размер одного файла
 export const TOTAL_SIZE_LIMIT = 20 * 1024 * 1024; // 20 МБ - лимит для выбора типа обработки
