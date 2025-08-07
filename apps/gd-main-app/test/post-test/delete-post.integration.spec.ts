@@ -12,7 +12,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PassportModule } from '@nestjs/passport';
 import { TokenService } from '../../src/modules/auth/application/use-cases/token.service';
 import { MockTokenService } from '../mocks/auth.flow.mocks';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService, AppNotification, NotificationInterceptor } from '@common';
 import { cookieOptionsProvider } from '../../src/modules/auth/constants/cookie-options.constants';
 import { PostsRepository } from '../../src/modules/posts/infrastructure/posts.repository';
@@ -39,6 +39,7 @@ describe('Delete post', () => {
       imports: [PassportModule],
       controllers: [PostsController],
       providers: [
+        QueryBus,
         { provide: TokenService, useClass: MockTokenService },
         { provide: CommandBus, useClass: MockCommandBus },
         { provide: AppConfigService, useClass: MockAppConfigService },

@@ -11,7 +11,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PostsController } from '../../src/modules/posts/interface/posts.controller';
 import { TokenService } from '../../src/modules/auth/application/use-cases/token.service';
 import { MockTokenService } from '../mocks/auth.flow.mocks';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AppConfigService, AppNotification, NotificationInterceptor } from '@common';
 import { cookieOptionsProvider } from '../../src/modules/auth/constants/cookie-options.constants';
 import { CookieInterceptor } from '../../core/interceptors/refresh-cookie.interceptor';
@@ -39,6 +39,7 @@ describe('Update post', () => {
       imports: [PassportModule],
       controllers: [PostsController],
       providers: [
+        QueryBus,
         { provide: TokenService, useClass: MockTokenService },
         { provide: CommandBus, useClass: MockCommandBus },
         { provide: AppConfigService, useClass: MockAppConfigService },
@@ -93,6 +94,10 @@ describe('Update post', () => {
       shortDescription: 'Mock short description',
       createdAt: new Date().toISOString(),
       files: [{ fileUrl: 'http://mock-file-url.com/image1.jpg' }],
+      user: {
+        id: mockUser.id,
+        username: 'mock_user',
+      },
     };
 
     it('200 успешный', async () => {
@@ -121,11 +126,14 @@ describe('Update post', () => {
       expect(result.body).toEqual(
         expect.objectContaining({
           id: mockPost.id,
-          userId: mockPost.userId,
           title: mockPost.title,
           shortDescription: mockPost.shortDescription,
           previewImages: mockPost.files.map((f) => f.fileUrl),
           createdAt: expect.any(String),
+          user: {
+            userId: mockPost.userId,
+            username: 'mock_user',
+          },
         }),
       );
     });

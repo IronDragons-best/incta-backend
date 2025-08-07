@@ -2,13 +2,18 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { CommandBus, CqrsModule } from '@nestjs/cqrs';
+import { CommandBus, CqrsModule, QueryBus } from '@nestjs/cqrs';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
 import request from 'supertest';
 import cookieParser from 'cookie-parser';
 
-import { AppConfigService, NotificationInterceptor, NotificationService, AppNotification } from '@common';
+import {
+  AppConfigService,
+  NotificationInterceptor,
+  NotificationService,
+  AppNotification,
+} from '@common';
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 
 import { PostsController } from '../../src/modules/posts/interface/posts.controller';
@@ -28,7 +33,11 @@ import { CryptoService } from '../../src/modules/users/application/crypto.servic
 import { DataSource } from 'typeorm';
 
 import { MockAppConfigService, MockHttpService } from '../mocks/common.mocks';
-import { MockPostsRepository, MockPostsQueryRepository, MockDataSource } from '../mocks/post.flow.mocks';
+import {
+  MockPostsRepository,
+  MockPostsQueryRepository,
+  MockDataSource,
+} from '../mocks/post.flow.mocks';
 import { MockUsersRepository } from '../mocks/user.flow.mocks';
 import { MockCryptoService } from '../mocks/auth.flow.mocks';
 
@@ -41,10 +50,19 @@ describe('Create Post Integration Tests', () => {
   let createPostUseCase: jest.Mocked<CreatePostUseCase>;
 
   const createValidToken = (userId: number): string => {
-    return jwtService.sign({ id: userId }, { secret: 'testAccessSecret', expiresIn: '1h' });
+    return jwtService.sign(
+      { id: userId },
+      { secret: 'testAccessSecret', expiresIn: '1h' },
+    );
   };
 
-  const createMockPost = (id: number, userId: number, title: string, description: string, files: PostFileEntity[] = []): PostEntity => {
+  const createMockPost = (
+    id: number,
+    userId: number,
+    title: string,
+    description: string,
+    files: PostFileEntity[] = [],
+  ): PostEntity => {
     const post = new PostEntity();
     post.id = id;
     post.title = title;
@@ -57,7 +75,11 @@ describe('Create Post Integration Tests', () => {
     return post;
   };
 
-  const createMockPostFile = (id: number, fileName: string, fileUrl: string): PostFileEntity => {
+  const createMockPostFile = (
+    id: number,
+    fileName: string,
+    fileUrl: string,
+  ): PostFileEntity => {
     const file = new PostFileEntity();
     file.id = id;
     file.fileName = fileName;
@@ -66,9 +88,11 @@ describe('Create Post Integration Tests', () => {
   };
 
   const setupFileServiceMock = (uploadResults: any[] = []) => {
-    httpService.post = jest.fn().mockReturnValue(of({
-      data: { uploadResults, errors: [] }
-    }));
+    httpService.post = jest.fn().mockReturnValue(
+      of({
+        data: { uploadResults, errors: [] },
+      }),
+    );
   };
 
   beforeEach(async () => {
@@ -93,6 +117,8 @@ describe('Create Post Integration Tests', () => {
         LocalStrategy,
         LocalAuthGuard,
         JwtStrategy,
+        QueryBus,
+
         JwtAuthGuard,
         PostsService,
         JwtService,
@@ -119,7 +145,12 @@ describe('Create Post Integration Tests', () => {
         },
         {
           provide: CustomLogger,
-          useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn(), log: jest.fn() },
+          useValue: {
+            setContext: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            log: jest.fn(),
+          },
         },
         {
           provide: PostsRepository,
@@ -154,7 +185,6 @@ describe('Create Post Integration Tests', () => {
           useClass: MockDataSource,
         },
       ],
-
     }).compile();
 
     app = module.createNestApplication();
@@ -173,7 +203,9 @@ describe('Create Post Integration Tests', () => {
     httpService = module.get<MockHttpService>(HttpService);
     jwtService = module.get<JwtService>(JwtService);
     commandBus = commandBusMock;
-    createPostUseCase = module.get<CreatePostUseCase>(CreatePostUseCase) as jest.Mocked<CreatePostUseCase>;
+    createPostUseCase = module.get<CreatePostUseCase>(
+      CreatePostUseCase,
+    ) as jest.Mocked<CreatePostUseCase>;
 
     commandBus.execute.mockImplementation((command) => {
       if (command.constructor.name === 'CreatePostCommand') {
@@ -192,10 +224,23 @@ describe('Create Post Integration Tests', () => {
     it('201 - should successfully create a post', async () => {
       const userId = 1;
       const validAccessToken = createValidToken(userId);
-      const postData = { title: 'Test Post Title', shortDescription: 'Test post description' };
-      const createdPost = createMockPost(99, userId, postData.title, postData.shortDescription);
+      const postData = {
+        title: 'Test Post Title',
+        shortDescription: 'Test post description',
+      };
+      const createdPost = createMockPost(
+        99,
+        userId,
+        postData.title,
+        postData.shortDescription,
+      );
 
-      setupFileServiceMock([{ originalName: 'test-file.jpg', uploadedUrl: 'https://example.com/files/test-file.jpg' }]);
+      setupFileServiceMock([
+        {
+          originalName: 'test-file.jpg',
+          uploadedUrl: 'https://example.com/files/test-file.jpg',
+        },
+      ]);
       createPostUseCase.execute.mockResolvedValue(AppNotification.success(createdPost));
       postsQueryRepository.getPostByIdWithUserId.mockResolvedValue(createdPost);
 
@@ -207,17 +252,22 @@ describe('Create Post Integration Tests', () => {
         .field('shortDescription', postData.shortDescription)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
-          contentType: 'image/jpeg'
+          contentType: 'image/jpeg',
         })
         .expect(201);
 
       expect(createPostUseCase.execute).toHaveBeenCalled();
-      expect(postsQueryRepository.getPostByIdWithUserId).toHaveBeenCalledWith(createdPost.id, userId);
-      expect(response.body).toEqual(expect.objectContaining({
-        id: createdPost.id,
-        title: createdPost.title,
-        shortDescription: createdPost.shortDescription,
-      }));
+      expect(postsQueryRepository.getPostByIdWithUserId).toHaveBeenCalledWith(
+        createdPost.id,
+        userId,
+      );
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: createdPost.id,
+          title: createdPost.title,
+          shortDescription: createdPost.shortDescription,
+        }),
+      );
     });
 
     it('201 - should successfully create a post with files', async () => {
@@ -254,7 +304,10 @@ describe('Create Post Integration Tests', () => {
         of({
           data: {
             uploadResults: [
-              { originalName: 'test-file.jpg', uploadedUrl: 'https://example.com/files/test-file.jpg' },
+              {
+                originalName: 'test-file.jpg',
+                uploadedUrl: 'https://example.com/files/test-file.jpg',
+              },
             ],
             errors: [],
           },
@@ -274,12 +327,15 @@ describe('Create Post Integration Tests', () => {
         .field('shortDescription', postData.shortDescription)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
-          contentType: 'image/jpeg'
+          contentType: 'image/jpeg',
         })
         .expect(201);
 
       expect(createPostUseCase.execute).toHaveBeenCalled();
-      expect(postsQueryRepository.getPostByIdWithUserId).toHaveBeenCalledWith(createdPost.id, userId);
+      expect(postsQueryRepository.getPostByIdWithUserId).toHaveBeenCalledWith(
+        createdPost.id,
+        userId,
+      );
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -294,7 +350,6 @@ describe('Create Post Integration Tests', () => {
           createdAt: expect.any(String),
         }),
       );
-
     });
 
     it('400 - should return bad request when title is missing', async () => {
@@ -309,17 +364,19 @@ describe('Create Post Integration Tests', () => {
         expiresIn: '1h',
       });
 
-      httpService.post = jest.fn().mockReturnValue(of({
-        data: {
-          uploadResults: [],
-          errors: []
-        }
-      }));
+      httpService.post = jest.fn().mockReturnValue(
+        of({
+          data: {
+            uploadResults: [],
+            errors: [],
+          },
+        }),
+      );
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Authorization',`Bearer ${validAccessToken}`)
-    .set('Content-Type', 'multipart/form-data')
+        .set('Authorization', `Bearer ${validAccessToken}`)
+        .set('Content-Type', 'multipart/form-data')
         .field('shortDescription', 'Test description without title')
         .expect(400);
 
@@ -327,12 +384,14 @@ describe('Create Post Integration Tests', () => {
     });
 
     it('401 - should return unauthorized when access token is missing', async () => {
-      httpService.post = jest.fn().mockReturnValue(of({
-        data: {
-          uploadResults: [],
-          errors: []
-        }
-      }));
+      httpService.post = jest.fn().mockReturnValue(
+        of({
+          data: {
+            uploadResults: [],
+            errors: [],
+          },
+        }),
+      );
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
@@ -347,12 +406,14 @@ describe('Create Post Integration Tests', () => {
     it('401 - should return unauthorized when access token is invalid', async () => {
       const invalidToken = 'invalid-token';
 
-      httpService.post = jest.fn().mockReturnValue(of({
-        data: {
-          uploadResults: [],
-          errors: []
-        }
-      }));
+      httpService.post = jest.fn().mockReturnValue(
+        of({
+          data: {
+            uploadResults: [],
+            errors: [],
+          },
+        }),
+      );
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
