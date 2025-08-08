@@ -8,7 +8,7 @@ export class AppController {
 
   @Get()
   @HealthSwagger()
-  healthCheck() {
-    return this.appService.healthCheck();
+  async healthCheck() {
+    return await this.appService.healthCheck();
   }
 }

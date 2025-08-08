@@ -49,6 +49,16 @@ export const loggerValidationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test'),
 
   LOGGER_LEVEL: Joi.string().valid('info', 'trace', 'error'),
+
+  NEW_RELIC_APP_NAME: Joi.string(),
+
+  NEW_RELIC_LICENSE_KEY: Joi.string(),
+
+  NEW_RELIC_LOG_LEVEL: Joi.string(),
+
+  NEW_RELIC_ENABLED: Joi.boolean(),
+
+  NEW_RELIC_LOG_FORWARDING: Joi.boolean(),
 });
 
 export const filesValidationSchema = Joi.object({
@@ -57,6 +67,18 @@ export const filesValidationSchema = Joi.object({
   FILES_HOST: Joi.string(),
 
   FILES_PORT: Joi.number(),
+
+  S3_URL: Joi.string(),
+
+  S3_ACCESS_SECRET_KEY: Joi.string(),
+
+  S3_ACCESS_KEY_ID: Joi.string(),
+
+  S3_SERVER: Joi.string(),
+
+  S3_REGION: Joi.string(),
+
+  POST_FILES_BUCKET_NAME: Joi.string(),
 });
 
 export const notificationsValidationSchema = Joi.object({

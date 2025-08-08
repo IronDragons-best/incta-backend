@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EmailResendEvent } from '../events/email.resend.event';
+import { EmailResendEvent } from '../../events/email.resend.event';
 
 @Injectable()
 export class PasswordRecoveryListener {

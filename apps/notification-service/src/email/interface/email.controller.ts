@@ -136,7 +136,6 @@ export class EmailController {
   async handleOauthProvider(@Payload() data: OauthInputDto, @Ctx() context: RmqContext) {
     const { template, email } = data;
     try {
-      console.log('here');
       this.logger.log(`Processing oath email for ${email}`);
       let result: AppNotification;
       if (template === OauthTemplateType.ADD_PROVIDER) {

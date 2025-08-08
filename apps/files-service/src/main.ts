@@ -1,33 +1,19 @@
+import 'newrelic';
+import { FilesConfigService } from '@common';
 import { NestFactory } from '@nestjs/core';
 import { config } from 'dotenv';
 import { FilesServiceModule } from './files-service.module';
-import { Transport } from '@nestjs/microservices';
-import { NotificationInterceptor } from '@common';
-import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
-import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
+import { filesSetup } from '../core/files.setup';
 config();
 
 async function bootstrap() {
-  const host = process.env.FILES_HOST;
-  const port = parseInt(process.env.FILES_PORT!, 10);
+  const app = await NestFactory.create(FilesServiceModule);
+  const configService = app.get(FilesConfigService);
 
-  const app = await NestFactory.createMicroservice(FilesServiceModule, {
-    transport: Transport.TCP,
-    options: {
-      host,
-      port,
-    },
-  });
-
-  const logger = await app.resolve(CustomLogger);
-  logger.setContext('FILES_NEST_INIT');
-  app.useLogger(logger);
-  app.useGlobalInterceptors(
-    new NotificationInterceptor(),
-    new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
-  );
-
-  await app.listen();
+  const port = configService.filesPort;
+  const host = configService.filesHost;
+  await filesSetup(app);
+  await app.listen(port);
 
   console.log(`🚀 Files microservice started on ${host}:${port}`);
 }

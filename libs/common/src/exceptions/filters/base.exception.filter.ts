@@ -5,14 +5,14 @@ import { Response } from 'express';
 export abstract class BaseExceptionFilter implements ExceptionFilter {
   abstract catch(exception: any, host: ArgumentsHost): void;
 
-  protected formatErrorResponse(message: string, field: string = 'none'): ErrorResponse {
+  protected formatErrorResponse(message: string, field?: string): ErrorResponse {
+    const errorMessage: { message: string; field?: string } = { message };
+    if (field && field.trim()) {
+      errorMessage.field = field;
+    }
+
     return {
-      errorsMessages: [
-        {
-          message,
-          field,
-        },
-      ],
+      errorsMessages: [errorMessage],
     };
   }
 

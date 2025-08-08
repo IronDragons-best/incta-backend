@@ -147,6 +147,36 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: GITHUB_CALLBACK_URL
+             - name: FILES_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_URL
+             - name: NEW_RELIC_APP_NAME
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: NEW_RELIC_APP_NAME
+             - name: NEW_RELIC_LICENSE_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: NEW_RELIC_LICENSE_KEY
+             - name: NEW_RELIC_LOG_LEVEL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: NEW_RELIC_LOG_LEVEL
+             - name: NEW_RELIC_ENABLED
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: NEW_RELIC_ENABLED
+             - name: NEW_RELIC_LOG_FORWARDING
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: NEW_RELIC_LOG_FORWARDING
              - name: PORT
                valueFrom:
                  secretKeyRef:

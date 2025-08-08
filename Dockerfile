@@ -17,10 +17,16 @@ RUN pnpm install --frozen-lockfile
 # Copy the entire source code to the builder stage
 COPY . .
 
-# Build all services
+# Generate Prisma client BEFORE building the services
+RUN pnpm run prisma:files:generate
+
+# Build all services (files-service build also includes prisma generate)
 RUN pnpm run build:gd-main-app
 RUN pnpm run build:files-service
 RUN pnpm run build:notification-service
+
+# Verify Prisma client was generated
+RUN ls -la node_modules/.prisma/client/ || echo "Prisma client not found!"
 
 FROM node:20-alpine AS production
 
@@ -35,8 +41,15 @@ RUN npm install -g pnpm
 # Copy package files (including pnpm-lock.yaml) for production dependencies
 COPY package.json ./
 COPY pnpm-lock.yaml ./
+
 # Install ONLY production dependencies
 RUN pnpm install --frozen-lockfile --prod
+
+# IMPORTANT: Copy Prisma schema BEFORE generating client in production
+COPY --from=builder /app/apps/files-service/prisma ./apps/files-service/prisma
+
+# Re-generate Prisma client in production stage with only production dependencies
+RUN npx prisma generate --schema=apps/files-service/prisma/schema.prisma
 
 # Copy built applications (dist folder)
 COPY --from=builder /app/dist ./dist
@@ -49,10 +62,13 @@ COPY --from=builder /app/libs ./libs
 COPY --from=builder /app/tsconfig*.json ./
 COPY --from=builder /app/nest-cli.json ./
 
-
+# Copy the New Relic configuration file
+COPY newrelic.js ./
 
 # Copy the startup script
 COPY start-services.sh ./start-services.sh
+
+
 
 # Create a non-root user
 RUN addgroup -g 1001 -S nodejs
@@ -60,6 +76,7 @@ RUN adduser -S nestjs -u 1001
 
 # Change ownership of the app directory to the non-root user
 RUN chown -R nestjs:nodejs /app
+
 # Switch to the non-root user
 USER nestjs
 

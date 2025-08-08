@@ -9,6 +9,8 @@ import {
   AuthProvider,
   UserOauthProviderEntity,
 } from '../../auth/domain/user.oauth2.provider.entity';
+import { PostEntity } from '../../posts/domain/post.entity';
+import { ProfileEntity } from '../../profiles/domain/profile.entity';
 
 export type UserDomainDtoType = {
   username: string;
@@ -34,11 +36,20 @@ export class User extends BasicEntity {
   @OneToMany(() => DeviceEntity, (device) => device.user)
   devices: DeviceEntity[];
 
+  @OneToMany(() => PostEntity, (post) => post.user)
+  posts: PostEntity[];
+
   @OneToMany(() => UserOauthProviderEntity, (oauthProvider) => oauthProvider.user, {
     cascade: ['insert', 'update'],
     eager: true,
   })
   oauthProviders: UserOauthProviderEntity[];
+
+  @OneToOne(() => ProfileEntity, (profile) => profile.user, {
+    cascade: true,
+    eager: true,
+  })
+  profile: ProfileEntity;
 
   static createOauthInstance(
     email: string,

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import {
   AppConfigService,
@@ -20,9 +20,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from '../core/common/shared-modules/client.module';
 import { DeviceModule } from './modules/devices/device.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { OwnershipModule } from '../core/guards/ownership/ownership.module';
+import { ProfileModule } from './modules/profiles/profile.module';
 
 @Module({
   imports: [
+    OwnershipModule,
+
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',
       validationSchema: validationSchema,
@@ -32,34 +36,46 @@ import { ThrottlerModule } from '@nestjs/throttler';
       wildcard: true,
       delimiter: '.',
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 10000,
-      limit: 5
-    }]),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl: 10000,
+        limit: 5,
+      },
+    ]),
     MonitoringModule.forRoot('main-microservice'),
     TypeOrmModule.forRootAsync({
-      useFactory: (configService: AppConfigService) => ({
-        type: 'postgres',
-        host: configService.postgresHost,
-        port: configService.pgPort,
-        username: configService.pgUserName,
-        password: configService.pgPassword,
-        database: configService.mainPostgresDatabaseName,
-        autoLoadEntities: true,
-        synchronize: false,
-        logging: ['error'],
-        namingStrategy: new SnakeNamingStrategy(),
-        ssl: {
-          rejectUnauthorized: true,
-        },
-        // Для Neon можно также добавить:
-        extra: {
-          // Настройки пула соединений для Neon
-          max: 20,
-          idleTimeoutMillis: 30000,
-          connectionTimeoutMillis: 2000,
-        },
-      }),
+      useFactory: (configService: AppConfigService) => {
+        const isStaging = configService.depType === 'staging';
+        const baseConfig: TypeOrmModuleOptions = {
+          type: 'postgres',
+          host: configService.postgresHost,
+          port: configService.pgPort,
+          username: configService.pgUserName,
+          password: configService.pgPassword,
+          database: configService.mainPostgresDatabaseName,
+          autoLoadEntities: true,
+          synchronize: false,
+          logging: ['error'],
+          namingStrategy: new SnakeNamingStrategy(),
+        };
+        if (isStaging) {
+          return {
+            ...baseConfig,
+            extra: undefined,
+          };
+        }
+
+        return {
+          ...baseConfig,
+          ssl: { rejectUnauthorized: false },
+          extra: {
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+          },
+        };
+      },
       inject: [AppConfigService],
     }),
     ClientsModule,
@@ -69,6 +85,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     AuthModule,
     PostsModule,
     DeviceModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService, RabbitInitService, AsyncLocalStorageService],

@@ -95,6 +95,7 @@ export class SharedConfigModule {
       paths.push(
         join(envDir, '.env.test'), // Тестовые переменные (высший приоритет)
         join(envDir, '.env.development'), // Fallback на development
+        join(envDir, '.env.development.local'), // Fallback на development local
         join(envDir, '.env'), // Базовый файл
       );
 

@@ -14,7 +14,7 @@ import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 export interface LoginCommandPayload {
   userId: number;
   deviceName: string;
-  ip: string
+  ip: string;
 }
 
 export class LoginCommand {
@@ -29,7 +29,7 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
     private readonly usersRepository: UsersRepository,
     private readonly devicesQueryRepository: DevicesQueryRepository,
     private readonly devicesRepository: DevicesRepository,
-    private readonly logger: CustomLogger
+    private readonly logger: CustomLogger,
   ) {
     this.logger.setContext('Login Use Case');
   }

@@ -27,6 +27,9 @@ export class MockAppConfigService {
   get jwtRefreshExpires() {
     return '7d';
   }
+  get filesUrl() {
+    return 'http://localhost:3001';
+  }
 }
 
 export class MockCommandBus {
@@ -254,4 +257,8 @@ export class MockCustomLogger implements Partial<CustomLogger> {
   log = jest.fn();
   debug = jest.fn();
   verbose = jest.fn();
+}
+
+export class MockHttpService {
+  post = jest.fn();
 }

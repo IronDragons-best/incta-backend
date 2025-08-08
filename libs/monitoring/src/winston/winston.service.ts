@@ -57,16 +57,19 @@ export class WinstonService {
 
     const transports: Transport[] = [consoleTransport];
 
-    // const isProduction = this.configService.isProduction;
-
-    // if (isProduction) {
-    //   const httpTransport = new winston.transports.Http({
-    //     host: configService.loggerHost,
-    //     path: configService.loggerUrlPath,
-    //     ssl: true
-    //   })
-    //  transports.push(httpTransport)
-    // }
+    if (isProduction) {
+      const httpTransport = new winston.transports.Http({
+        host: 'log-api.newrelic.com',
+        path: '/log/v1',
+        port: 443,
+        ssl: true,
+        headers: {
+          'X-License-Key': configService.newRelicKey,
+          'Content-Type': 'application/json',
+        },
+      });
+      transports.push(httpTransport);
+    }
 
     this.logger = winston.createLogger({
       format: winston.format.timestamp({ format: timeFormat }),
