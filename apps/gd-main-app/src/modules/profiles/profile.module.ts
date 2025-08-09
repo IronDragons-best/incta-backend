@@ -9,9 +9,14 @@ import { ProfileQueryRepository } from './infrastructure/profile.query.repositor
 import { ProfileRepository } from './infrastructure/profile.repository';
 import { CityEntity } from '../location/domain/city.entity';
 import { CountryEntity } from '../location/domain/country.entity';
+import { CreateProfileListener } from '../../../core/listeners/user-listeners/profile.create.listener';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProfileEntity, CityEntity, CountryEntity])],
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([ProfileEntity, CityEntity, CountryEntity]),
+  ],
   controllers: [ProfileController],
   providers: [
     CreateProfileUseCase,
@@ -19,6 +24,7 @@ import { CountryEntity } from '../location/domain/country.entity';
     AsyncLocalStorageService,
     ProfileQueryRepository,
     ProfileRepository,
+    CreateProfileListener,
   ],
 })
 export class ProfileModule {}

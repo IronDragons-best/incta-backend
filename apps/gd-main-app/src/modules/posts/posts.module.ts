@@ -20,7 +20,7 @@ const useCases = [
   UpdatePostUseCase,
   DeletePostUseCase,
   GetPostByIdHandler,
-  GetPostsHandler
+  GetPostsHandler,
 ];
 
 @Module({

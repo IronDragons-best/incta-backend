@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { CountryEntity } from './country.entity';
 
 @Entity('cities')
@@ -14,5 +21,6 @@ export class CityEntity {
   country: CountryEntity;
 
   @Column({ name: 'country_id' })
+  @Index()
   countryId: number;
 }
