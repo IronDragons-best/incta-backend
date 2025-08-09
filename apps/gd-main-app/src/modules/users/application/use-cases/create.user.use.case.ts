@@ -64,6 +64,8 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
 
       const hash = await this.cryptoService.createHash(userDto.password);
       const confirmCode = uuidv4();
+
+      let savedUser: User;
       if (
         userWithTheSameLoginOrEmail &&
         !userWithTheSameLoginOrEmail.existingUser.emailConfirmationInfo.isConfirmed
@@ -77,7 +79,10 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
           emailConfirmCode: confirmCode,
         });
 
-        await this.usersRepository.saveWithTransaction(existingUser, queryRunner);
+        savedUser = await this.usersRepository.saveWithTransaction(
+          existingUser,
+          queryRunner,
+        );
       } else {
         const user: User = User.createInstance({
           username: userDto.username,
@@ -85,12 +90,13 @@ export class CreateUserUseCase implements ICommandHandler<CreateUserCommand> {
           email: userDto.email,
           emailConfirmCode: confirmCode,
         });
-        await this.usersRepository.saveWithTransaction(user, queryRunner);
+        savedUser = await this.usersRepository.saveWithTransaction(user, queryRunner);
       }
 
       await queryRunner.commitTransaction();
 
       const registeredUserDto = new RegisteredUserDto(
+        savedUser.id,
         userDto.username,
         userDto.email,
         confirmCode,

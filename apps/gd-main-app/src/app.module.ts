@@ -22,6 +22,7 @@ import { DeviceModule } from './modules/devices/device.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { OwnershipModule } from '../core/guards/ownership/ownership.module';
 import { ProfileModule } from './modules/profiles/profile.module';
+import { LocationModule } from './modules/location/location.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { ProfileModule } from './modules/profiles/profile.module';
     PostsModule,
     DeviceModule,
     ProfileModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [AppService, RabbitInitService, AsyncLocalStorageService],

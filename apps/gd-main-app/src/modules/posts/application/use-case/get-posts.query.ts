@@ -10,9 +10,7 @@ import { firstValueFrom } from 'rxjs';
 import { PostEntity } from '../../domain/post.entity';
 
 export class GetPostsQuery {
-  constructor(
-    public readonly query: QueryPostsInputDto
-  ) {}
+  constructor(public readonly query: QueryPostsInputDto) {}
 }
 
 @QueryHandler(GetPostsQuery)
@@ -38,28 +36,32 @@ export class GetPostsHandler implements IQueryHandler<GetPostsQuery> {
         return notify.setNotFound('No posts found');
       }
 
-      await Promise.all(posts.items.map(async post => {
-        if (!post.files || post.files.length === 0) {
-          const imagesFiles = await this.getPreviewImageUrl(post.user.id, post.id);
-          if (imagesFiles) {
-            post.files = imagesFiles.map(file => ({
-              id: file.id,
-              fileName: file.originalName,
-              fileUrl: file.uploadedUrl,
-            }));
-          } else {
-            this.logger.warn(`No preview image found for post ${post.id}`);
+      await Promise.all(
+        posts.items.map(async (post) => {
+          if (!post.files || post.files.length === 0) {
+            const imagesFiles = await this.getPreviewImageUrl(post.user.id, post.id);
+            if (imagesFiles) {
+              post.files = imagesFiles.map((file) => ({
+                id: file.id,
+                fileName: file.originalName,
+                fileUrl: file.uploadedUrl,
+              }));
+            } else {
+              this.logger.warn(`No preview image found for post ${post.id}`);
+            }
           }
-        }
-      }));
+        }),
+      );
 
       return {
         ...posts,
-        items: posts.items.map(post => PostEntity.mapToDomainDto(post)),
-      }
+        items: posts.items.map((post) => PostEntity.mapToDomainDto(post)),
+      };
     } catch (error) {
       this.logger.error(`Error retrieving posts: ${error.message}`);
-      return notify.setServerError('Internal Server Error occurred while retrieving posts');
+      return notify.setServerError(
+        'Internal Server Error occurred while retrieving posts',
+      );
     }
   }
 

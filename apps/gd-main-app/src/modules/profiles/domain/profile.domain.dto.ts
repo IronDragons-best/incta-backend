@@ -8,12 +8,6 @@ abstract class BaseProfileDomainDto {
 }
 
 type CreateProfileData = {
-  firstName: string;
-  lastName: string;
-  dateOfBirth?: Date;
-  aboutMe?: string;
-  countryId?: number;
-  cityId?: number;
   userId: number;
 };
 

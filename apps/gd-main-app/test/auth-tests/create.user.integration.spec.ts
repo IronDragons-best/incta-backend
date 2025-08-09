@@ -121,6 +121,9 @@ describe('CreateUserUseCase', () => {
 
     // Мокаем зависимости для успешного сценария
     usersRepository.findExistingByLoginAndEmailWithTransaction.mockResolvedValue(null);
+    usersRepository.saveWithTransaction.mockResolvedValue({
+      id: 1,
+    });
     cryptoService.createHash.mockResolvedValue(hashedPassword);
 
     // Мокаем User.createInstance, чтобы он возвращал предсказуемый объект User
@@ -267,6 +270,9 @@ describe('CreateUserUseCase', () => {
       existingUser: existingUserMock,
       field: 'Username',
     });
+    usersRepository.saveWithTransaction.mockResolvedValue({
+      id: 1,
+    });
     cryptoService.createHash.mockResolvedValue(hashedPassword);
 
     const result = await useCase.execute(new CreateUserCommand(dto));
@@ -275,6 +281,7 @@ describe('CreateUserUseCase', () => {
     expect(
       usersRepository.findExistingByLoginAndEmailWithTransaction,
     ).toHaveBeenCalledWith(dto.username, dto.email, mockQueryRunner);
+
     expect(userIsPasswordsMatchSpy).toHaveBeenCalledWith(
       dto.password,
       dto.passwordConfirmation,
