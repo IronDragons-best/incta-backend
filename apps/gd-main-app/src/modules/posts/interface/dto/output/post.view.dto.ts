@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-
 class PostUserDto {
   @ApiProperty({
     description: 'Unique identifier of the user.',

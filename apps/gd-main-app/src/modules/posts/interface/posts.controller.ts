@@ -57,6 +57,7 @@ import { DeletePostCommand } from '../application/use-case/delete.post.use-case'
 import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/posts/delete.post.swagger.decorator';
 import { GetPostByIdQuery } from '../application/use-case/get.post.by.id.query';
 import { GetPostsQuery } from '../application/use-case/get-posts.query';
+import { GetPostByIdSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.post.by.id.swagger.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -124,6 +125,7 @@ export class PostsController {
   }
 
   @Get('/:id')
+  @GetPostByIdSwaggerDecorator()
   async getPostById(@Param('id', ParseIntPipe) id: number) {
     return await this.queryBus.execute(new GetPostByIdQuery(id));
   }
