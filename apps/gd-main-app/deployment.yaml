@@ -192,11 +192,11 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: REDIS_PASSWORD
-             - name: LOCATION_REDIS_DB
+             - name: REDIS_DB
                valueFrom:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
-                   key: LOCATION_REDIS_DB
+                   key: REDIS_DB
              - name: PORT
                valueFrom:
                  secretKeyRef:
