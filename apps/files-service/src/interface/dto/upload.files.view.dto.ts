@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class UploadErrorDto {
   @ApiProperty({ default: 'file-name' })
@@ -23,15 +23,15 @@ export class UploadErrorDto {
   }
 }
 export class UploadFilesResponseDto extends TotalUploadedFilesViewDto<
-  FileViewDto,
+  FilePostViewDto,
   UploadErrorDto
 > {
   @ApiProperty({
     isArray: true,
-    type: FileViewDto,
+    type: FilePostViewDto,
     description: 'Успешно загруженные файлы',
   })
-  uploadResults: FileViewDto[];
+  uploadResults: FilePostViewDto[];
 
   @ApiProperty({
     isArray: true,

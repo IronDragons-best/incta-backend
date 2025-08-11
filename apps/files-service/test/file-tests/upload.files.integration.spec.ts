@@ -4,7 +4,7 @@ import { FilesServiceService } from '../../src/application/files-service.service
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileValidationPipe } from '@common/pipes/file.validation.pipe';
 import { AppNotification } from '@common';
-import { UploadFilesCommand } from '../../src/application/use-cases/upload-files-use.case';
+import { UploadPostFilesCommand } from '../../src/application/use-cases/upload-post-files-use.case';
 
 describe('FilesServiceController', () => {
   let controller: FilesServiceController;
@@ -70,9 +70,9 @@ describe('FilesServiceController', () => {
 
       const result = await controller.uploadFiles(mockValidatedData, mockBody);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UploadFilesCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UploadPostFilesCommand));
 
-      const executedCommand = commandBus.execute.mock.calls[0][0] as UploadFilesCommand;
+      const executedCommand = commandBus.execute.mock.calls[0][0] as UploadPostFilesCommand;
       expect(executedCommand.files).toHaveLength(1);
       expect(executedCommand.files[0].originalName).toBe('test.jpg');
       expect(executedCommand.files[0].size).toBe(1024);
@@ -94,7 +94,7 @@ describe('FilesServiceController', () => {
 
       const result = await controller.uploadFiles(mockValidatedData, mockBody);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UploadFilesCommand));
+      expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UploadPostFilesCommand));
       expect(result).toBeInstanceOf(AppNotification);
       expect(result.hasErrors()).toBe(true);
       expect(result.getStatusCode()).toBe(400);

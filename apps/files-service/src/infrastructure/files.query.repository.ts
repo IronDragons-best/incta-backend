@@ -1,13 +1,13 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { FileFromDatabaseDtoType } from '@common';
+import { FilePostFromDatabaseDtoType } from '@common';
 
 @Injectable()
 export class FilesQueryRepository extends PrismaService {
   async getManyByUserIdAndPostId(
     userId: number,
     postId: number,
-  ): Promise<FileFromDatabaseDtoType[] | null> {
+  ): Promise<FilePostFromDatabaseDtoType[] | null> {
     const files = await this.file.findMany({
       where: {
         postId: postId,
@@ -20,10 +20,10 @@ export class FilesQueryRepository extends PrismaService {
     if (!files.length) {
       return null;
     }
-    return files as unknown as FileFromDatabaseDtoType[];
+    return files as unknown as FilePostFromDatabaseDtoType[];
   }
 
-  async getManyByUserId(userId: number): Promise<FileFromDatabaseDtoType[] | null> {
+  async getManyByUserId(userId: number): Promise<FilePostFromDatabaseDtoType[] | null> {
     const files = await this.file.findMany({
       where: {
         uploadedBy: userId,
@@ -35,6 +35,6 @@ export class FilesQueryRepository extends PrismaService {
     if (!files.length) {
       return null;
     }
-    return files as unknown as FileFromDatabaseDtoType[];
+    return files as unknown as FilePostFromDatabaseDtoType[];
   }
 }

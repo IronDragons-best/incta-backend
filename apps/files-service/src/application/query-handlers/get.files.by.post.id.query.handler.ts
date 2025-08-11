@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FilesQueryRepository } from '../../infrastructure/files.query.repository';
-import { AppNotification, FileFromDatabaseDtoType, NotificationService } from '@common';
+import { AppNotification, FilePostFromDatabaseDtoType, NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class GetFilesByPostIdQuery {
   constructor(
@@ -20,9 +20,9 @@ export class GetFilesByPostIdHandler implements IQueryHandler<GetFilesByPostIdQu
   ) {
     this.logger.setContext('GetFilesByPostIdHandler');
   }
-  async execute(query: GetFilesByPostIdQuery): Promise<AppNotification<FileViewDto[]>> {
-    const notify = this.notification.create<FileViewDto[]>();
-    const rawFiles: FileFromDatabaseDtoType[] | null =
+  async execute(query: GetFilesByPostIdQuery): Promise<AppNotification<FilePostViewDto[]>> {
+    const notify = this.notification.create<FilePostViewDto[]>();
+    const rawFiles: FilePostFromDatabaseDtoType[] | null =
       await this.filesQueryRepository.getManyByUserIdAndPostId(
         query.userId,
         query.postId,
@@ -30,11 +30,11 @@ export class GetFilesByPostIdHandler implements IQueryHandler<GetFilesByPostIdQu
 
     if (!rawFiles) {
       this.logger.warn('No files found');
-      const viewFiles: FileViewDto[] = [];
+      const viewFiles: FilePostViewDto[] = [];
       return notify.setValue(viewFiles);
     }
 
-    const viewFiles: FileViewDto[] = FileViewDto.mapToView(rawFiles);
+    const viewFiles: FilePostViewDto[] = FilePostViewDto.mapToView(rawFiles);
     return notify.setValue(viewFiles);
   }
 }

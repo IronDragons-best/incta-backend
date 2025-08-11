@@ -3,24 +3,18 @@ import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { UploadFilesResponseDto } from '../../../src/interface/dto/upload.files.view.dto';
 import { ErrorResponseDto } from '@common';
 
-export function UploadFilesSwagger() {
+export function UploadUserFilesSwagger() {
   return applyDecorators(
-    ApiOperation({ summary: 'Upload files' }),
+    ApiOperation({ summary: 'Upload user avatar file 123' }),
     ApiResponse({
       status: HttpStatus.CREATED,
       type: UploadFilesResponseDto,
     }),
     ApiResponse({
-      status: HttpStatus.NOT_FOUND,
-      description: 'Uploaded files not found.',
-    }),
-
-    ApiResponse({
       status: HttpStatus.BAD_REQUEST,
-      description: 'If post files is already uploaded and exists',
+      description: 'File or userId is missing or invalid',
       type: ErrorResponseDto,
     }),
-    ApiOperation({ summary: 'Upload files' }),
     ApiConsumes('multipart/form-data'),
     ApiBody({
       schema: {
@@ -30,20 +24,13 @@ export function UploadFilesSwagger() {
             type: 'integer',
             example: 1,
           },
-          postId: {
-            type: 'integer',
-            example: 1,
-          },
-          files: {
-            type: 'array',
-            items: {
-              type: 'string',
-              format: 'binary',
-            },
-            description: 'До 10 файлов',
+          file: {
+            type: 'string',
+            format: 'binary',
+            description: 'User avatar file (only 1 file allowed)',
           },
         },
-        required: ['userId', 'postId', 'files'],
+        required: ['userId', 'file'],
       },
     }),
   );
