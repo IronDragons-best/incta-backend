@@ -1,5 +1,6 @@
 import { CountryEntity } from '../../domain/country.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { CachedCountry } from '@app/cache';
 
 export class CountryViewDto {
   @ApiProperty({
@@ -20,7 +21,7 @@ export class CountryViewDto {
   })
   code: string;
 
-  static mapToView(country: CountryEntity) {
+  static mapToView(country: CountryEntity | CachedCountry) {
     const dto = new this();
     dto.id = country.id;
     dto.name = country.name;

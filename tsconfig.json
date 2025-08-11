@@ -20,6 +20,12 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "paths": {
+      "@app/cache": [
+        "libs/cache/src"
+      ],
+      "@app/cache/*": [
+        "libs/cache/src/*"
+      ],
       "@common": [
         "libs/common/src"
       ],
@@ -33,6 +39,5 @@
         "libs/monitoring/src/*"
       ]
     }
-
   }
 }
