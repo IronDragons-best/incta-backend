@@ -14,8 +14,6 @@ services:
       - "3002:3002"
     environment:
       - NODE_ENV=production
-
-
     env_file:
       - .env.production
     volumes:
@@ -26,6 +24,7 @@ services:
     depends_on:
       - postgres-main
       - postgres-files
+      - redis
     command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
     logging:
       driver: "json-file"
@@ -84,6 +83,23 @@ services:
       - postgres-main
       - postgres-files
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis-staging
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    command: redis-server --appendonly yes --requirepass staging_password
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "staging_password", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 networks:
   app-network:
     driver: bridge
@@ -93,3 +109,4 @@ volumes:
   postgres_files_data:
   pgadmin_data:
   logs:
+  redis_data:

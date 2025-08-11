@@ -9,16 +9,21 @@ import { GetAllCitiesHandler } from './application/query-handlers/get.all.cities
 import { LocationController } from './interface/location.controller';
 import { AppConfigService, NotificationService } from '@common';
 import { LocationQueryRepository } from './infrastructure/location.query.repository';
+import { LocationCacheService } from './application/location.cache.service';
 
+const queryHandlers = [
+  GetCitiesByCountryHandler,
+  GetCountriesHandler,
+  GetAllCitiesHandler,
+];
 @Module({
   imports: [TypeOrmModule.forFeature([CityEntity, CountryEntity]), CqrsModule],
   providers: [
-    GetCitiesByCountryHandler,
-    GetCountriesHandler,
-    GetAllCitiesHandler,
+    ...queryHandlers,
     NotificationService,
     AppConfigService,
     LocationQueryRepository,
+    LocationCacheService,
   ],
   controllers: [LocationController],
 })

@@ -177,6 +177,26 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: NEW_RELIC_LOG_FORWARDING
+             - name: REDIS_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_HOST
+             - name: REDIS_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_PORT
+             - name: REDIS_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_PASSWORD
+             - name: REDIS_DB
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_DB
              - name: PORT
                valueFrom:
                  secretKeyRef:

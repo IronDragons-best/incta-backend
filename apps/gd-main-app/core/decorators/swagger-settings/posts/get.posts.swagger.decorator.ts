@@ -1,13 +1,20 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiProperty, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 import { PostViewDto } from '../../../../src/modules/posts/interface/dto/output/post.view.dto';
+import { PagedResponse } from '../../../common/pagination/paged.response';
+
+export class PagedPostViewDto extends PagedResponse<PostViewDto> {
+  @ApiProperty({ type: PostViewDto, isArray: true })
+  items: PostViewDto[];
+}
 
 export function GetPostsSwaggerDecorator() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get posts',
-      description: 'This endpoint retrieves a list of posts with pagination and sorting options.',
+      description:
+        'This endpoint retrieves a list of posts with pagination and sorting options.',
     }),
     ApiQuery({
       name: 'userId',
@@ -43,7 +50,7 @@ export function GetPostsSwaggerDecorator() {
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Posts retrieved successfully.',
-      type: Array<PostViewDto>,
+      type: PagedPostViewDto,
     }),
     ApiResponse({
       status: HttpStatus.NOT_FOUND,

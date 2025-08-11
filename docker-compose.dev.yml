@@ -14,7 +14,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - rabbitmq_network
+      - app_network
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -33,7 +33,7 @@ services:
     volumes:
       - minio_data:/data
     networks:
-      - rabbitmq_network
+      - app_network
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "mc", "admin", "info", "local"]
@@ -41,9 +41,26 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+    command: redis-server --appendonly yes --requirepass devpassword
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 volumes:
   rabbitmq_data:
   minio_data:
+  redis_data:
 
 networks:
-  rabbitmq_network:
+  app_network:
