@@ -2,12 +2,18 @@ export enum FileType {
   PUBLIC = 'PUBLIC',
   PAID = 'PAID',
 }
+
 export enum FileAccessType {
-  PAID = 'PAID',
   PUBLIC = 'PUBLIC',
+  PAID = 'PAID',
 }
 
-export type FileFromDatabaseDtoType = {
+export enum FileRequestStatusType {
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+}
+
+interface BaseFileFromDatabase {
   id: number;
   filename: string;
   s3Key: string;
@@ -17,28 +23,38 @@ export type FileFromDatabaseDtoType = {
   size: number;
   type: FileType;
   uploadedBy: number;
-  postId: number;
   createdAt: Date;
   updatedAt: Date;
-  requests?: FileRequestFromDatabase[];
-};
+}
 
-export type FileRequestFromDatabase = {
+export interface FilePostFromDatabaseDtoType extends BaseFileFromDatabase {
+  postId: number;
+  requests?: FilePostRequestFromDatabase[];
+}
+
+export interface FileUserFromDatabaseDtoType extends BaseFileFromDatabase {
+  userId: number;
+  requests?: FileUserRequestFromDatabase[];
+}
+
+interface BaseFileRequestFromDatabase {
   id: number;
   fileId: number;
   requestedBy: number;
   status: FileRequestStatusType;
   createdAt: Date;
   updatedAt: Date;
-  file?: FileFromDatabaseDtoType;
-};
-
-export enum FileRequestStatusType {
-  APPROVED = 'APPROVED',
-  DENIED = 'DENIED',
 }
 
-export type CreateFileDtoType = {
+export interface FilePostRequestFromDatabase extends BaseFileRequestFromDatabase {
+  file?: FilePostFromDatabaseDtoType;
+}
+
+export interface FileUserRequestFromDatabase extends BaseFileRequestFromDatabase {
+  file?: FileUserFromDatabaseDtoType;
+}
+
+export interface CreateFileDtoType {
   filename: string;
   s3Key: string;
   s3Bucket: string;
@@ -48,9 +64,9 @@ export type CreateFileDtoType = {
   uploadedBy: number;
   postId: number;
   type?: FileAccessType;
-};
+}
 
-export type CreateFileRequestDtoType = {
+export interface CreateFileRequestDtoType {
   requestedBy: number;
   status?: FileRequestStatusType;
-};
+}

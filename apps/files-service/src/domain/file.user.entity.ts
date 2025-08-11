@@ -1,8 +1,8 @@
+import { Prisma } from '@prisma/client';
 import { FileRequestEntity } from './file.request.entity';
-import { FileType as PrismaFileType } from '@prisma/client';
-import { FileAccessType, FileFromDatabaseDtoType } from '@common';
+import { FileType } from '@common';
 
-export class FileEntity {
+export class FileUserEntity {
   constructor(
     public id: number,
     public filename: string,
@@ -11,9 +11,9 @@ export class FileEntity {
     public url: string,
     public mimeType: string,
     public size: number,
-    public type: PrismaFileType,
+    public type: string,
     public uploadedBy: number,
-    public postId: number,
+    public userId: number,
     public createdAt: Date,
     public updatedAt: Date,
     public requests?: FileRequestEntity[],
@@ -25,11 +25,11 @@ export class FileEntity {
     s3Key: string;
     s3Bucket: string;
     uploadedBy: number;
-    postId: number;
+    userId: number;
     size: number;
-    type: PrismaFileType;
+    type?: FileType;
     mimeType: string;
-  }): Omit<FileEntity, 'id' | 'createdAt' | 'updatedAt' | 'requests'> {
+  }) {
     return {
       filename: data.filename,
       s3Key: data.s3Key,
@@ -37,14 +37,14 @@ export class FileEntity {
       url: data.url,
       mimeType: data.mimeType,
       size: data.size,
-      type: data.type || FileAccessType.PUBLIC,
+      type: data.type || 'PUBLIC',
       uploadedBy: data.uploadedBy,
-      postId: data.postId,
-    };
+      userId: data.userId,
+    } as Omit<FileUserEntity, 'id' | 'createdAt' | 'updatedAt' | 'requests'>;
   }
 
-  static fromDatabase(data: FileFromDatabaseDtoType): FileEntity {
-    return new FileEntity(
+  static fromDatabase(data: any): FileUserEntity {
+    return new FileUserEntity(
       data.id,
       data.filename,
       data.s3Key,
@@ -54,10 +54,10 @@ export class FileEntity {
       data.size,
       data.type,
       data.uploadedBy,
-      data.postId,
+      data.userId,
       data.createdAt,
       data.updatedAt,
-      data.requests?.map((req: any) => FileRequestEntity.fromDatabase(req)),
+      data.requests?.map((r: any) => FileRequestEntity.fromDatabase(r)),
     );
   }
 }

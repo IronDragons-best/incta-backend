@@ -8,13 +8,16 @@ import {
 } from '@common';
 import { CustomLogger } from '@monitoring';
 import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
-import { FilesRepository } from '../../infrastructure/files.repository';
-import { FileEntity } from '../../domain/file.entity';
+import { FilesPostRepository } from '../../infrastructure/files.post.repository';
+import { FilePostEntity } from '../../domain/file.post.entity';
 import { GetFilesByPostIdQuery } from '../query-handlers/get.files.by.post.id.query.handler';
-import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import {
+  TotalUploadedFilesViewDto,
+  TotalUploadedFilesViewWithPostDto,
+} from '../../../core/dto/totalUploadedFilesViewDto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
-export class UploadFilesCommand {
+export class UploadPostFilesCommand {
   constructor(
     public readonly files: ProcessedFileData[],
     public readonly totalSize: number,
@@ -24,38 +27,37 @@ export class UploadFilesCommand {
   ) {}
 }
 
-@CommandHandler(UploadFilesCommand)
-export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
+@CommandHandler(UploadPostFilesCommand)
+export class UploadPostFilesUseCase implements ICommandHandler<UploadPostFilesCommand> {
   constructor(
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
     private readonly fileAdapter: S3StorageAdapter,
-    private readonly filesRepository: FilesRepository,
+    private readonly filesRepository: FilesPostRepository,
     private readonly queryBus: QueryBus,
     private readonly configService: FilesConfigService,
   ) {
-    this.logger.setContext('UploadFilesUseCase');
+    this.logger.setContext('UploadPostFilesUseCase');
   }
-  async execute(command: UploadFilesCommand) {
+  async execute(command: UploadPostFilesCommand) {
     const notify = this.notification.create();
     const { files, totalSize, userId, postId } = command;
     const existingPost = await this.filesRepository.findByPostId(postId);
     if (existingPost) {
       return notify.setBadRequest('Files for this post is already uploaded.', 'postId');
     }
-    // Общий результат загрузки, в том числе и файлы с ошибками. отдаю в контроллер через notification
     const uploadedWithErrors: any[] = [];
     // Только успешные. Нужно для сохранения в бд
     const uploadedFiles: Omit<
-      FileEntity,
+      FilePostEntity,
       'id' | 'createdAt' | 'updatedAt' | 'requests'
     >[] = [];
 
     for (const fileData of files) {
       try {
         const result: { filename: string; url: string; key: string } =
-          await this.fileAdapter.uploadWithBuffer(fileData, userId, postId);
-        const fileEntity = FileEntity.createInstance({
+          await this.fileAdapter.uploadWithBuffer(fileData, userId, 'post', postId);
+        const fileEntity = FilePostEntity.createInstance({
           filename: result.filename,
           url: result.url,
           s3Key: result.key,
@@ -92,16 +94,16 @@ export class UploadFilesUseCase implements ICommandHandler<UploadFilesCommand> {
       return notify.setServerError('Failed to save uploaded file information.');
     }
 
-    const savedFilesResult: AppNotification<FileViewDto[]> = await this.queryBus.execute(
+    const savedFilesResult: AppNotification<FilePostViewDto[]> = await this.queryBus.execute(
       new GetFilesByPostIdQuery(postId, userId),
     );
 
-    const savedFiles: FileViewDto[] | null = savedFilesResult.getValue();
+    const savedFiles: FilePostViewDto[] | null = savedFilesResult.getValue();
     if (!savedFiles || savedFiles.length === 0) {
       return notify.setNotFound('Files not found');
     }
 
-    const totalViewDto = TotalUploadedFilesViewDto.mapToView({
+    const totalViewDto = TotalUploadedFilesViewWithPostDto.mapToView({
       totalFiles: files.length,
       successUploaded: savedFiles.length,
       totalSize: totalSize,

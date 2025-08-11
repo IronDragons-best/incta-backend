@@ -19,7 +19,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 
 import { PostEntity } from '../../domain/post.entity';
 import { PostFileEntity } from '../../domain/post.file.entity';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class CreatePostCommand {
   constructor(
@@ -100,7 +100,7 @@ export class CreatePostUseCase {
       }),
     );
 
-    const filesServiceUrl = `${this.configService.filesUrl}/api/v1/upload`;
+    const filesServiceUrl = `${this.configService.filesUrl}/api/v1/upload-post-files`;
     this.logger.log(`Uploading files to ${filesServiceUrl}`);
 
     const { data } = await firstValueFrom(
@@ -122,7 +122,7 @@ export class CreatePostUseCase {
 
   private async savePostFiles(
     queryRunner: QueryRunner,
-    uploadResults: FileViewDto[],
+    uploadResults: FilePostViewDto[],
     postId: PostEntity['id'],
   ) {
     for (const file of uploadResults) {

@@ -1,8 +1,8 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FilesQueryRepository } from '../../infrastructure/files.query.repository';
-import { FileFromDatabaseDtoType, NotificationService } from '@common';
+import { FilePostFromDatabaseDtoType, NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class GetFilesByUserIdQuery {
   constructor(public userId: number) {}
@@ -21,15 +21,15 @@ export class GetFilesByUserIdHandler implements IQueryHandler<GetFilesByUserIdQu
     const notify = this.notification.create();
 
     try {
-      const files: FileFromDatabaseDtoType[] | null =
+      const files: FilePostFromDatabaseDtoType[] | null =
         await this.filesQueryRepository.getManyByUserId(query.userId);
 
       if (!files) {
-        const viewResponse = FileViewDto.mapToView([]);
+        const viewResponse = FilePostViewDto.mapToView([]);
         return notify.setValue(viewResponse);
       }
 
-      const viewFiles: FileViewDto[] = FileViewDto.mapToView(files);
+      const viewFiles: FilePostViewDto[] = FilePostViewDto.mapToView(files);
 
       return notify.setValue(viewFiles);
     } catch (error) {

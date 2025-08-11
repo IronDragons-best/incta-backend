@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class FilesByUserIdViewDto {
   @ApiProperty({ default: 1, description: 'Total files count' })
@@ -8,10 +8,10 @@ export class FilesByUserIdViewDto {
   totalSize: number;
   @ApiProperty({ default: 1, description: 'Files owner user id.' })
   uploadedBy: number;
-  @ApiProperty({ isArray: true, type: FileViewDto, description: 'Files data' })
-  files: FileViewDto[];
+  @ApiProperty({ isArray: true, type: FilePostViewDto, description: 'Files data' })
+  files: FilePostViewDto[];
 
-  static mapToView(files: FileViewDto[], userId: number) {
+  static mapToView(files: FilePostViewDto[], userId: number) {
     const dto = new this();
     dto.totalFiles = files.length;
     dto.totalSize = files.reduce((acc, file) => {
