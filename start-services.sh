@@ -7,7 +7,7 @@ pnpm run start:notification-service &
 pnpm run start:files-service &
 
 # Give services time to start
-sleep 5
+sleep 10
 
 # Start main app (this will run migrations first)
 pnpm run start:gd-main-app

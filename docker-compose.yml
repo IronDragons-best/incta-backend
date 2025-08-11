@@ -24,7 +24,7 @@ services:
     depends_on:
       - postgres-main
       - postgres-files
-      - redis # <-- Добавлена зависимость
+      - redis
     command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
     logging:
       driver: "json-file"
