@@ -24,6 +24,7 @@ import {
 } from '../mocks/common.mocks';
 import { MockUsersRepository, MockUser } from '../mocks/user.flow.mocks';
 import { MockCryptoService, MockTokenService } from '../mocks/auth.flow.mocks';
+import cookieParser from 'cookie-parser';
 
 describe('AuthController - Logout Integration Tests', () => {
   let app: INestApplication;
@@ -93,6 +94,7 @@ describe('AuthController - Logout Integration Tests', () => {
       }),
     );
 
+    app.use(cookieParser());
     await app.init();
 
     usersRepository = module.get<MockUsersRepository>(UsersRepository);
@@ -141,10 +143,10 @@ describe('AuthController - Logout Integration Tests', () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
       .send(validLoginData)
-      .expect(200);
+      .expect(204);
 
     return {
-      cookies: res.headers['set-cookie'],
+      cookies: res.headers['set-cookie'] || [],
       accessToken,
     };
   };
@@ -153,10 +155,12 @@ describe('AuthController - Logout Integration Tests', () => {
     it('should clear refreshToken cookie and return 204', async () => {
       const { cookies, accessToken } = await loginAndGetCookies();
 
+      const mockLogoutNotification = MockFactory.createSuccessNotification(null);
+      commandBus.execute.mockResolvedValueOnce(mockLogoutNotification);
+
       const response = await request(app.getHttpServer())
         .post('/auth/logout')
-        .set('Cookie', cookies)
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', `accessToken=${accessToken}`)
         .expect(204);
 
       const setCookie = response.headers['set-cookie'];

@@ -246,7 +246,7 @@ describe('Create Post Integration Tests', () => {
 
       const response = await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Authorization', `Bearer ${validAccessToken}`)
+        .set('Cookie', [`accessToken=${validAccessToken}`])
         .set('Content-Type', 'multipart/form-data')
         .field('title', postData.title)
         .field('shortDescription', postData.shortDescription)
@@ -321,7 +321,7 @@ describe('Create Post Integration Tests', () => {
 
       const response = await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Authorization', `Bearer ${validAccessToken}`)
+        .set('Cookie', [`accessToken=${validAccessToken}`])
         .set('Content-Type', 'multipart/form-data')
         .field('title', postData.title)
         .field('shortDescription', postData.shortDescription)
@@ -375,7 +375,7 @@ describe('Create Post Integration Tests', () => {
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Authorization', `Bearer ${validAccessToken}`)
+        .set('Cookie', [`accessToken=${validAccessToken}`])
         .set('Content-Type', 'multipart/form-data')
         .field('shortDescription', 'Test description without title')
         .expect(400);
@@ -417,7 +417,7 @@ describe('Create Post Integration Tests', () => {
 
       await request(app.getHttpServer())
         .post('/posts/create-post')
-        .set('Authorization', `Bearer ${invalidToken}`)
+        .set('Cookie', [`accessToken=${invalidToken}`])
         .set('Content-Type', 'multipart/form-data')
         .field('title', 'Test Post')
         .field('shortDescription', 'Test description')

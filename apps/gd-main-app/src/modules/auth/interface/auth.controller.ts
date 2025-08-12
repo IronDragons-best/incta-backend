@@ -165,6 +165,7 @@ export class AuthController {
 
     if (result) {
       res.clearCookie('refreshToken', this.cookieOptions);
+      res.clearCookie('accessToken', this.cookieOptions);
       res.sendStatus(HttpStatus.NO_CONTENT);
     }
   }
@@ -175,7 +176,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async getMe(@ExtractUserFromRequest() user: UserContextDto) {
     const result: AppNotification<User> = await this.authService.findUserById(user.id);
-
     const me = result.getValue();
     if (result.hasErrors() || !me) {
       return result;

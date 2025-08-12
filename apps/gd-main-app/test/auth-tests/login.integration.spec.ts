@@ -148,11 +148,7 @@ describe('AuthController - Login Integration Tests', () => {
         const response = await request(app.getHttpServer())
           .post('/auth/login')
           .send(validLoginData)
-          .expect(200);
-
-        expect(response.body).toEqual({
-          accessToken: mockTokens.accessToken,
-        });
+          .expect(204);
 
         const cookies = response.headers['set-cookie'];
         expect(cookies).toBeDefined();

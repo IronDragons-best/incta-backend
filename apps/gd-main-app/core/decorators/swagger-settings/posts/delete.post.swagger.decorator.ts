@@ -1,6 +1,7 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCookieAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -12,7 +13,7 @@ import { WithoutFieldErrorResponseDto } from '@common';
 
 export function DeletePostSwagger() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiCookieAuth('accessToken'),
     ApiOperation({
       summary: 'Delete existing post',
       description: 'this endpoint deletes a post by post id.',

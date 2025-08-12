@@ -22,9 +22,7 @@ export class PostDeletedListener implements IEventHandler<PostDeletedEvent> {
 
   async handle(event: PostDeletedEvent) {
     try {
-      console.log('start deleting');
       await this.deleteFiles(event);
-      console.log('end deleting');
     } catch (error) {
       const errorMessage =
         error instanceof AxiosError

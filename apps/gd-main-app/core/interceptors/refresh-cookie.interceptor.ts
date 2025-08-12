@@ -1,6 +1,7 @@
 import {
   CallHandler,
   ExecutionContext,
+  HttpStatus,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
@@ -15,15 +16,21 @@ export class CookieInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
     const isStaging = this.configService.depType === 'staging';
     const response: Response = context.switchToHttp().getResponse();
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: isStaging ? 'none' : 'lax',
+    } as const;
+
     return next.handle().pipe(
       map((data) => {
         if (data instanceof TokenResponseDto && data.shouldRedirect) {
           if (data.isRefreshTokenCookie && data.refreshToken) {
-            response.cookie('refreshToken', data.refreshToken, {
-              httpOnly: true,
-              secure: true,
-              sameSite: isStaging ? 'none' : 'lax',
-            });
+            response.cookie('refreshToken', data.refreshToken, cookieOptions);
+          }
+          if (data.accessToken) {
+            response.cookie('accessToken', data.accessToken, cookieOptions);
           }
 
           if (data.redirectUrl) {
@@ -32,13 +39,17 @@ export class CookieInterceptor implements NestInterceptor {
           return;
         }
 
-        if (data instanceof TokenResponseDto && data.isRefreshTokenCookie) {
-          response.cookie('refreshToken', data.refreshToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: isStaging ? 'none' : 'lax',
-          });
-          return { accessToken: data.accessToken };
+        if (data instanceof TokenResponseDto) {
+          if (data.isRefreshTokenCookie && data.refreshToken) {
+            response.cookie('refreshToken', data.refreshToken, cookieOptions);
+          }
+
+          if (data.accessToken) {
+            response.cookie('accessToken', data.accessToken, cookieOptions);
+          }
+
+          response.status(HttpStatus.NO_CONTENT);
+          return;
         }
         return data;
       }),

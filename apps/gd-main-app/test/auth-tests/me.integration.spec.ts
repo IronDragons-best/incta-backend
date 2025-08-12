@@ -2,7 +2,6 @@ import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { MockUser, MockUsersRepository } from '../mocks/user.flow.mocks';
 import { MockCryptoService, MockTokenService } from '../mocks/auth.flow.mocks';
 import {
-  MockAppConfigService,
   MockCommandBus,
   MockFactory,
   MockNotificationService,
@@ -22,6 +21,7 @@ import { TokenService } from '../../src/modules/auth/application/use-cases/token
 import { CommandBus } from '@nestjs/cqrs';
 import { AppConfigService, NotificationService } from '@common';
 import request from 'supertest';
+import cookieParser from 'cookie-parser';
 
 describe('AuthController - Me Integration Tests', () => {
   let app: INestApplication;
@@ -31,12 +31,19 @@ describe('AuthController - Me Integration Tests', () => {
   let jwtService: JwtService;
 
   beforeEach(async () => {
+    const mockConfigService = {
+      jwtAccessSecret: 'testAccessSecret',
+      depType: 'test',
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         PassportModule,
-        JwtModule.register({
-          secret: 'testAccessSecret',
-          signOptions: { expiresIn: '1h' },
+        JwtModule.registerAsync({
+          useFactory: () => ({
+            secret: mockConfigService.jwtAccessSecret,
+            signOptions: { expiresIn: '1h' },
+          }),
         }),
       ],
       controllers: [AuthController],
@@ -48,7 +55,7 @@ describe('AuthController - Me Integration Tests', () => {
         JwtAuthGuard,
         {
           provide: AppConfigService,
-          useClass: MockAppConfigService,
+          useValue: mockConfigService,
         },
         {
           provide: UsersRepository,
@@ -79,7 +86,6 @@ describe('AuthController - Me Integration Tests', () => {
             path: '/',
           },
         },
-
         JwtService,
       ],
     }).compile();
@@ -92,7 +98,7 @@ describe('AuthController - Me Integration Tests', () => {
         forbidNonWhitelisted: true,
       }),
     );
-
+    app.use(cookieParser());
     await app.init();
 
     usersRepository = module.get<MockUsersRepository>(UsersRepository);
@@ -144,13 +150,12 @@ describe('AuthController - Me Integration Tests', () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
       .send(validLoginData)
-      .expect(HttpStatus.OK);
+      .expect(HttpStatus.NO_CONTENT);
 
     const accessToken = jwtService.sign({ id: 1 });
 
     return {
-      cookies: res.headers['set-cookie'],
-      accessToken,
+      accessToken: accessToken,
     };
   };
 
@@ -160,7 +165,7 @@ describe('AuthController - Me Integration Tests', () => {
 
       const response = await request(app.getHttpServer())
         .get('/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set('Cookie', `accessToken=${accessToken}`)
         .expect(HttpStatus.OK);
 
       expect(response.body).toEqual(
@@ -175,6 +180,13 @@ describe('AuthController - Me Integration Tests', () => {
 
     it('should return 401 Unauthorized if token is not provided', async () => {
       await request(app.getHttpServer()).get('/auth/me').expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should return 401 Unauthorized if token is invalid', async () => {
+      await request(app.getHttpServer())
+        .get('/auth/me')
+        .set('Cookie', 'accessToken=invalid-token')
+        .expect(HttpStatus.UNAUTHORIZED);
     });
   });
 });

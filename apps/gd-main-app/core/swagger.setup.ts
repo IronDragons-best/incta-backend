@@ -7,7 +7,7 @@ export function swaggerSetup(app: INestApplication) {
     .setDescription('Описание API')
     .setVersion('1.0')
     .addServer('/api/v1')
-    .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'accessToken', in: 'cookie' }, 'accessToken')
     .addApiKey({ type: 'apiKey', name: 'refreshToken', in: 'cookie' }, 'refreshToken')
     .build();
 
