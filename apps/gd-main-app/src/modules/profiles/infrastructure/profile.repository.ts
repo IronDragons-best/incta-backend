@@ -19,6 +19,6 @@ export class ProfileRepository {
   }
 
   async saveWithTransaction(profile: ProfileEntity, queryRunner: QueryRunner) {
-    await queryRunner.manager.save(profile);
+    return await queryRunner.manager.save(profile);
   }
 }

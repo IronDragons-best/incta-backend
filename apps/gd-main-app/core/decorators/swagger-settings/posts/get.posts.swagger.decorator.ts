@@ -5,7 +5,7 @@ import { PostViewDto } from '../../../../src/modules/posts/interface/dto/output/
 import { PagedResponse } from '../../../common/pagination/paged.response';
 
 export class PagedPostViewDto extends PagedResponse<PostViewDto> {
-  @ApiProperty({ type: () => [PostViewDto] })
+  @ApiProperty({ type: () => [PostViewDto], description: 'Array of Posts' })
   items: PostViewDto[];
 }
 

@@ -11,6 +11,7 @@ import { CityEntity } from '../location/domain/city.entity';
 import { CountryEntity } from '../location/domain/country.entity';
 import { CreateProfileListener } from '../../../core/listeners/user-listeners/profile.create.listener';
 import { CqrsModule } from '@nestjs/cqrs';
+import { UpdateProfileUseCase } from './application/use-cases/update.profile.use-case';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CqrsModule } from '@nestjs/cqrs';
   controllers: [ProfileController],
   providers: [
     CreateProfileUseCase,
+    UpdateProfileUseCase,
     NotificationService,
     AsyncLocalStorageService,
     ProfileQueryRepository,
