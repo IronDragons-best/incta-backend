@@ -1,12 +1,10 @@
 import {
+  IsDate,
   IsDateString,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
   Matches,
-  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
@@ -15,6 +13,7 @@ import {
   dateOfBirthConstraints,
   firstAndLastNameConstraints,
 } from '../../constants/profile.constants';
+import { IsDateDMY } from '../../../../../core/decorators/validation/is.date.dmy';
 
 export class ProfileInputDto {
   // FIRST NAME
@@ -51,11 +50,7 @@ export class ProfileInputDto {
     pattern: dateOfBirthConstraints.patternString,
   })
   @IsOptional()
-  @IsString()
-  @Matches(dateOfBirthConstraints.pattern, {
-    message: 'Date of birth must be in format dd.mm.yyyy',
-  })
-  @Transform(dateOfBirthConstraints.transform)
+  @IsDateDMY()
   dateOfBirth?: string;
 
   // COUNTRY ID
@@ -85,6 +80,6 @@ export class ProfileInputDto {
     example: 'Software developer passionate about clean code and architecture',
   })
   @IsOptional()
-  @IsStringWithTrim(0, 100)
+  @IsString()
   aboutMe?: string;
 }

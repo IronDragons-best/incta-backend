@@ -116,11 +116,17 @@ class ProfileEntity extends BasicEntity {
 
     if (firstName !== undefined) this.firstName = firstName;
     if (lastName !== undefined) this.lastName = lastName;
+
     if (dateOfBirth !== undefined) {
-      const [day, month, year] = dateOfBirth.split('.').map(Number);
-      this.dateOfBirth = new Date(year, month - 1, day);
+      if (dateOfBirth.length === 0) {
+        this.dateOfBirth = null;
+      } else {
+        const [day, month, year] = dateOfBirth.split('.').map(Number);
+        this.dateOfBirth = new Date(year, month - 1, day);
+      }
     }
-    if (aboutMe !== undefined) this.aboutMe = aboutMe;
+
+    if (aboutMe !== undefined) this.aboutMe = aboutMe.length ? aboutMe : null;
     if (countryId !== undefined) this.countryId = countryId;
     if (cityId !== undefined) this.cityId = cityId;
 

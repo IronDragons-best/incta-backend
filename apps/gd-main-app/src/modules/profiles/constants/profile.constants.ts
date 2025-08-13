@@ -14,20 +14,4 @@ export const firstAndLastNameConstraints = {
 export const dateOfBirthConstraints = {
   pattern: /^\d{2}\.\d{2}\.\d{4}$/,
   patternString: '^\\d{2}\\.\\d{2}\\.\\d{4}$',
-  transform: ({ value }) => {
-    if (value && typeof value === 'string') {
-      const [day, month, year] = value.split('.').map(Number);
-      const date = new Date(year, month - 1, day);
-
-      if (
-        date.getFullYear() !== year ||
-        date.getMonth() !== month - 1 ||
-        date.getDate() !== day ||
-        date > new Date()
-      ) {
-        return undefined;
-      }
-    }
-    return value;
-  },
 };

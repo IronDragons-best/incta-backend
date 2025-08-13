@@ -6,6 +6,7 @@ import { NotificationService } from '@common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { UpdateProfileDomainDto } from '../../domain/profile.domain.dto';
+import { BadRequestDomainException } from '@common/exceptions/domain.exception';
 
 export class UpdateProfileCommand {
   constructor(
@@ -49,16 +50,27 @@ export class UpdateProfileUseCase implements ICommandHandler<UpdateProfileComman
       // заполняем
       profile.updateInstance(profileDomainDto);
 
-      const savedProfile = await this.profileRepository.saveWithTransaction(
-        profile,
-        queryRunner,
-      );
+      await this.profileRepository.saveWithTransaction(profile, queryRunner);
 
       await queryRunner.commitTransaction();
-      return notify.setValue(savedProfile);
+      return notify.setNoContent();
     } catch (error) {
-      console.log(error);
       let errorMessage: string;
+
+      if (error instanceof BadRequestDomainException) {
+        if (error.extensions && error.extensions.length > 1) {
+          const errorMessages = error.extensions.map((ext) => ({
+            message: ext.message,
+            field: ext.key,
+          }));
+          notify.addErrors(errorMessages, 400);
+        } else {
+          const firstExtension = error.firstExtension;
+          notify.setBadRequest(firstExtension.message, firstExtension.key);
+        }
+        await queryRunner.rollbackTransaction();
+        return notify;
+      }
       if (error instanceof Error) {
         errorMessage = error.message;
       } else {

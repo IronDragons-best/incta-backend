@@ -5,13 +5,15 @@ import { ProfileInputDto } from './dto/profile.input.dto';
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
 import { UserContextDto } from '../../../../core/dto/user.context.dto';
 import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
+import { UpdateProfileSwaggerDecorator } from '../../../../core/decorators/swagger-settings/profile/update.profile.swagger.decorator';
 
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly commandBus: CommandBus) {}
   @UseGuards(JwtAuthGuard)
   @Patch('update')
-  @HttpCode(HttpStatus.OK)
+  @UpdateProfileSwaggerDecorator()
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateProfile(
     @Body() body: ProfileInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
