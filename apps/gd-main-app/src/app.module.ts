@@ -84,6 +84,7 @@ import { CacheModule } from '@app/cache';
     HttpModule,
     CommonModule,
     UsersModule,
+
     AuthModule,
     PostsModule,
     DeviceModule,

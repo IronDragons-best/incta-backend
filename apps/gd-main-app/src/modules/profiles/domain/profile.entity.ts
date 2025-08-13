@@ -46,11 +46,21 @@ class ProfileEntity extends BasicEntity {
   @Index()
   userId: number;
 
+  @Column({ nullable: true })
+  avatarUrl?: string;
+
   static createInstance(profileDto: CreateProfileDomainDto): ProfileEntity {
     const profile = new ProfileEntity();
+
+    if (profileDto.dateOfBirth !== undefined) {
+      const [day, month, year] = profileDto.dateOfBirth.split('.').map(Number);
+      profile.dateOfBirth = new Date(year, month - 1, day);
+    } else {
+      profile.dateOfBirth = null;
+    }
+
     profile.firstName = profileDto.firstName ?? null;
     profile.lastName = profileDto.lastName ?? null;
-    profile.dateOfBirth = profileDto.dateOfBirth ?? null;
     profile.aboutMe = profileDto.aboutMe ?? null;
     profile.countryId = profileDto.countryId ?? null;
     profile.cityId = profileDto.cityId ?? null;
@@ -58,15 +68,38 @@ class ProfileEntity extends BasicEntity {
     return profile;
   }
 
-  static isFirstNameAndLastNameExists(firstName: string, lastName: string) {
+  isFirstNameAndLastNameExists(
+    updateDto: UpdateProfileDomainDto,
+    existingProfile: ProfileEntity,
+  ) {
     const errors: ErrorExtension[] = [];
 
-    if (!firstName) {
+    const finalFirstName =
+      updateDto.firstName !== undefined ? updateDto.firstName : existingProfile.firstName;
+    if (!finalFirstName?.trim()) {
       errors.push(new ErrorExtension('First name is required', 'firstName'));
     }
 
-    if (!lastName) {
+    const finalLastName =
+      updateDto.lastName !== undefined ? updateDto.lastName : existingProfile.lastName;
+
+    if (!finalLastName?.trim()) {
       errors.push(new ErrorExtension('Last name is required', 'lastName'));
+    }
+    if (
+      existingProfile.firstName?.trim() &&
+      updateDto.firstName !== undefined &&
+      !updateDto.firstName?.trim()
+    ) {
+      errors.push(new ErrorExtension('Cannot clear required field', 'firstName'));
+    }
+
+    if (
+      existingProfile.lastName?.trim() &&
+      updateDto.lastName !== undefined &&
+      !updateDto.lastName?.trim()
+    ) {
+      errors.push(new ErrorExtension('Cannot clear required field', 'lastName'));
     }
 
     if (errors.length === 1) {
@@ -83,7 +116,10 @@ class ProfileEntity extends BasicEntity {
 
     if (firstName !== undefined) this.firstName = firstName;
     if (lastName !== undefined) this.lastName = lastName;
-    if (dateOfBirth !== undefined) this.dateOfBirth = dateOfBirth;
+    if (dateOfBirth !== undefined) {
+      const [day, month, year] = dateOfBirth.split('.').map(Number);
+      this.dateOfBirth = new Date(year, month - 1, day);
+    }
     if (aboutMe !== undefined) this.aboutMe = aboutMe;
     if (countryId !== undefined) this.countryId = countryId;
     if (cityId !== undefined) this.cityId = cityId;

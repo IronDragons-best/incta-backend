@@ -7,7 +7,7 @@ import { MonitoringModule } from '@monitoring';
 @Global()
 @Module({
   imports: [
-    MonitoringModule.forRoot('CacheModule'),
+    MonitoringModule.forRoot('CacheModules'),
     SharedConfigModule.forRoot({
       appName: 'cache-module',
       validationSchema: loggerValidationSchema,

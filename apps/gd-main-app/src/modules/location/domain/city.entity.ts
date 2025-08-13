@@ -21,6 +21,6 @@ export class CityEntity {
   country: CountryEntity;
 
   @Column({ name: 'country_id' })
-  @Index()
+  @Index('IDX_cities_country_id')
   countryId: number;
 }

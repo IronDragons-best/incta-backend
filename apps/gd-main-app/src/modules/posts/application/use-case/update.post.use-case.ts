@@ -61,6 +61,8 @@ export class UpdatePostUseCase implements ICommandHandler<UpdatePostCommand> {
       return notify.setServerError(
         'Something went wrong while updating post description',
       );
+    } finally {
+      await queryRunner.release();
     }
   }
 }

@@ -1,7 +1,7 @@
 abstract class BaseProfileDomainDto {
   firstName?: string;
   lastName?: string;
-  dateOfBirth?: Date;
+  dateOfBirth?: string;
   aboutMe?: string;
   countryId?: number;
   cityId?: number;
