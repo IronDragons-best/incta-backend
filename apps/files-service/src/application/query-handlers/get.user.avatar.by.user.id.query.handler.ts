@@ -30,7 +30,7 @@ export class GetUserAvatarByUserIdHandler implements IQueryHandler<GetUserAvatar
 
       if (!rawFiles || rawFiles.length === 0) {
         this.logger.warn(`No avatar files found for userId=${query.userId}`);
-        return notify.setValue(null);
+        return notify.setNotFound('No avatar files found');
       }
 
       const viewFile = FileUserViewDto.mapToView(rawFiles);

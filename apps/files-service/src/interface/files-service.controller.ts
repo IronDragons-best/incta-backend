@@ -1,15 +1,15 @@
 import {
   Body,
   Controller,
-  HttpCode,
-  HttpStatus,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
-  UploadedFile,
   ValidationPipe,
 } from '@nestjs/common';
 import { FilesServiceService } from '../application/files-service.service';
@@ -30,7 +30,7 @@ import { DeletePostFilesCommand } from '../application/use-cases/delete-post-fil
 import { GetFilesByUserIdQuery } from '../application/query-handlers/get.files.by.user.id.query-handler';
 import { GetUsersFilesSwagger } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
 import { GetFilesByPostIdQuery } from '../application/query-handlers/get.files.by.post.id.query.handler';
-import { FilePostViewDto } from '@common/dto/filePostViewDto';
+import { FilePostViewDto, FileUserViewDto } from '@common/dto/filePostViewDto';
 import { FilesByUserIdViewDto } from './dto/files.by.user.id.view-dto';
 import { GetPostFilesSwagger } from '../../core/decorators/swagger-settings/get.post.files.swagger.decorator';
 import { UploadUserFileInputDto } from './dto/upload.user.files.input.dto';
@@ -40,6 +40,8 @@ import { UploadPostFilesSwagger } from '../../core/decorators/swagger-settings/u
 import { DeleteAvatarFileCommand } from '../application/use-cases/delete-avatar-file.use.case';
 import { DeleteUserFilesSwagger } from '../../core/decorators/swagger-settings/delete.user.files.swagger.decorator';
 import { FileRequiredPipe } from '@common/pipes/file.required.pipe';
+import { GetUserAvatarByUserIdQuery } from '../application/query-handlers/get.user.avatar.by.user.id.query.handler';
+import { GetUserAvatarByIdDecorator } from '../../core/decorators/swagger-settings/get.user.avatar.by.id.decorator';
 
 @Controller()
 export class FilesServiceController {
@@ -82,6 +84,12 @@ export class FilesServiceController {
     return FilesByUserIdViewDto.mapToView(files, userId);
   }
 
+  @Get('user-avatar/:userId')
+  @GetUserAvatarByIdDecorator()
+  async getUserAvatarById(@Param('userId') userId: number) {
+    return await this.queryBus.execute(new GetUserAvatarByUserIdQuery(userId));
+  }
+
   @Delete('delete-post-files/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeletePostFilesSwagger()
@@ -93,7 +101,7 @@ export class FilesServiceController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteUserFilesSwagger()
   async deleteAvatarFiles(@Param('userId') userId: string) {
-    return await this.commandBus.execute(new DeleteAvatarFileCommand(+userId))
+    return await this.commandBus.execute(new DeleteAvatarFileCommand(+userId));
   }
 
   @Post('upload-user-files')
@@ -107,9 +115,9 @@ export class FilesServiceController {
   @UploadUserFilesSwagger()
   async uploadUserFiles(
     @UploadedFile(new FileRequiredPipe()) file: Express.Multer.File,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })) body: UploadUserFileInputDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    body: UploadUserFileInputDto,
   ) {
-
     const processed: ProcessedFileData = {
       originalName: file.originalname,
       size: file.size,
