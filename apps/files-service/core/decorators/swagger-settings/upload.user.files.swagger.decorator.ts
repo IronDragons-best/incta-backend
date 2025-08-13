@@ -5,7 +5,7 @@ import { ErrorResponseDto } from '@common';
 
 export function UploadUserFilesSwagger() {
   return applyDecorators(
-    ApiOperation({ summary: 'Upload user avatar file 123' }),
+    ApiOperation({ summary: 'Upload user avatar file' }),
     ApiResponse({
       status: HttpStatus.CREATED,
       type: UploadFilesResponseDto,
