@@ -1,6 +1,5 @@
 import { StatusType } from '@common/notification/notification.types';
 import { ErrorMessage } from '@common/exceptions/exception.type';
-import { HttpStatus } from '@nestjs/common';
 
 export class AppNotification<T = any> {
   private errors: Array<ErrorMessage> = [];

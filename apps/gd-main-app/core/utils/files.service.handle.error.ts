@@ -10,6 +10,7 @@ export function filesServiceErrorHandler(
   const { status, data } = response;
 
   const errorText = data.errorsMessages[0].message;
+  const field = data.errorsMessages[0].field;
 
   if (status >= 500) {
     return notify.setServerError(errorText ?? `Something went wrong while ${operation}`);
@@ -20,7 +21,7 @@ export function filesServiceErrorHandler(
   }
 
   if (status === 400) {
-    return notify.setBadRequest(errorText ?? `Bad request during ${operation}`);
+    return notify.setBadRequest(errorText ?? `Bad request during ${operation}`, field);
   }
 
   if (errorText) {

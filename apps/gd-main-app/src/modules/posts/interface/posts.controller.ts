@@ -91,7 +91,6 @@ export class PostsController {
       return postRes;
     }
 
-    console.log(1);
     const post = await this.postsQueryRepository.getPostByIdWithUserId(
       postRes.getValue()!.id,
       user.id,

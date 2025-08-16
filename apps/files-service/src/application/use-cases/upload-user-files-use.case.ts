@@ -38,6 +38,7 @@ export class UploadUserAvatarUseCase implements ICommandHandler<UploadUserAvatar
 
   async execute(command: UploadUserAvatarCommand) {
     const notify = this.notification.create();
+
     const { file, userId, uploadedBy } = command;
 
     if (!file?.buffer) {

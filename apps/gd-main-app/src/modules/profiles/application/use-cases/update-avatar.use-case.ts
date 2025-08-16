@@ -106,6 +106,7 @@ export class UpdateAvatarUseCase implements ICommandHandler<UpdateAvatarCommand>
     const data = response.data;
     if ('errorsMessages' in data && data.errorsMessages.length > 0) {
       this.logger.warn(`File service error: ${JSON.stringify(data)}`);
+      console.log('asd', data);
       return filesServiceErrorHandler(
         response as AxiosResponse<ErrorResponseDto>,
         notify,
