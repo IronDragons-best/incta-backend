@@ -1,5 +1,4 @@
 import {
-  AppNotification,
   FilesConfigService,
   FileType,
   NotificationService,
@@ -13,7 +12,6 @@ import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
 import { FileUserEntity } from '../../domain/file.user.entity';
 import { FilesUserRepository } from '../../infrastructure/files.user.repository';
 import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
-import { FileUserViewDto } from '@common/dto/filePostViewDto';
 import { GetUserAvatarByUserIdQuery } from '../query-handlers/get.user.avatar.by.user.id.query.handler';
 
 export class UploadUserAvatarCommand {
@@ -47,7 +45,10 @@ export class UploadUserAvatarUseCase implements ICommandHandler<UploadUserAvatar
     }
 
     const uploadedWithErrors: Array<{ originalName: string; error: string }> = [];
-    let uploadedFile: Omit<FileUserEntity, 'id' | 'createdAt' | 'updatedAt' | 'requests'> | null = null;
+    let uploadedFile: Omit<
+      FileUserEntity,
+      'id' | 'createdAt' | 'updatedAt' | 'requests'
+    > | null = null;
 
     try {
       const existing = await this.userRepository.findUserAvatar(userId);
@@ -83,7 +84,9 @@ export class UploadUserAvatarUseCase implements ICommandHandler<UploadUserAvatar
         try {
           await this.fileAdapter.deleteMultipleObjects([existing.s3Key]);
         } catch (err) {
-          this.logger.warn(`Failed to delete old S3 object: ${existing.s3Key}. Error: ${err}`);
+          this.logger.warn(
+            `Failed to delete old S3 object: ${existing.s3Key}. Error: ${err}`,
+          );
         }
       }
 

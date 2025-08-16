@@ -132,4 +132,9 @@ class ProfileEntity extends BasicEntity {
 
     return this;
   }
+
+  updateAvatarUrl(url: string) {
+    this.avatarUrl = url;
+    return this;
+  }
 }

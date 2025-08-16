@@ -70,3 +70,26 @@ export interface CreateFileRequestDtoType {
   requestedBy: number;
   status?: FileRequestStatusType;
 }
+
+export type AvatarViewType = {
+  id: number;
+  originalName: string;
+  key: string;
+  uploadedUrl: string;
+  size: number;
+};
+
+export type UploadAvatarResponse = {
+  totalFiles: number;
+  successUploaded: number;
+  totalSize: number;
+  userId: number;
+  uploadResults: AvatarViewType[];
+  errors?: { originalName: string; error: string }[];
+};
+
+export interface CompressionOptions {
+  compressionThreshold?: number;
+  maxDimension?: number;
+  baseQuality?: number;
+}

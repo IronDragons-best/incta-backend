@@ -12,16 +12,20 @@ import { CountryEntity } from '../location/domain/country.entity';
 import { CreateProfileListener } from '../../../core/listeners/user-listeners/profile.create.listener';
 import { CqrsModule } from '@nestjs/cqrs';
 import { UpdateProfileUseCase } from './application/use-cases/update.profile.use-case';
+import { UpdateAvatarUseCase } from './application/use-cases/update-avatar.use-case';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     CqrsModule,
+    HttpModule,
     TypeOrmModule.forFeature([ProfileEntity, CityEntity, CountryEntity]),
   ],
   controllers: [ProfileController],
   providers: [
     CreateProfileUseCase,
     UpdateProfileUseCase,
+    UpdateAvatarUseCase,
     NotificationService,
     AsyncLocalStorageService,
     ProfileQueryRepository,

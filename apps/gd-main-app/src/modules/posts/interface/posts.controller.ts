@@ -58,6 +58,7 @@ import { DeletePostSwagger } from '../../../../core/decorators/swagger-settings/
 import { GetPostByIdQuery } from '../application/use-case/get.post.by.id.query';
 import { GetPostsQuery } from '../application/use-case/get-posts.query';
 import { GetPostByIdSwaggerDecorator } from '../../../../core/decorators/swagger-settings/posts/get.post.by.id.swagger.decorator';
+import { ImageCompressionPipe } from '@common/pipes/image.processing.pipe';
 
 @Controller('posts')
 export class PostsController {
@@ -79,7 +80,7 @@ export class PostsController {
   @HttpCode(HttpStatus.CREATED)
   @CreatePostSwaggerDecorator()
   async createPost(
-    @UploadedFiles(FileValidationPipe) files: ValidatedFilesData,
+    @UploadedFiles(FileValidationPipe, ImageCompressionPipe()) files: ValidatedFilesData,
     @Body() body: CreatePostInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
@@ -90,6 +91,7 @@ export class PostsController {
       return postRes;
     }
 
+    console.log(1);
     const post = await this.postsQueryRepository.getPostByIdWithUserId(
       postRes.getValue()!.id,
       user.id,

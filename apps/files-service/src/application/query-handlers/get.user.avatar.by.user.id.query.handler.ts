@@ -1,10 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
-import {
-  AppNotification,
-  FileUserFromDatabaseDtoType,
-  NotificationService,
-} from '@common';
+import { AppNotification, NotificationService } from '@common';
 import { FilesUserQueryRepository } from '../../infrastructure/files.user.query.repository';
 import { FileUserViewDto } from '@common/dto/filePostViewDto';
 
@@ -13,7 +9,9 @@ export class GetUserAvatarByUserIdQuery {
 }
 
 @QueryHandler(GetUserAvatarByUserIdQuery)
-export class GetUserAvatarByUserIdHandler implements IQueryHandler<GetUserAvatarByUserIdQuery> {
+export class GetUserAvatarByUserIdHandler
+  implements IQueryHandler<GetUserAvatarByUserIdQuery>
+{
   constructor(
     private readonly filesUserQueryRepository: FilesUserQueryRepository,
     private readonly notification: NotificationService,
@@ -22,11 +20,15 @@ export class GetUserAvatarByUserIdHandler implements IQueryHandler<GetUserAvatar
     this.logger.setContext('GetUserAvatarByUserIdHandler');
   }
 
-  async execute(query: GetUserAvatarByUserIdQuery): Promise<AppNotification<FileUserViewDto[] | null>> {
+  async execute(
+    query: GetUserAvatarByUserIdQuery,
+  ): Promise<AppNotification<FileUserViewDto[] | null>> {
     const notify = this.notification.create<FileUserViewDto[] | null>();
 
     try {
-      const rawFiles = await this.filesUserQueryRepository.getManyAvatarsByUserId(query.userId);
+      const rawFiles = await this.filesUserQueryRepository.getManyAvatarsByUserId(
+        query.userId,
+      );
 
       if (!rawFiles || rawFiles.length === 0) {
         this.logger.warn(`No avatar files found for userId=${query.userId}`);
@@ -41,5 +43,4 @@ export class GetUserAvatarByUserIdHandler implements IQueryHandler<GetUserAvatar
       return notify.setServerError('Failed to fetch user avatar');
     }
   }
-
 }

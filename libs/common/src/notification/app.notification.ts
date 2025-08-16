@@ -1,5 +1,6 @@
 import { StatusType } from '@common/notification/notification.types';
 import { ErrorMessage } from '@common/exceptions/exception.type';
+import { HttpStatus } from '@nestjs/common';
 
 export class AppNotification<T = any> {
   private errors: Array<ErrorMessage> = [];
@@ -60,6 +61,13 @@ export class AppNotification<T = any> {
   setNoContent() {
     this.statusType = StatusType.NoContent;
     this.statusCode = 204;
+    return this;
+  }
+
+  setToLarge(message: string, field?: string) {
+    this.errors.push({ message, field });
+    this.statusType = StatusType.ToLarge;
+    this.statusCode = 413;
     return this;
   }
 

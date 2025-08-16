@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { FileRequestEntity } from './file.request.entity';
 import { FileType } from '@common';
 

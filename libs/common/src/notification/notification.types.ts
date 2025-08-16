@@ -6,4 +6,5 @@ export enum StatusType {
   ValidationError = 'validationError',
   Unauthorized = 'unauthorized',
   Forbidden = 'forbidden',
+  ToLarge = 'toLarge',
 }

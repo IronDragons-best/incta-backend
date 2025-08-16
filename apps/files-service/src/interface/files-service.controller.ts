@@ -30,7 +30,7 @@ import { DeletePostFilesCommand } from '../application/use-cases/delete-post-fil
 import { GetFilesByUserIdQuery } from '../application/query-handlers/get.files.by.user.id.query-handler';
 import { GetUsersFilesSwagger } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
 import { GetFilesByPostIdQuery } from '../application/query-handlers/get.files.by.post.id.query.handler';
-import { FilePostViewDto, FileUserViewDto } from '@common/dto/filePostViewDto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 import { FilesByUserIdViewDto } from './dto/files.by.user.id.view-dto';
 import { GetPostFilesSwagger } from '../../core/decorators/swagger-settings/get.post.files.swagger.decorator';
 import { UploadUserFileInputDto } from './dto/upload.user.files.input.dto';
@@ -39,7 +39,7 @@ import { UploadUserAvatarCommand } from '../application/use-cases/upload-user-fi
 import { UploadPostFilesSwagger } from '../../core/decorators/swagger-settings/upload.post.files.swagger.decorator';
 import { DeleteAvatarFileCommand } from '../application/use-cases/delete-avatar-file.use.case';
 import { DeleteUserFilesSwagger } from '../../core/decorators/swagger-settings/delete.user.files.swagger.decorator';
-import { FileRequiredPipe } from '@common/pipes/file.required.pipe';
+import { AvatarValidationPipe } from '@common/pipes/avatar-validation-pipe.service';
 import { GetUserAvatarByUserIdQuery } from '../application/query-handlers/get.user.avatar.by.user.id.query.handler';
 import { GetUserAvatarByIdDecorator } from '../../core/decorators/swagger-settings/get.user.avatar.by.id.decorator';
 
@@ -114,7 +114,7 @@ export class FilesServiceController {
   )
   @UploadUserFilesSwagger()
   async uploadUserFiles(
-    @UploadedFile(new FileRequiredPipe()) file: Express.Multer.File,
+    @UploadedFile(new AvatarValidationPipe()) file: Express.Multer.File,
     @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
     body: UploadUserFileInputDto,
   ) {
