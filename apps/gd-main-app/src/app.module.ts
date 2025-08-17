@@ -24,6 +24,7 @@ import { OwnershipModule } from '../core/guards/ownership/ownership.module';
 import { ProfileModule } from './modules/profiles/profile.module';
 import { LocationModule } from './modules/location/location.module';
 import { CacheModule } from '@app/cache';
+import { CountersModule } from './modules/counters/counters.module';
 
 @Module({
   imports: [
@@ -57,7 +58,7 @@ import { CacheModule } from '@app/cache';
           password: configService.pgPassword,
           database: configService.mainPostgresDatabaseName,
           autoLoadEntities: true,
-          synchronize: false,
+          synchronize: true,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
         };
@@ -71,11 +72,11 @@ import { CacheModule } from '@app/cache';
         return {
           ...baseConfig,
           ssl: { rejectUnauthorized: false },
-          extra: {
-            max: 20,
-            idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
-          },
+          // extra: {
+          //   max: 20,
+          //   idleTimeoutMillis: 30000,
+          //   connectionTimeoutMillis: 2000,
+          // },
         };
       },
       inject: [AppConfigService],
@@ -84,7 +85,7 @@ import { CacheModule } from '@app/cache';
     HttpModule,
     CommonModule,
     UsersModule,
-
+    CountersModule,
     AuthModule,
     PostsModule,
     DeviceModule,

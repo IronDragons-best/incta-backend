@@ -5,6 +5,8 @@ import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 import { DataSource } from 'typeorm';
 import { ProfileEntity } from '../../domain/profile.entity';
+import { UserCreatedEvent } from '../../../../core/events/user.created.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export class CreateProfileCommand {
   constructor(public profileInputDto: CreateProfileDomainDto) {}
@@ -17,6 +19,7 @@ export class CreateProfileUseCase implements ICommandHandler<CreateProfileComman
     private readonly notificationService: NotificationService,
     private readonly logger: CustomLogger,
     private readonly dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2
   ) {
     this.logger.setContext('CreateProfileUseCase');
   }
@@ -44,6 +47,10 @@ export class CreateProfileUseCase implements ICommandHandler<CreateProfileComman
       }
       await this.profileRepository.saveWithTransaction(profile, queryRunner);
       await queryRunner.commitTransaction();
+
+      const userCreatedEvent = new UserCreatedEvent(profile?.user?.username, profile?.user?.email)
+      this.eventEmitter.emit('user.created', userCreatedEvent)
+
       return notify.setNoContent();
     } catch (error) {
       await queryRunner.rollbackTransaction();

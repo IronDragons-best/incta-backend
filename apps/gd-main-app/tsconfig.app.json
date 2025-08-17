@@ -5,6 +5,6 @@
     "outDir": "../../dist/apps/gd-main-app",
     "typeRoots": ["../../node_modules/@types", "./core/common/types"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "core/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

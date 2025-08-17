@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, QueryRunner } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { CustomLogger } from '@monitoring';
 import { NotificationService, AppConfigService } from '@common';
@@ -20,6 +21,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 import { PostEntity } from '../../domain/post.entity';
 import { PostFileEntity } from '../../domain/post.file.entity';
 import { FilePostViewDto } from '@common/dto/filePostViewDto';
+import { PostCreatedEvent } from '../../../../../core/events/post-events/post.created.event';
 
 export class CreatePostCommand {
   constructor(
@@ -38,6 +40,7 @@ export class CreatePostUseCase {
     private readonly notification: NotificationService,
     private readonly httpService: HttpService,
     private readonly configService: AppConfigService,
+    private readonly eventEmitter: EventEmitter2,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {
     this.logger.setContext('CreatePostUseCase');
@@ -59,6 +62,10 @@ export class CreatePostUseCase {
       }
 
       await queryRunner.commitTransaction();
+
+      const postCreatedEvent = new PostCreatedEvent(post.id, userId);
+      this.eventEmitter.emit('post.created', postCreatedEvent);
+      
       return notify.setValue(post);
     } catch (error) {
       await queryRunner.rollbackTransaction();
