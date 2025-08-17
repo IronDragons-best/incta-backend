@@ -58,7 +58,7 @@ import { CountersModule } from './modules/counters/counters.module';
           password: configService.pgPassword,
           database: configService.mainPostgresDatabaseName,
           autoLoadEntities: true,
-          synchronize: true,
+          synchronize: false,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
         };
@@ -72,11 +72,11 @@ import { CountersModule } from './modules/counters/counters.module';
         return {
           ...baseConfig,
           ssl: { rejectUnauthorized: false },
-          // extra: {
-          //   max: 20,
-          //   idleTimeoutMillis: 30000,
-          //   connectionTimeoutMillis: 2000,
-          // },
+          extra: {
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
+          },
         };
       },
       inject: [AppConfigService],
