@@ -13,7 +13,7 @@ export const cookieOptionsProvider = {
     const isStaging = configService.get<string>('DEP_TYPE') === 'staging';
 
     return {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: isStaging ? 'none' : 'lax',
       ...(isStaging && { domain: '.nodewebdev.online' }),

@@ -18,7 +18,7 @@ export class CookieInterceptor implements NestInterceptor {
     const response: Response = context.switchToHttp().getResponse();
 
     const cookieOptions = {
-      httpOnly: true,
+      httpOnly: false,
       secure: true,
       sameSite: isStaging ? 'none' : 'lax',
       path: '/',
