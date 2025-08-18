@@ -22,7 +22,7 @@ export class CookieInterceptor implements NestInterceptor {
       secure: true,
       sameSite: isStaging ? 'none' : 'lax',
       path: '/',
-      domain: '.nodewebdev.online',
+      ...(isStaging && { domain: '.nodewebdev.online' }),
     } as const;
 
     return next.handle().pipe(

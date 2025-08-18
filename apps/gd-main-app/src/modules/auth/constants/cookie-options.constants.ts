@@ -16,7 +16,7 @@ export const cookieOptionsProvider = {
       httpOnly: true,
       secure: true,
       sameSite: isStaging ? 'none' : 'lax',
-      domain: '.nodewebdev.online',
+      ...(isStaging && { domain: '.nodewebdev.online' }),
     };
   },
   inject: [AppConfigService],
