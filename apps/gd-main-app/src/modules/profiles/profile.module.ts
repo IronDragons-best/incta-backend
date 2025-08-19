@@ -14,6 +14,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { UpdateProfileUseCase } from './application/use-cases/update.profile.use-case';
 import { UpdateAvatarUseCase } from './application/use-cases/update-avatar.use-case';
 import { HttpModule } from '@nestjs/axios';
+import { DeleteAvatarUseCase } from './application/use-cases/delete-avatar.use-case';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HttpModule } from '@nestjs/axios';
     CreateProfileUseCase,
     UpdateProfileUseCase,
     UpdateAvatarUseCase,
+    DeleteAvatarUseCase,
     NotificationService,
     AsyncLocalStorageService,
     ProfileQueryRepository,

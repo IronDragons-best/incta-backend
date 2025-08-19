@@ -60,7 +60,6 @@ export class UpdateAvatarUseCase implements ICommandHandler<UpdateAvatarCommand>
       }
       const uploadAvatarResult: FilePostViewDto[] | AppNotification =
         await this.uploadAvatarToService(file, userId, notify);
-      console.log(uploadAvatarResult);
       if (uploadAvatarResult instanceof AppNotification) {
         return uploadAvatarResult;
       }
@@ -106,7 +105,6 @@ export class UpdateAvatarUseCase implements ICommandHandler<UpdateAvatarCommand>
     const data = response.data;
     if ('errorsMessages' in data && data.errorsMessages.length > 0) {
       this.logger.warn(`File service error: ${JSON.stringify(data)}`);
-      console.log('asd', data);
       return filesServiceErrorHandler(
         response as AxiosResponse<ErrorResponseDto>,
         notify,
