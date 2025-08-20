@@ -88,8 +88,7 @@ describe('Get Post By Id Integration Test', () => {
       const postId = 1;
       const mockPost = {
         id: postId,
-        title: 'Test Post',
-        shortDescription: 'Test description',
+        description: 'Test description',
         user: {
           userId: 1,
           username: 'testuser',
@@ -107,8 +106,7 @@ describe('Get Post By Id Integration Test', () => {
       expect(queryBus.execute).toHaveBeenCalledWith(new GetPostByIdQuery(postId));
       expect(response.body).toEqual(expect.objectContaining({
         id: mockPost.id,
-        title: mockPost.title,
-        shortDescription: mockPost.shortDescription,
+        description: mockPost.description,
         user: mockPost.user,
         previewImages: mockPost.previewImages,
         createdAt: expect.any(String),

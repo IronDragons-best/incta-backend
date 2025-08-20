@@ -90,8 +90,6 @@ describe('Delete post', () => {
       description: 'some desc',
       url: 'some url',
       userId: mockUser.id,
-      title: 'Mock Post Title',
-      shortDescription: 'Mock short description',
       createdAt: new Date().toISOString(),
       files: [{ fileUrl: 'http://mock-file-url.com/image1.jpg' }],
     };
