@@ -24,6 +24,7 @@ import { OwnershipModule } from '../core/guards/ownership/ownership.module';
 import { ProfileModule } from './modules/profiles/profile.module';
 import { LocationModule } from './modules/location/location.module';
 import { CacheModule } from '@app/cache';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { CacheModule } from '@app/cache';
     DeviceModule,
     ProfileModule,
     LocationModule,
+    StatsModule
   ],
   controllers: [AppController],
   providers: [AppService, RabbitInitService, AsyncLocalStorageService],
