@@ -17,13 +17,17 @@ import { HttpModule } from '@nestjs/axios';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { ClientsModule } from '../core/common/shared-modules/client.module';
+import {
+  AmqpClientsModule,
+  TcpClientsModule,
+} from '../core/common/shared-modules/client.module';
 import { DeviceModule } from './modules/devices/device.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { OwnershipModule } from '../core/guards/ownership/ownership.module';
 import { ProfileModule } from './modules/profiles/profile.module';
 import { LocationModule } from './modules/location/location.module';
 import { CacheModule } from '@app/cache';
+import { RabbitListenersModule } from '../core/listeners/rabbit.listeners.module';
 
 @Module({
   imports: [
@@ -80,11 +84,11 @@ import { CacheModule } from '@app/cache';
       },
       inject: [AppConfigService],
     }),
-    ClientsModule,
+    TcpClientsModule,
     HttpModule,
     CommonModule,
     UsersModule,
-
+    RabbitListenersModule,
     AuthModule,
     PostsModule,
     DeviceModule,
