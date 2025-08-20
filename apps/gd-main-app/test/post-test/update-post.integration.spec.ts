@@ -90,8 +90,6 @@ describe('Update post', () => {
       description: 'some desc',
       url: 'some url',
       userId: mockUser.id,
-      title: 'Mock Post Title',
-      shortDescription: 'Mock short description',
       createdAt: new Date().toISOString(),
       files: [{ fileUrl: 'http://mock-file-url.com/image1.jpg' }],
       user: {
@@ -126,8 +124,7 @@ describe('Update post', () => {
       expect(result.body).toEqual(
         expect.objectContaining({
           id: mockPost.id,
-          title: mockPost.title,
-          shortDescription: mockPost.shortDescription,
+          description: mockPost.description,
           previewImages: mockPost.files.map((f) => f.fileUrl),
           createdAt: expect.any(String),
           user: {

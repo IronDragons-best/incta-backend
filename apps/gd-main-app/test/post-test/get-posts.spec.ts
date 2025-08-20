@@ -89,16 +89,14 @@ describe('Get Posts Integration Test', () => {
         items: [
           {
             id: 1,
-            title: 'Test Post 1',
-            shortDescription: 'Test description 1',
+            description: 'Test description 1',
             user: { userId: 1, username: 'user1' },
             previewImages: ['https://example.com/image1.jpg'],
             createdAt: new Date(),
           },
           {
             id: 2,
-            title: 'Test Post 2',
-            shortDescription: 'Test description 2',
+            description: 'Test description 2',
             user: { userId: 2, username: 'user2' },
             previewImages: [],
             createdAt: new Date(),
@@ -145,8 +143,7 @@ describe('Get Posts Integration Test', () => {
         items: [
           {
             id: 3,
-            title: 'Test Post 3',
-            shortDescription: 'Test description 3',
+            description: 'Test description 3',
             user: { userId: 1, username: 'user1' },
             previewImages: [],
             createdAt: new Date(),
@@ -201,8 +198,7 @@ describe('Get Posts Integration Test', () => {
         items: [
           {
             id: 1,
-            title: 'User 1 Post',
-            shortDescription: 'Post by user 1',
+            description: 'Post by user 1',
             user: { userId: 1, username: 'user1' },
             previewImages: [],
             createdAt: new Date(),

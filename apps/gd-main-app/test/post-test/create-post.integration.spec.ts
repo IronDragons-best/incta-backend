@@ -59,14 +59,12 @@ describe('Create Post Integration Tests', () => {
   const createMockPost = (
     id: number,
     userId: number,
-    title: string,
     description: string,
     files: PostFileEntity[] = [],
   ): PostEntity => {
     const post = new PostEntity();
     post.id = id;
-    post.title = title;
-    post.shortDescription = description;
+    post.description = description;
     post.userId = userId;
     (post as any).user = { id: userId, username: 'test-user' };
     post.createdAt = new Date();
@@ -225,14 +223,12 @@ describe('Create Post Integration Tests', () => {
       const userId = 1;
       const validAccessToken = createValidToken(userId);
       const postData = {
-        title: 'Test Post Title',
-        shortDescription: 'Test post description',
+        description: 'Test post description',
       };
       const createdPost = createMockPost(
         99,
         userId,
-        postData.title,
-        postData.shortDescription,
+        postData.description,
       );
 
       setupFileServiceMock([
@@ -248,8 +244,7 @@ describe('Create Post Integration Tests', () => {
         .post('/posts/create-post')
         .set('Cookie', [`accessToken=${validAccessToken}`])
         .set('Content-Type', 'multipart/form-data')
-        .field('title', postData.title)
-        .field('shortDescription', postData.shortDescription)
+        .field('description', postData.description)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
           contentType: 'image/jpeg',
@@ -264,8 +259,7 @@ describe('Create Post Integration Tests', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           id: createdPost.id,
-          title: createdPost.title,
-          shortDescription: createdPost.shortDescription,
+          description: createdPost.description,
         }),
       );
     });
@@ -279,14 +273,12 @@ describe('Create Post Integration Tests', () => {
       );
 
       const postData = {
-        title: 'Test Post with Files',
-        shortDescription: 'Test post with file attachments',
+        description: 'Test post with file attachments',
       };
 
       const createdPost = new PostEntity();
       createdPost.id = 2;
-      createdPost.title = postData.title;
-      createdPost.shortDescription = postData.shortDescription;
+      createdPost.description = postData.description;
       createdPost.userId = userId;
       (createdPost as any).user = { id: userId, username: 'test-user' };
       createdPost.createdAt = new Date();
@@ -323,8 +315,7 @@ describe('Create Post Integration Tests', () => {
         .post('/posts/create-post')
         .set('Cookie', [`accessToken=${validAccessToken}`])
         .set('Content-Type', 'multipart/form-data')
-        .field('title', postData.title)
-        .field('shortDescription', postData.shortDescription)
+        .field('description', postData.description)
         .attach('files', Buffer.from('fake image data'), {
           filename: 'test-file.jpg',
           contentType: 'image/jpeg',
@@ -340,8 +331,7 @@ describe('Create Post Integration Tests', () => {
       expect(response.body).toEqual(
         expect.objectContaining({
           id: createdPost.id,
-          title: createdPost.title,
-          shortDescription: createdPost.shortDescription,
+          description: createdPost.description,
           previewImages: expect.arrayContaining([postFile.fileUrl]),
           user: expect.objectContaining({
             userId: createdPost.userId,
@@ -377,7 +367,7 @@ describe('Create Post Integration Tests', () => {
         .post('/posts/create-post')
         .set('Cookie', [`accessToken=${validAccessToken}`])
         .set('Content-Type', 'multipart/form-data')
-        .field('shortDescription', 'Test description without title')
+        .field('description', 'Test description without title')
         .expect(400);
 
       expect(createPostUseCase.execute).not.toHaveBeenCalled();
@@ -396,8 +386,7 @@ describe('Create Post Integration Tests', () => {
       await request(app.getHttpServer())
         .post('/posts/create-post')
         .set('Content-Type', 'multipart/form-data')
-        .field('title', 'Test Post')
-        .field('shortDescription', 'Test description')
+        .field('description', 'Test description')
         .expect(401);
 
       expect(createPostUseCase.execute).not.toHaveBeenCalled();
@@ -419,8 +408,7 @@ describe('Create Post Integration Tests', () => {
         .post('/posts/create-post')
         .set('Cookie', [`accessToken=${invalidToken}`])
         .set('Content-Type', 'multipart/form-data')
-        .field('title', 'Test Post')
-        .field('shortDescription', 'Test description')
+        .field('description', 'Test description')
         .expect(401);
 
       expect(createPostUseCase.execute).not.toHaveBeenCalled();

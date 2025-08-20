@@ -4,27 +4,14 @@ import { Trim } from '../../../../../../core/decorators/transform/trim';
 
 export class CreatePostInputDto {
   @ApiProperty({
-    description: 'title',
-    example: 'post title',
-    required: true,
-    type: String,
-    minLength: 1,
-    maxLength: 30,
-  })
-  @IsString()
-  @Trim()
-  @Length(1, 30)
-  title: string;
-
-  @ApiProperty({
-    description: 'shortDescription',
+    description: 'description',
     example: 'short description of post',
     type: String,
     required: true,
   })
   @IsString()
   @Trim()
-  shortDescription: string;
+  description: string;
 
   @ApiProperty({
     description: 'Post images (max 10)',

@@ -75,8 +75,7 @@ export class CreatePostUseCase {
     userId: number,
   ) {
     const post = PostEntity.createInstance({
-      title: data.title,
-      shortDescription: data.shortDescription,
+      description: data.description,
       userId,
     });
     this.logger.log('Creating post instance');

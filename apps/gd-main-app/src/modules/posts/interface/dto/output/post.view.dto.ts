@@ -28,16 +28,10 @@ export class PostViewDto {
   user: PostUserDto;
 
   @ApiProperty({
-    description: 'Title of the post.',
-    example: 'Understanding TypeScript Decorators',
-  })
-  title: string;
-
-  @ApiProperty({
     description: 'Content of the post.',
     example: 'This post explains how to use decorators in TypeScript...',
   })
-  shortDescription: string;
+  description: string;
 
   @ApiProperty({
     description: 'Preview images of the post.',
