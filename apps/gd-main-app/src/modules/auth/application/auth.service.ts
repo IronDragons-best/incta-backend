@@ -18,7 +18,6 @@ export class AuthService {
     const notify = this.notification.create<{ id: number } | null>();
     const user: User | null =
       await this.usersRepository.findByUsernameOrEmail(usernameOrEmail);
-    console.log('auth service: ', user);
     if (!user) {
       notify.setValue(null);
       return notify;
@@ -27,8 +26,6 @@ export class AuthService {
       notify.setForbidden('Email is not confirmed');
       return notify;
     }
-
-    console.log('auth service: ', user);
 
     const passwordIsMatch = await this.cryptoService.comparePassword(
       password,
