@@ -35,48 +35,59 @@ export class LoginUseCase implements ICommandHandler<LoginCommand> {
   }
 
   async execute(command: LoginCommand): Promise<AppNotification<Tokens>> {
-    const notify = this.notification.create<Tokens>();
+    try {
+      const notify = this.notification.create<Tokens>();
 
-    const { userId, deviceName, ip } = command.loginPayload;
+      console.log('1');
+      const { userId, deviceName, ip } = command.loginPayload;
 
-    const user = await this.usersRepository.findById(userId);
+      const user = await this.usersRepository.findById(userId);
+      console.log('2');
 
-    if (!user) {
-      return notify.setNotFound('User not found');
-    }
-    const sessionId: string = uuidv4();
+      if (!user) {
+        return notify.setNotFound('User not found');
+      }
+      const sessionId: string = uuidv4();
+      console.log('3');
 
-    const tokens: Tokens = this.tokenService.generateTokenPare(userId, sessionId);
-    const refreshPayload = this.tokenService.getRefreshTokenPayload(tokens.refreshToken);
-    const now = new Date();
+      const tokens: Tokens = this.tokenService.generateTokenPare(userId, sessionId);
+      const refreshPayload = this.tokenService.getRefreshTokenPayload(
+        tokens.refreshToken,
+      );
+      const now = new Date();
+      console.log('4');
 
-    const userDevice = await this.devicesQueryRepository.findByUserAndDeviceNameAndIp(
-      userId,
-      deviceName,
-      ip,
-    );
-
-    if (userDevice) {
-      await this.devicesRepository.updateDeviceById(userDevice.id, {
-        user,
+      const userDevice = await this.devicesQueryRepository.findByUserAndDeviceNameAndIp(
+        userId,
         deviceName,
         ip,
-        updatedAt: now,
-        tokenVersion: refreshPayload.exp,
-        sessionId: refreshPayload.sessionId,
-      });
-    } else {
-      const newDevice = DeviceEntity.createInstance({
-        user,
-        deviceName,
-        ip,
-        updatedAt: now,
-        tokenVersion: refreshPayload.exp,
-        sessionId: sessionId,
-      });
-      await this.devicesRepository.insertNewDevice(newDevice);
-    }
+      );
 
-    return notify.setValue(tokens);
+      if (userDevice) {
+        await this.devicesRepository.updateDeviceById(userDevice.id, {
+          user,
+          deviceName,
+          ip,
+          updatedAt: now,
+          tokenVersion: refreshPayload.exp,
+          sessionId: refreshPayload.sessionId,
+        });
+      } else {
+        const newDevice = DeviceEntity.createInstance({
+          user,
+          deviceName,
+          ip,
+          updatedAt: now,
+          tokenVersion: refreshPayload.exp,
+          sessionId: sessionId,
+        });
+        await this.devicesRepository.insertNewDevice(newDevice);
+      }
+
+      return notify.setValue(tokens);
+    } catch (e) {
+      console.log(e);
+      throw new Error('some error');
+    }
   }
 }

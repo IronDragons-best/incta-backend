@@ -113,26 +113,34 @@ export class AuthController {
     @ExtractUserFromRequest() user: UserContextDto,
     @ClientInfo() clientInfo: ClientInfoDto,
   ) {
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
+    {
+      try {
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip =
+          typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : req.ip;
 
-    const parser = new UAParserNS.UAParser(req.headers['user-agent']);
-    const browser = parser.getBrowser();
+        const parser = new UAParserNS.UAParser(req.headers['user-agent']);
+        const browser = parser.getBrowser();
 
-    const result: AppNotification<Tokens> = await this.commandBus.execute(
-      new LoginCommand({
-        userId: user.id,
-        deviceName: browser.name || 'Unknown',
-        ip: ip || 'Unknown',
-      }),
-    );
+        const result: AppNotification<Tokens> = await this.commandBus.execute(
+          new LoginCommand({
+            userId: user.id,
+            deviceName: browser.name || 'Unknown',
+            ip: ip || 'Unknown',
+          }),
+        );
 
-    const tokens = result.getValue();
-    if (!tokens) {
-      return result;
+        const tokens = result.getValue();
+        if (!tokens) {
+          return result;
+        }
+
+        return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
+      } catch (e) {
+        console.log(e);
+        throw new Error('error');
+      }
     }
-
-    return new TokenResponseDto(tokens.accessToken, tokens.refreshToken);
   }
 
   @Post('refresh-token')

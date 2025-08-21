@@ -27,27 +27,37 @@ export class User extends BasicEntity {
   @Column()
   email: string;
 
-  @OneToOne(() => EmailInfo, (e) => e.user, { cascade: true, eager: true })
+  @OneToOne(() => EmailInfo, (e) => e.user, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   emailConfirmationInfo: EmailInfo;
 
-  @OneToOne(() => PasswordInfo, (p) => p.user, { cascade: true, eager: true })
+  @OneToOne(() => PasswordInfo, (p) => p.user, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   passwordInfo: PasswordInfo;
 
-  @OneToMany(() => DeviceEntity, (device) => device.user)
+  @OneToMany(() => DeviceEntity, (device) => device.user, { onDelete: 'CASCADE' })
   devices: DeviceEntity[];
 
-  @OneToMany(() => PostEntity, (post) => post.user)
+  @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
   posts: PostEntity[];
 
   @OneToMany(() => UserOauthProviderEntity, (oauthProvider) => oauthProvider.user, {
     cascade: ['insert', 'update'],
     eager: true,
+    onDelete: 'CASCADE',
   })
   oauthProviders: UserOauthProviderEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user, {
     cascade: true,
     eager: true,
+    onDelete: 'CASCADE',
   })
   profile: ProfileEntity;
 
