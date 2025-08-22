@@ -1,5 +1,5 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 export function DeleteUserFilesSwagger() {
   return applyDecorators(
@@ -7,6 +7,7 @@ export function DeleteUserFilesSwagger() {
       summary: 'Delete User Avatar by User ID',
       description: 'This endpoint allows you to delete the user avatar associated with a specific user.',
     }),
+    ApiBasicAuth('basic'),
     ApiResponse({
       status: HttpStatus.NO_CONTENT,
       description: 'User avatar deleted successfully.',

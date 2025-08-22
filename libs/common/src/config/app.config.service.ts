@@ -236,4 +236,20 @@ export class AppConfigService extends ConfigService {
     }
     return url;
   }
+
+  get filesAdminLogin(): string {
+    const login = this.get<string>('FILES_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Files admin login is required');
+    }
+    return login;
+  }
+
+  get filesAdminPassword(): string {
+    const password = this.get<string>('FILES_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Files admin password is required');
+    }
+    return password;
+  }
 }

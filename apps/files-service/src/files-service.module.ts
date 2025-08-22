@@ -22,6 +22,8 @@ import { UploadUserAvatarUseCase } from './application/use-cases/upload-user-fil
 import { FilesUserQueryRepository } from './infrastructure/files.user.query.repository';
 import { GetUserAvatarByUserIdHandler } from './application/query-handlers/get.user.avatar.by.user.id.query.handler';
 import { DeleteAvatarFileUseCase } from './application/use-cases/delete-avatar-file.use.case';
+import { APP_GUARD } from '@nestjs/core';
+import { BasicAuthGuard } from '../core/guards/basic-auth-guard';
 
 const useCases = [DeletePostFilesUseCase, UploadPostFilesUseCase, UploadUserAvatarUseCase, DeleteAvatarFileUseCase];
 
@@ -48,6 +50,10 @@ const useCaseHandlers = [GetFilesByUserIdHandler, GetFilesByPostIdHandler, GetUs
     FilesQueryRepository,
     FilesUserQueryRepository,
     PrismaService,
+    {
+      provide: APP_GUARD,
+      useClass: BasicAuthGuard,
+    },
     ...useCaseHandlers,
     ...useCases,
   ],
