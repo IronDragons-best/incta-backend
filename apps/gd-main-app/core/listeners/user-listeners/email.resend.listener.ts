@@ -2,15 +2,21 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EmailResendEvent } from '../../events/email.resend.event';
-import { catchError, firstValueFrom, of, timeout } from 'rxjs';
 import { CustomLogger } from '@monitoring';
+import { BaseRabbitListener } from '../base-rabbit.listener';
+import { RabbitMQMonitorService } from '../../common/adapters/rabbit.monitor-service';
 
 @Injectable()
-export class EmailResendListener {
+export class EmailResendListener extends BaseRabbitListener {
   constructor(
-    @Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy,
-    private readonly logger: CustomLogger,
-  ) {}
+    @Inject('NOTIFICATIONS_SERVICE') client: ClientProxy,
+    rabbitMonitor: RabbitMQMonitorService,
+    logger: CustomLogger,
+  ) {
+    super(client, rabbitMonitor, logger);
+    this.logger.setContext('EmailResendListener');
+  }
+
   @OnEvent('email.registration_resend')
   handleEmailResend(event: EmailResendEvent) {
     const record = new RmqRecordBuilder({
@@ -20,21 +26,10 @@ export class EmailResendListener {
     })
       .setOptions({
         deliveryMode: 2,
-        headers: {
-          'x-retry-count': '0',
-        },
+        headers: { 'x-retry-count': '0' },
       })
       .build();
-    void firstValueFrom(
-      this.client.emit('email.registration_resend', record).pipe(
-        timeout({ each: 3000 }), // ограничиваем время ожидания
-        catchError((err) => {
-          this.logger.warn(
-            `AMQP emit failed or timed out: ${err instanceof Error ? err.message : String(err)}`,
-          );
-          return of(null); // игнорируем ошибку, блокировки нет
-        }),
-      ),
-    );
+
+    this.sendMessage('email.registration_resend', record);
   }
 }
