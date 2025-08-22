@@ -46,8 +46,8 @@ class ProfileEntity extends BasicEntity {
   @Index()
   userId: number;
 
-  @Column({ nullable: true })
-  avatarUrl?: string;
+  @Column({ type: 'varchar', nullable: true })
+  avatarUrl?: string | null;
 
   static createInstance(profileDto: CreateProfileDomainDto): ProfileEntity {
     const profile = new ProfileEntity();
@@ -135,6 +135,10 @@ class ProfileEntity extends BasicEntity {
 
   updateAvatarUrl(url: string) {
     this.avatarUrl = url;
+    return this;
+  }
+  deleteAvatarUrl() {
+    this.avatarUrl = undefined;
     return this;
   }
 }

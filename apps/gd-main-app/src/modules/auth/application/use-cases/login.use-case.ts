@@ -2,14 +2,11 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AppNotification, NotificationService } from '@common';
 import { v4 as uuidv4 } from 'uuid';
 import { Tokens, TokenService } from './token.service';
-
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
-
 import { DevicesQueryRepository } from '../../../devices/infrastructure/devices.query.repository';
 import { DevicesRepository } from '../../../devices/infrastructure/devices.repository';
 import { DeviceEntity } from '../../../devices/domain/device.entity';
 import { CustomLogger } from '@monitoring';
-import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export interface LoginCommandPayload {
   userId: number;

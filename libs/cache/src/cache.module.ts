@@ -2,12 +2,10 @@ import { Global, Module } from '@nestjs/common';
 import { loggerValidationSchema, SharedConfigModule } from '@common';
 import { CacheService } from '@app/cache/cache.service';
 import { CacheConfigService } from '@app/cache/config/cache.config.service';
-import { MonitoringModule } from '@monitoring';
 
 @Global()
 @Module({
   imports: [
-    MonitoringModule.forRoot('CacheModules'),
     SharedConfigModule.forRoot({
       appName: 'cache-module',
       validationSchema: loggerValidationSchema,

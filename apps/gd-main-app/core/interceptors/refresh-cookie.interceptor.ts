@@ -21,6 +21,7 @@ export class CookieInterceptor implements NestInterceptor {
       httpOnly: true,
       secure: true,
       sameSite: isStaging ? 'none' : 'lax',
+      ...(isStaging && { domain: '.nodewebdev.online' }),
     } as const;
 
     return next.handle().pipe(

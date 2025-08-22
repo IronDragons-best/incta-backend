@@ -2,6 +2,7 @@ import { UpdateProfileCommand } from '../application/use-cases/update.profile.us
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Patch,
@@ -21,6 +22,8 @@ import { AVATAR_SIZE_LIMIT } from '@common';
 import { AvatarValidationPipe } from '@common/pipes/avatar-validation-pipe.service';
 import { ImageCompressionPipe } from '@common/pipes/image.processing.pipe';
 import { UploadAvatarSwagger } from '../../../../core/decorators/swagger-settings/profile/upload.avatar.swagger.decorator';
+import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.use-case';
+import { DeleteAvatarSwagger } from '../../../../core/decorators/swagger-settings/profile/delete.avatar.swagger.decorator';
 
 @Controller('profile')
 export class ProfileController {
@@ -51,5 +54,13 @@ export class ProfileController {
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
     return await this.commandBus.execute(new UpdateAvatarCommand(avatar, user.id));
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('avatar')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteAvatarSwagger()
+  async deleteAvatar(@ExtractUserFromRequest() user: UserContextDto) {
+    return await this.commandBus.execute(new DeleteAvatarCommand(user.id));
   }
 }

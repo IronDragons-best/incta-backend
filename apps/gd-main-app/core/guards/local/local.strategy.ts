@@ -51,7 +51,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (notification.hasErrors()) {
       const errors = notification.getErrors();
       const errorResponse = { errorsMessages: errors };
-
+      console.log('from strategy2: ', errors);
       switch (notification.getStatusCode()) {
         case 400:
           throw new BadRequestException(errorResponse);

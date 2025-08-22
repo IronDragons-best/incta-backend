@@ -26,6 +26,7 @@ export class AuthService {
       notify.setForbidden('Email is not confirmed');
       return notify;
     }
+
     const passwordIsMatch = await this.cryptoService.comparePassword(
       password,
       user.passwordInfo.passwordHash!,

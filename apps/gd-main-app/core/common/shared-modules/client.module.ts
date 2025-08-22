@@ -19,6 +19,16 @@ import { AppConfigService, SharedConfigModule } from '@common';
         }),
         inject: [AppConfigService],
       },
+    ]),
+  ],
+  exports: [NestClientsModule],
+})
+export class TcpClientsModule {}
+
+// 2. RabbitMQ клиент только для listeners
+@Module({
+  imports: [
+    NestClientsModule.registerAsync([
       {
         name: 'NOTIFICATIONS_SERVICE',
         imports: [SharedConfigModule],
@@ -43,6 +53,8 @@ import { AppConfigService, SharedConfigModule } from '@common';
             socketOptions: {
               heartbeatIntervalInSeconds: 60,
               reconnectTimeInSeconds: 5,
+              connectionTimeout: 10000,
+              maxReconnectAttempts: 3,
             },
           },
         }),
@@ -52,4 +64,4 @@ import { AppConfigService, SharedConfigModule } from '@common';
   ],
   exports: [NestClientsModule],
 })
-export class ClientsModule {}
+export class AmqpClientsModule {}

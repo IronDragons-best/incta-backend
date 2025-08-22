@@ -12,23 +12,12 @@ import { StatsQueryRepository } from './infrastructure/stats.query.repository';
 
 import { GetStatsQueryHandler } from './application/use-case/get-stats.query';
 
-const queryHandlers = [
-  GetStatsQueryHandler
-];
+const queryHandlers = [GetStatsQueryHandler];
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([PostEntity, User])
-  ],
-  controllers: [
-    StatsController
-  ],
-  providers: [
-    StatsQueryRepository,
-    NotificationService,
-
-    ...queryHandlers
-  ],
-  exports: []
+  imports: [TypeOrmModule.forFeature([PostEntity, User])],
+  controllers: [StatsController],
+  providers: [StatsQueryRepository, NotificationService, ...queryHandlers],
+  exports: [],
 })
 export class StatsModule {}
