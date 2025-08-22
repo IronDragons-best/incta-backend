@@ -54,8 +54,15 @@ export class PostDeletedListener implements IEventHandler<PostDeletedEvent> {
 
   private async deleteFiles(event: PostDeletedEvent): Promise<void> {
     const url = `${this.filesUrl}/api/v1/delete-post-files/${event.postId}`;
+
+    const filesAdminLogin = this.configService.filesAdminLogin;
+    const filesAdminPassword = this.configService.filesAdminPassword;
+
     await firstValueFrom(
       this.httpService.delete(url, {
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`
+        },
         timeout: 10000, // 10 секунд таймаут для повторной попытки
       }),
     );

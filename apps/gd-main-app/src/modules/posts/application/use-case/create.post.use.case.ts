@@ -102,11 +102,18 @@ export class CreatePostUseCase {
     const filesServiceUrl = `${this.configService.filesUrl}/api/v1/upload-post-files`;
     this.logger.log(`Uploading files to ${filesServiceUrl}`);
 
+    const filesAdminLogin = this.configService.filesAdminLogin;
+    const filesAdminPassword = this.configService.filesAdminPassword;
+
     const { data } = await firstValueFrom(
       this.httpService.post(filesServiceUrl, formData, {
-        headers: formData.getHeaders(),
+        headers: {
+          ...formData.getHeaders(),
+          Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`
+        },
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
+
       }),
     );
 

@@ -7,6 +7,13 @@ export function swaggerSetupFiles(app: INestApplication) {
     .setDescription('Описание Api микросервиса Files')
     .setVersion('1.0')
     .addServer('/api/v1')
+    .addBasicAuth(
+      {
+        type: 'http',
+        scheme: 'basic',
+      },
+      'basic',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

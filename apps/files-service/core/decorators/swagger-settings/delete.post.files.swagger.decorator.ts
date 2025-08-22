@@ -1,5 +1,5 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 export function DeletePostFilesSwagger() {
   return applyDecorators(
@@ -8,6 +8,7 @@ export function DeletePostFilesSwagger() {
       description:
         'This endpoint allows you to delete files associated with a specific post.',
     }),
+    ApiBasicAuth('basic'),
     ApiResponse({
       status: HttpStatus.NO_CONTENT,
       description: 'Files deleted successfully.',

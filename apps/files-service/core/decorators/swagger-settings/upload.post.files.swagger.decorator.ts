@@ -1,4 +1,4 @@
-import { ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBasicAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { UploadFilesResponseDto } from '../../../src/interface/dto/upload.files.view.dto';
 import { ErrorResponseDto } from '@common';
@@ -6,6 +6,7 @@ import { ErrorResponseDto } from '@common';
 export function UploadPostFilesSwagger() {
   return applyDecorators(
     ApiOperation({ summary: 'Upload post preview files' }),
+    ApiBasicAuth('basic'),
     ApiResponse({
       status: HttpStatus.CREATED,
       type: UploadFilesResponseDto,

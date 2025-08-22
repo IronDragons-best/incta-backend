@@ -9,6 +9,7 @@ import {
   Post,
   UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
@@ -42,6 +43,7 @@ import { DeleteUserFilesSwagger } from '../../core/decorators/swagger-settings/d
 import { AvatarValidationPipe } from '@common/pipes/avatar-validation-pipe.service';
 import { GetUserAvatarByUserIdQuery } from '../application/query-handlers/get.user.avatar.by.user.id.query.handler';
 import { GetUserAvatarByIdDecorator } from '../../core/decorators/swagger-settings/get.user.avatar.by.id.decorator';
+import { BasicAuthGuard } from '../../core/guards/basic-auth-guard';
 
 @Controller()
 export class FilesServiceController {
@@ -90,6 +92,7 @@ export class FilesServiceController {
     return await this.queryBus.execute(new GetUserAvatarByUserIdQuery(userId));
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete('delete-post-files/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeletePostFilesSwagger()
@@ -97,6 +100,7 @@ export class FilesServiceController {
     return await this.commandBus.execute(new DeletePostFilesCommand(+postId));
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete('delete-avatar-files/:userId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteUserFilesSwagger()
@@ -104,6 +108,7 @@ export class FilesServiceController {
     return await this.commandBus.execute(new DeleteAvatarFileCommand(+userId));
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post('upload-user-files')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -132,6 +137,7 @@ export class FilesServiceController {
     return result;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post('upload-post-files')
   @UseInterceptors(
     FilesInterceptor('files', MAX_FILES_COUNT, {
