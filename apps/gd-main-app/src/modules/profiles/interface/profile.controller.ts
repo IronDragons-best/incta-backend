@@ -3,8 +3,10 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   UploadedFile,
   UseGuards,
@@ -28,6 +30,11 @@ import { DeleteAvatarSwagger } from '../../../../core/decorators/swagger-setting
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly commandBus: CommandBus) {}
+
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getProfile(@Param('id') id: number) {}
+
   @UseGuards(JwtAuthGuard)
   @Patch()
   @UpdateProfileSwaggerDecorator()

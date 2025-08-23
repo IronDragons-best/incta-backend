@@ -24,6 +24,10 @@ export function filesServiceErrorHandler(
     return notify.setBadRequest(errorText ?? `Bad request during ${operation}`, field);
   }
 
+  if (status === 404) {
+    return notify.setNotFound(errorText ?? `Not found ${operation}`);
+  }
+
   if (errorText) {
     return notify.setBadRequest(errorText);
   }
