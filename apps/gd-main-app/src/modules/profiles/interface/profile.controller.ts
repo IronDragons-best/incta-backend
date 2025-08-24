@@ -7,12 +7,13 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ProfileInputDto } from './dto/profile.input.dto';
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
 import { UserContextDto } from '../../../../core/dto/user.context.dto';
@@ -26,14 +27,22 @@ import { ImageCompressionPipe } from '@common/pipes/image.processing.pipe';
 import { UploadAvatarSwagger } from '../../../../core/decorators/swagger-settings/profile/upload.avatar.swagger.decorator';
 import { DeleteAvatarCommand } from '../application/use-cases/delete-avatar.use-case';
 import { DeleteAvatarSwagger } from '../../../../core/decorators/swagger-settings/profile/delete.avatar.swagger.decorator';
+import { GetProfileQuery } from '../application/query-handlers/get-profile.query';
+import { GetProfileSwagger } from '../../../../core/decorators/swagger-settings/profile/get.profile.swagger.decorator';
 
 @Controller('profile')
 export class ProfileController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
-  @Get(':id')
+  @Get(':userId')
+  @GetProfileSwagger()
   @HttpCode(HttpStatus.OK)
-  async getProfile(@Param('id') id: number) {}
+  async getProfile(@Param('userId', ParseIntPipe) userId: number) {
+    return await this.queryBus.execute(new GetProfileQuery(userId));
+  }
 
   @UseGuards(JwtAuthGuard)
   @Patch()

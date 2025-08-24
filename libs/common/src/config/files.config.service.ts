@@ -69,7 +69,7 @@ export class FilesConfigService extends ConfigService {
     return s3Region;
   }
   get postPhotosBucketName(): string {
-    const bucketName = this.get<string>('POST_FILES_BUCKET_NAME');
+    const bucketName = this.get<string>('FILES_BUCKET_NAME');
     if (!bucketName) {
       throw new Error('POST_FILES_BUCKET_NAME is required');
     }

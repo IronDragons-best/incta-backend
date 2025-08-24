@@ -197,6 +197,16 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: REDIS_DB
+             - name: FILES_ADMIN_LOGIN
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_ADMIN_LOGIN
+             - name: FILES_ADMIN_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_ADMIN_PASSWORD
              - name: PORT
                valueFrom:
                  secretKeyRef:

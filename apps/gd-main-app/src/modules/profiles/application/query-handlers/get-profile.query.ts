@@ -53,21 +53,28 @@ export class GetProfileHandler implements IQueryHandler<GetProfileQuery> {
   }
 
   private async getAvatarUrlFromService(userId: number) {
-    const filesServiceUrl = `${this.configService.filesUrl}/api/v1/user-avatar/${userId}`;
-    const response: AxiosResponse<FileUserViewDto | ErrorResponseDto> =
-      await firstValueFrom(
-        this.httpService.get(filesServiceUrl, {
-          auth: {
-            username: this.configService.filesAdminLogin,
-            password: this.configService.filesAdminPassword,
-          },
-        }),
-      );
-    const data = response.data;
-    if ('errorsMessages' in data && data.errorsMessages.length > 0) {
-      this.logger.log('Avatar info not found');
+    try {
+      const filesServiceUrl = `${this.configService.filesUrl}/api/v1/user-avatar/${userId}`;
+      const response: AxiosResponse<FileUserViewDto | ErrorResponseDto> =
+        await firstValueFrom(
+          this.httpService.get(filesServiceUrl, {
+            auth: {
+              username: this.configService.filesAdminLogin,
+              password: this.configService.filesAdminPassword,
+            },
+            validateStatus: () => true,
+          }),
+        );
+      const data = response.data;
+      if ('errorsMessages' in data && data.errorsMessages.length > 0) {
+        this.logger.log('Avatar info not found');
+        return null;
+      }
+      return data as FileUserViewDto;
+    } catch (error) {
+      const errorsMessage = error instanceof Error ? error.message : String(error);
+      this.logger.log(`An error occurred: ${errorsMessage}`);
       return null;
     }
-    return data as FileUserViewDto;
   }
 }

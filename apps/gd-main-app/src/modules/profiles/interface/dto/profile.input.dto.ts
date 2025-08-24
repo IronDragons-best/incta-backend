@@ -1,13 +1,5 @@
-import {
-  IsDate,
-  IsDateString,
-  IsNumber,
-  IsOptional,
-  IsString,
-  Matches,
-} from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
 import {
   dateOfBirthConstraints,

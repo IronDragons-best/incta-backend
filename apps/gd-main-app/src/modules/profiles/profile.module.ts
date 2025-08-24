@@ -15,6 +15,7 @@ import { UpdateProfileUseCase } from './application/use-cases/update.profile.use
 import { UpdateAvatarUseCase } from './application/use-cases/update-avatar.use-case';
 import { HttpModule } from '@nestjs/axios';
 import { DeleteAvatarUseCase } from './application/use-cases/delete-avatar.use-case';
+import { GetProfileHandler } from './application/query-handlers/get-profile.query';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DeleteAvatarUseCase } from './application/use-cases/delete-avatar.use-c
     UpdateProfileUseCase,
     UpdateAvatarUseCase,
     DeleteAvatarUseCase,
+    GetProfileHandler,
     NotificationService,
     AsyncLocalStorageService,
     ProfileQueryRepository,

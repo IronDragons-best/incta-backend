@@ -24,7 +24,6 @@ export class GetUserAvatarByUserIdHandler
     query: GetUserAvatarByUserIdQuery,
   ): Promise<AppNotification<FileUserViewDto[] | null>> {
     const notify = this.notification.create<FileUserViewDto[] | null>();
-
     try {
       const rawFiles = await this.filesUserQueryRepository.getManyAvatarsByUserId(
         query.userId,

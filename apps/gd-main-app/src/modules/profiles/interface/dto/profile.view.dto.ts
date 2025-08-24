@@ -2,8 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProfileEntity } from '../../domain/profile.entity';
 
 export class ProfileViewDto {
-  @ApiProperty({ default: 1, description: 'Profile id' })
-  id: number;
   @ApiProperty({ default: 1, description: 'User id' })
   userId: number;
 
@@ -25,9 +23,11 @@ export class ProfileViewDto {
   @ApiProperty({ default: 'Something about me', nullable: true })
   aboutMe: string | null;
 
+  @ApiProperty({ default: 'https://s3-storage.com/bucket/somefile', nullable: true })
+  avatarUrl: string | null;
+
   static mapToView(profile: ProfileEntity) {
     const dto = new this();
-    dto.id = profile.id;
     dto.userId = profile.userId;
     dto.username = profile.user.username;
     dto.firstname = profile.firstName || null;
@@ -35,6 +35,7 @@ export class ProfileViewDto {
     dto.city = profile.city?.name || null;
     dto.country = profile.country?.name || null;
     dto.aboutMe = profile.aboutMe;
+    dto.avatarUrl = profile.avatarUrl || null;
     return dto;
   }
 }

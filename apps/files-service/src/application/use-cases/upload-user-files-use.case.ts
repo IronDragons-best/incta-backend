@@ -13,6 +13,7 @@ import { FileUserEntity } from '../../domain/file.user.entity';
 import { FilesUserRepository } from '../../infrastructure/files.user.repository';
 import { TotalUploadedFilesViewDto } from '../../../core/dto/totalUploadedFilesViewDto';
 import { GetUserAvatarByUserIdQuery } from '../query-handlers/get.user.avatar.by.user.id.query.handler';
+import { NotFoundException } from '@nestjs/common';
 
 export class UploadUserAvatarCommand {
   constructor(
@@ -38,7 +39,6 @@ export class UploadUserAvatarUseCase implements ICommandHandler<UploadUserAvatar
 
   async execute(command: UploadUserAvatarCommand) {
     const notify = this.notification.create();
-
     const { file, userId, uploadedBy } = command;
 
     if (!file?.buffer) {
