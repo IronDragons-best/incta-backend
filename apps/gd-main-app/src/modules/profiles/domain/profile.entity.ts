@@ -38,7 +38,7 @@ class ProfileEntity extends BasicEntity {
   @Column({ type: 'varchar', length: 200, nullable: true })
   aboutMe: string | null;
 
-  @OneToOne(() => User, (user) => user.profile)
+  @OneToOne(() => User, (user) => user.profile, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

@@ -17,7 +17,7 @@ export class PostEntity extends BasicEntity {
   @Column()
   description: string;
 
-  @ManyToOne(() => User, (u) => u.posts)
+  @ManyToOne(() => User, (u) => u.posts, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 

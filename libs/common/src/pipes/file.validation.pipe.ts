@@ -50,6 +50,7 @@ export class FileValidationPipe
     }
 
     if (totalSize > MAX_TOTAL_SIZE) {
+      console.log('here');
       throw new PayloadTooLargeException(
         `Files size can't be more than ${MAX_TOTAL_SIZE / 1024 / 1024} mb`,
       );

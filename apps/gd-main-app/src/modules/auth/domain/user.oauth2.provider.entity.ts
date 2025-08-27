@@ -16,7 +16,7 @@ export class UserOauthProviderEntity extends BasicEntity {
   @Column()
   providerId: string;
 
-  @ManyToOne(() => User, (user) => user.oauthProviders)
+  @ManyToOne(() => User, (user) => user.oauthProviders, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
