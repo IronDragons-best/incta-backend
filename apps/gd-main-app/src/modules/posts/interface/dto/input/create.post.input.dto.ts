@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Length } from 'class-validator';
+import { IsString } from 'class-validator';
 import { Trim } from '../../../../../../core/decorators/transform/trim';
 
 export class CreatePostInputDto {

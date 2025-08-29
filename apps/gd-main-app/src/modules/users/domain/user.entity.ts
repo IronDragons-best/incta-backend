@@ -11,6 +11,8 @@ import {
 } from '../../auth/domain/user.oauth2.provider.entity';
 import { PostEntity } from '../../posts/domain/post.entity';
 import { ProfileEntity } from '../../profiles/domain/profile.entity';
+import { UserSubscriptionEntity } from '../../subscriptions/domain/user-subscription.entity';
+import { PaymentStatusType } from '../../../../../../libs/common/src/types/payment.types';
 
 export type UserDomainDtoType = {
   username: string;
@@ -60,6 +62,12 @@ export class User extends BasicEntity {
     onDelete: 'CASCADE',
   })
   profile: ProfileEntity;
+
+  @Column({ type: 'boolean', default: false })
+  hasActiveSubscription: boolean;
+
+  @OneToMany(() => UserSubscriptionEntity, (subscription) => subscription.user)
+  subscriptions: UserSubscriptionEntity[];
 
   static createOauthInstance(
     email: string,
@@ -315,5 +323,21 @@ export class User extends BasicEntity {
       );
     }
     this.passwordInfo.passwordHash = passwordHash;
+  }
+
+  updateSubscriptionStatus(status: boolean) {
+    this.hasActiveSubscription = status;
+  }
+
+  get currentSubscription(): UserSubscriptionEntity | null {
+    return (
+      this.subscriptions?.find(
+        (sub) => sub.status === PaymentStatusType.Active && sub.endDate > new Date(),
+      ) || null
+    );
+  }
+
+  get accountType(): 'personal' | 'business' {
+    return this.currentSubscription ? 'business' : 'personal';
   }
 }

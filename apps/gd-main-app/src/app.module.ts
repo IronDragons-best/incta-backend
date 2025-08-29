@@ -26,6 +26,7 @@ import { LocationModule } from './modules/location/location.module';
 import { CacheModule } from '@app/cache';
 import { RabbitListenersModule } from '../core/listeners/rabbit.listeners.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { SubscriptionModule } from './modules/subscriptions/subscription.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { StatsModule } from './modules/stats/stats.module';
     PostsModule,
     DeviceModule,
     ProfileModule,
+    SubscriptionModule,
     LocationModule,
     StatsModule,
   ],

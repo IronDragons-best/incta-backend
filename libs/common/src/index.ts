@@ -11,6 +11,7 @@ export * from './exceptions/exception.type';
 export * from './exceptions/types/error.message';
 export * from './types/common.types';
 export * from './types/files.types';
+export * from './types/payment.types';
 
 // CONSTANTS
 export * from './constants/files.constants';

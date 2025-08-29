@@ -14,10 +14,14 @@ export class AuthMeViewDto {
   @ApiProperty({ type: Boolean })
   isConfirmed: boolean;
 
+  @ApiProperty({ type: Boolean })
+  hasActiveSubscription: boolean;
+
   constructor(user: User) {
     this.id = user.id.toString();
     this.username = user.username;
     this.email = user.email;
     this.isConfirmed = user.isEmailConfirmed();
+    this.hasActiveSubscription = user.hasActiveSubscription;
   }
 }
