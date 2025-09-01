@@ -11,6 +11,7 @@ export class CreateSubscriptionCommand {
     public userId: number,
     public planType: PlanType,
     public paymentMethod: PaymentMethodType,
+    public duration: number,
   ) {}
 }
 
@@ -27,7 +28,17 @@ export class CreateSubscriptionUseCase
     this.logger.setContext('CreateSubscriptionUseCase');
   }
   async execute(command: CreateSubscriptionCommand) {
-    const notify = this.notification.create();
+    const notify = this.notification.create<{
+      subscriptionId: number;
+      checkoutUrl: string;
+    }>();
+
+    if (command.planType === PlanType.Yearly && command.duration > 1) {
+      return notify.setBadRequest(
+        'The maximum subscription period is 1 year.',
+        'duration',
+      );
+    }
 
     const user: User | null = await this.usersRepository.findById(command.userId);
 
@@ -36,18 +47,26 @@ export class CreateSubscriptionUseCase
       return notify.setNotFound('User not found');
     }
 
+    const result = this.createPayment();
     const userSubscription: UserSubscriptionEntity = user.createSubscriptionForUser(
       command.planType,
       command.paymentMethod,
+      result.subscriptionId,
     );
-
-    const paymentUrl = this.createPayment(userSubscription);
-    const sub = this.subscriptionRepository.save(userSubscription);
+    const sub = await this.subscriptionRepository.save(userSubscription);
+    return notify.setValue({
+      subscriptionId: sub.id,
+      checkoutUrl: result.paymentUrl,
+    });
   }
 
-  private createPayment(subscription: UserSubscriptionEntity) {
+  private createPayment() {
     // request logic
-    return 'https://stripe-url.com/will/be/here';
+    return {
+      paymentUrl: 'https://stripe-url.com/will/be/here',
+      subscriptionId: 'someID',
+      status: 'pending',
+    };
   }
 }
 /// Создать payment дублирующую сущность. доделать логику создания подписки и payment entity

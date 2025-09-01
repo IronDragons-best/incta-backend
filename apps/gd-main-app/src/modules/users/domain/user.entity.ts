@@ -329,11 +329,16 @@ export class User extends BasicEntity {
     this.passwordInfo.passwordHash = passwordHash;
   }
 
-  createSubscriptionForUser(planType: PlanType, paymentMethod: PaymentMethodType) {
+  createSubscriptionForUser(
+    planType: PlanType,
+    paymentMethod: PaymentMethodType,
+    subscriptionId: string,
+  ) {
     return UserSubscriptionEntity.createInstance({
       userId: this.id,
       planType,
       paymentMethod,
+      subscriptionId,
     });
   }
 
