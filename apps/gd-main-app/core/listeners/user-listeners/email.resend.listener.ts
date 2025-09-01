@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EmailResendEvent } from '../../events/email.resend.event';
+import { EmailResendEvent } from '../../events/user-events/email.resend.event';
 import { CustomLogger } from '@monitoring';
 import { BaseRabbitListener } from '../base-rabbit.listener';
 import { RabbitMQMonitorService } from '../../common/adapters/rabbit.monitor-service';

@@ -10,8 +10,8 @@ import { DataSource } from 'typeorm';
 import { Tokens } from './token.service';
 import { User } from '../../../users/domain/user.entity';
 import { LoginCommand } from './login.use-case';
-import { UserProviderAddedEvent } from '../../../../../core/events/user.provider.added.event';
-import { UserProviderRegisteredEvent } from '../../../../../core/events/user.oauth.registered.event';
+import { UserProviderAddedEvent } from '../../../../../core/events/user-events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../../../../core/events/user-events/user.oauth.registered.event';
 
 export class GithubOauthCommand {
   constructor(

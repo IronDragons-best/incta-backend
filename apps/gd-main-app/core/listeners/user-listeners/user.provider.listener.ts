@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
-import { UserProviderRegisteredEvent } from '../../events/user.oauth.registered.event';
-import { UserProviderAddedEvent } from '../../events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../events/user-events/user.oauth.registered.event';
+import { UserProviderAddedEvent } from '../../events/user-events/user.provider.added.event';
 import { OauthTemplateType } from '@common';
 import { CustomLogger } from '@monitoring';
 import { BaseRabbitListener } from '../base-rabbit.listener';
