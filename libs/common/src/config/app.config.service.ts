@@ -252,4 +252,20 @@ export class AppConfigService extends ConfigService {
     }
     return password;
   }
+
+  get paymentServicePort(): number {
+    const paymentServicePort = this.get<number>('PAYMENTS_SERVICE_PORT')
+    if (!paymentServicePort) {
+      throw new Error('Payment service port is required')
+    }
+    return paymentServicePort
+  }
+
+  get paymentServiceHost(): string {
+    const paymentServiceHost = this.get<string>('PAYMENTS_SERVICE_HOST')
+    if (!paymentServiceHost) {
+      throw new Error('Payment service host is required')
+    }
+    return paymentServiceHost
+  }
 }

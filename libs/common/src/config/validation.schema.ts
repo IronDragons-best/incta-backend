@@ -43,6 +43,15 @@ export const validationSchema = Joi.object({
   GITHUB_CLIENT_ID: Joi.string(),
   GITHUB_CLIENT_SECRET: Joi.string(),
   GITHUB_CALLBACK_URL: Joi.string(),
+
+  PAYMENTS_MONGO_URL: Joi.string(),
+  PAYMENT_PRODUCT_ID: Joi.string(),
+  PAYMENT_PRICE_ID: Joi.string(),
+  PAYMENT_SECRET_KEY: Joi.string(),
+  PAYMENT_WEBHOOK_SIGN_SECRET: Joi.string(),
+  PAYMENT_WEBHOOK_URL: Joi.string(),
+  PAYMENTS_SERVICE_PORT: Joi.number().port(),
+  PAYMENTS_SERVICE_HOST: Joi.string()
 });
 
 export const loggerValidationSchema = Joi.object({
@@ -98,3 +107,24 @@ export const notificationsValidationSchema = Joi.object({
 
   RABBITMQ_PORT: Joi.number().port(),
 });
+
+export const monitoringValidationSchema = Joi.object({
+  NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+
+  PAYMENTS_MONGO_URL: Joi.string(),
+
+  PAYMENT_PRODUCT_ID: Joi.string(),
+
+  PAYMENT_PRICE_ID: Joi.string(),
+
+  PAYMENT_SECRET_KEY: Joi.string(),
+
+  PAYMENT_WEBHOOK_SIGN_SECRET: Joi.string(),
+
+  PAYMENT_WEBHOOK_URL: Joi.string(),
+
+  PAYMENTS_SERVICE_PORT: Joi.number().port(),
+
+  PAYMENTS_SERVICE_HOST: Joi.string()
+  }
+)

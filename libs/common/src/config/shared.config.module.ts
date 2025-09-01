@@ -6,6 +6,7 @@ import { Schema as SchemaType } from 'joi';
 import { AppConfigService } from '@common/config/app.config.service';
 import { FilesConfigService } from '@common/config/files.config.service';
 import { NotificationConfigService } from '@common/config/notification.config.service';
+import { PaymentsConfigService } from '@common/config/payments.service';
 
 export interface AppConfigOptions {
   appName: string;
@@ -62,6 +63,14 @@ export class SharedConfigModule {
           provide: NotificationConfigService,
           useFactory: (configService: ConfigService) => {
             return new NotificationConfigService(configService);
+          },
+          inject: [ConfigService],
+        },
+
+        {
+          provide: PaymentsConfigService,
+          useFactory: (configService: ConfigService) => {
+            return new PaymentsConfigService(configService);
           },
           inject: [ConfigService],
         },
