@@ -13,7 +13,7 @@ import { UsersRepository } from '../../../users/infrastructure/users.repository'
 
 import { User } from '../../../users/domain/user.entity';
 
-import { PasswordRecoveryEvent } from '../../../../../core/events/password.recovery.event';
+import { PasswordRecoveryEvent } from '../../../../../core/events/user-events/password.recovery.event';
 
 import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 

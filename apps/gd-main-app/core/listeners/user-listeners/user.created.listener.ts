@@ -4,7 +4,7 @@ import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { RabbitMQMonitorService } from '../../common/adapters/rabbit.monitor-service';
 import { CustomLogger } from '@monitoring';
 import { OnEvent } from '@nestjs/event-emitter';
-import { UserCreatedEvent } from '../../events/user.created.event';
+import { UserCreatedEvent } from '../../events/user-events/user.created.event';
 
 @Injectable()
 export class UserCreatedListener extends BaseRabbitListener {

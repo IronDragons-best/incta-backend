@@ -15,8 +15,8 @@ import { User } from '../../../users/domain/user.entity';
 import { Tokens } from './token.service';
 import { LoginCommand } from './login.use-case';
 import { ClientInfoDto } from '../../interface/dto/input/client.info.dto';
-import { UserProviderAddedEvent } from '../../../../../core/events/user.provider.added.event';
-import { UserProviderRegisteredEvent } from '../../../../../core/events/user.oauth.registered.event';
+import { UserProviderAddedEvent } from '../../../../../core/events/user-events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../../../../core/events/user-events/user.oauth.registered.event';
 
 export class GoogleOauthCommand {
   constructor(

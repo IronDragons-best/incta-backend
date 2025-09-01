@@ -4,7 +4,7 @@ import { CreateUserCommand } from '../../../users/application/use-cases/create.u
 import { AppNotification, NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserCreatedEvent } from '../../../../../core/events/user.created.event';
+import { UserCreatedEvent } from '../../../../../core/events/user-events/user.created.event';
 import { RegisteredUserDto } from '../../../users/domain/registered.user.dto';
 import { CreateProfileEvent } from '../../../../../core/events/profile-events/profile.create.event';
 
