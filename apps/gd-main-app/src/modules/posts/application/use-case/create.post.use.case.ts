@@ -52,7 +52,6 @@ export class CreatePostUseCase {
     await queryRunner.startTransaction();
 
     const requestId = `create_post_${++CreatePostUseCase.requestCounter}_${Date.now()}`;
-    const startTime = Date.now();
 
     this.logger.warn(`[${requestId}] Starting post creation for user ${userId}`, {
       userId,
@@ -74,7 +73,8 @@ export class CreatePostUseCase {
       return notify.setValue(post);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('Error creating post', error);
+      this.logger.error(`Error creating post: ${requestId}`, error);
+
       return notify.setServerError('Failed to create post');
     } finally {
       await queryRunner.release();
