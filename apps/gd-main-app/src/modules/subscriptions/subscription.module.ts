@@ -7,8 +7,9 @@ import { CreateSubscriptionUseCase } from './application/use-cases/create-subscr
 import { SubscriptionRepository } from './infrastructure/subscription.repository';
 import { NotificationService } from '@common';
 import { UsersModule } from '../users/users.module';
-import { GetNewSubscriptionHandler } from './application/query-handlers/get-new-subscription.use-case';
+import { GetNewSubscriptionHandler } from './application/query-handlers/get-new-subscription.query-handler';
 import { SubscriptionQueryRepository } from './infrastructure/subscription.query-repository';
+import { SubscriptionPlansHandler } from './application/query-handlers/subscription-plans.query-handler';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SubscriptionQueryRepository } from './infrastructure/subscription.query
   providers: [
     NotificationService,
     CreateSubscriptionUseCase,
+    SubscriptionPlansHandler,
     GetNewSubscriptionHandler,
     SubscriptionRepository,
     SubscriptionQueryRepository,
