@@ -20,7 +20,7 @@ export class AuthService {
       await this.usersRepository.findByUsernameOrEmail(usernameOrEmail);
     if (!user) {
       notify.setValue(null);
-      return notify;
+      return notify.setNotFound('User does not exist');
     }
     if (!user.isEmailConfirmed()) {
       notify.setForbidden('Email is not confirmed');

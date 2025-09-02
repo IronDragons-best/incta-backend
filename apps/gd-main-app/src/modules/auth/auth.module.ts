@@ -5,7 +5,6 @@ import { RegistrationUseCase } from './application/use-cases/registration.use.ca
 import { AuthController } from './interface/auth.controller';
 import { NotificationService } from '@common';
 import { AsyncLocalStorageService } from '@monitoring';
-import { AmqpClientsModule } from '../../../core/common/shared-modules/client.module';
 import { LoginUseCase } from './application/use-cases/login.use-case';
 import { TokenService } from './application/use-cases/token.service';
 import { LocalStrategy } from '../../../core/guards/local/local.strategy';

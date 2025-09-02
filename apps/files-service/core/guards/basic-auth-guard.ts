@@ -2,16 +2,14 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
 
-import { AppConfigService } from '@common';
+import { FilesConfigService } from '@common';
 
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  constructor(
-    private configService: AppConfigService
-  ) {}
+  constructor(private configService: FilesConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -22,7 +20,9 @@ export class BasicAuthGuard implements CanActivate {
     }
 
     const base64Credentials = authHeader.split(' ')[1];
-    const [ username, password ] = Buffer.from(base64Credentials, 'base64').toString().split(':');
+    const [username, password] = Buffer.from(base64Credentials, 'base64')
+      .toString()
+      .split(':');
 
     const validUser = this.configService.filesAdminLogin;
     const validPassword = this.configService.filesAdminPassword;

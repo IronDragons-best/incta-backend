@@ -101,13 +101,14 @@ export class UpdateAvatarUseCase implements ICommandHandler<UpdateAvatarCommand>
         this.httpService.post<UploadFilesResponseDto>(filesServiceUrl, formData, {
           headers: {
             ...formData.getHeaders(),
-            Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`
+            Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`,
           },
           maxBodyLength: Infinity,
           maxContentLength: Infinity,
           validateStatus: () => true,
         }),
       );
+
     const data = response.data;
     if ('errorsMessages' in data && data.errorsMessages.length > 0) {
       this.logger.warn(`File service error: ${JSON.stringify(data)}`);

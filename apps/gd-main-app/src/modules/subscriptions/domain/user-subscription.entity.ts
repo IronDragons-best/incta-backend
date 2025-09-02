@@ -1,13 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import {
   PaymentMethodType,
   PlanType,
@@ -18,12 +9,11 @@ import {
   CreateSubscriptionDto,
   UpdateSubscriptionAfterPaymentDto,
 } from './dto/subscription.domain-dto';
+import { BasicEntity } from '../../../../core/common/types/basic.entity.type';
+import { PaymentInfoEntity } from './payment-info.entity';
 
 @Entity()
-export class UserSubscriptionEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class UserSubscriptionEntity extends BasicEntity {
   @Column({ type: 'enum', enum: PlanType })
   planType: PlanType;
 
@@ -37,16 +27,10 @@ export class UserSubscriptionEntity {
   endDate: Date;
 
   @Column()
-  stripeSubscriptionId: string;
+  subscriptionId: string;
 
   @Column({ type: 'enum', enum: PaymentMethodType })
   paymentMethod: PaymentMethodType;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
   canceledAt?: Date;
@@ -59,18 +43,22 @@ export class UserSubscriptionEntity {
   @Index()
   userId: number;
 
+  @OneToMany(() => PaymentInfoEntity, (payment) => payment.subscription)
+  payments: PaymentInfoEntity[];
+
   static createInstance(dto: CreateSubscriptionDto) {
     const sub = new this();
     sub.userId = dto.userId;
     sub.paymentMethod = dto.paymentMethod;
     sub.planType = dto.planType;
     sub.status = PaymentStatusType.Pending;
+    sub.subscriptionId = dto.subscriptionId;
     return sub;
   }
 
   update(dto: UpdateSubscriptionAfterPaymentDto) {
     this.status = dto.status;
-    this.stripeSubscriptionId = dto.stripeSubscriptionId;
+    this.subscriptionId = dto.stripeSubscriptionId;
     this.startDate = dto.startDate;
     this.endDate = dto.endDate;
     return this;

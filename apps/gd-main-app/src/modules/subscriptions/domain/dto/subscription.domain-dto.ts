@@ -4,6 +4,7 @@ export class CreateSubscriptionDto {
   userId: number;
   planType: PlanType;
   paymentMethod: PaymentMethodType;
+  subscriptionId: string;
 }
 
 export class UpdateSubscriptionAfterPaymentDto {

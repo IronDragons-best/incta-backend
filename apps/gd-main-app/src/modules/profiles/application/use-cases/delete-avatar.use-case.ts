@@ -75,9 +75,14 @@ export class DeleteAvatarUseCase implements ICommandHandler<DeleteAvatarCommand>
 
   async deleteAvatarFromService(userId: number, notify: AppNotification) {
     const filesServiceUrl = `${this.configService.filesUrl}/api/v1/delete-avatar-files/${userId}`;
+    const filesAdminLogin = this.configService.filesAdminLogin;
+    const filesAdminPassword = this.configService.filesAdminPassword;
 
     const response: AxiosResponse<ErrorResponseDto> = await firstValueFrom(
       this.httpService.delete(filesServiceUrl, {
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`,
+        },
         validateStatus: () => true,
       }),
     );

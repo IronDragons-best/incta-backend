@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { PaymentMethodType, PaymentStatusType } from '@common';
 
 export type PaymentDocument = Payment & Document;
 
@@ -45,20 +46,23 @@ export class Payment {
   @Prop({ type: Date, required: false })
   deletedAt?: Date;
 
-  @ApiProperty({ type: String })
-  @IsString()
-  @Prop({ type: String, required: true })
-  payType: string;
+  // stripe, paypal, etc.
+  @ApiProperty({ enum: PaymentMethodType })
+  @IsEnum(PaymentMethodType)
+  @Prop({ type: String, enum: PaymentMethodType, required: true })
+  payType: PaymentMethodType;
 
+  // tariffs
   @ApiProperty({ type: String })
   @IsString()
-  @Prop({ type: String, required: true })
+  @IsOptional()
+  @Prop({ type: String, required: false })
   subType: string;
 
-  @ApiProperty({ enum: PaymentStatus })
-  @IsEnum(PaymentStatus, { message: 'CANCEL, PENDING or ACTIVE' })
-  @Prop({ type: String, enum: PaymentStatus, required: true })
-  status: PaymentStatus;
+  @ApiProperty({ enum: PaymentStatusType })
+  @IsEnum(PaymentStatusType)
+  @Prop({ type: String, enum: PaymentStatusType, required: true })
+  status: PaymentStatusType;
 
   @ApiProperty({ type: Number })
   @IsNumber()

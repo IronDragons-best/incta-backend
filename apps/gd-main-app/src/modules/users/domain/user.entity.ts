@@ -12,7 +12,11 @@ import {
 import { PostEntity } from '../../posts/domain/post.entity';
 import { ProfileEntity } from '../../profiles/domain/profile.entity';
 import { UserSubscriptionEntity } from '../../subscriptions/domain/user-subscription.entity';
-import { PaymentStatusType } from '../../../../../../libs/common/src/types/payment.types';
+import {
+  PaymentMethodType,
+  PaymentStatusType,
+  PlanType,
+} from '../../../../../../libs/common/src/types/payment.types';
 
 export type UserDomainDtoType = {
   username: string;
@@ -323,6 +327,19 @@ export class User extends BasicEntity {
       );
     }
     this.passwordInfo.passwordHash = passwordHash;
+  }
+
+  createSubscriptionForUser(
+    planType: PlanType,
+    paymentMethod: PaymentMethodType,
+    subscriptionId: string,
+  ) {
+    return UserSubscriptionEntity.createInstance({
+      userId: this.id,
+      planType,
+      paymentMethod,
+      subscriptionId,
+    });
   }
 
   updateSubscriptionStatus(status: boolean) {
