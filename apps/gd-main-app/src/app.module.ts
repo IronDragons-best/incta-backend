@@ -41,7 +41,6 @@ import { SubscriptionModule } from './modules/subscriptions/subscription.module'
       wildcard: true,
       delimiter: '.',
     }),
-
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
@@ -76,8 +75,8 @@ import { SubscriptionModule } from './modules/subscriptions/subscription.module'
           ssl: { rejectUnauthorized: false },
           extra: {
             max: 20,
-            idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
+            // idleTimeoutMillis: 30000,
+            // connectionTimeoutMillis: 2000,
           },
         };
       },

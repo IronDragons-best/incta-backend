@@ -11,6 +11,7 @@ type FilesCheckType = {
   timestamp: string;
 };
 type NotificationCheckType = FilesCheckType;
+
 @Injectable()
 export class AppService {
   constructor(
@@ -29,15 +30,22 @@ export class AppService {
 
     try {
       const filesHost = this.configService.filesHost;
+      const paymentHost = this.configService.paymentServiceHost
+
       const filesPromise: Promise<AxiosResponse<FilesCheckType>> =
         this.http.axiosRef.get<FilesCheckType>(`${filesHost}/health`);
+
       const notificationPromise = firstValueFrom<NotificationCheckType>(
         this.notificationClient.send('notifications-check', { requestId }),
       );
-      const [filesResult, notificationResult] = await Promise.allSettled([
-        filesPromise,
 
+      const paymentsPromise: Promise<AxiosResponse<FilesCheckType>> =
+        this.http.axiosRef.get<FilesCheckType>(`${paymentHost}/api/v1/health`);
+
+      const [filesResult, notificationResult, paymentResult] = await Promise.allSettled([
+        filesPromise,
         notificationPromise,
+        paymentsPromise,
       ]);
       const filesService =
         filesResult.status === 'fulfilled'
@@ -57,6 +65,14 @@ export class AppService {
               status: 'not responding',
               timestamp: new Date().toISOString(),
             };
+
+      const paymentsService =
+        paymentResult.status === 'fulfilled'
+          ? paymentResult.value.data
+          : {
+              status: 'not responding',
+              timestamp: new Date().toISOString(),
+            };
       const combinedResult = {
         mainService: {
           status: 'healthy',
@@ -64,6 +80,7 @@ export class AppService {
         },
         filesService,
         notificationService,
+        paymentsService,
       };
 
       notification.setValue(combinedResult);
@@ -78,6 +95,10 @@ export class AppService {
           timestamp: new Date().toISOString(),
         },
         notificationService: {
+          status: 'not responding',
+          timestamp: new Date().toISOString(),
+        },
+        paymentsService: {
           status: 'not responding',
           timestamp: new Date().toISOString(),
         },
