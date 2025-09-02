@@ -2,7 +2,7 @@ import { CommandHandler } from '@nestjs/cqrs';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, QueryRunner } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 import { CustomLogger } from '@monitoring';
 import { NotificationService, AppConfigService } from '@common';
@@ -31,6 +31,7 @@ export class CreatePostCommand {
 
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase {
+  private static requestCounter = 0;
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
@@ -50,10 +51,21 @@ export class CreatePostUseCase {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    const requestId = `create_post_${++CreatePostUseCase.requestCounter}_${Date.now()}`;
+    const startTime = Date.now();
+
+    this.logger.warn(`[${requestId}] Starting post creation for user ${userId}`, {
+      userId,
+      filesCount: files?.length || 0,
+      description: data.description?.substring(0, 50) + '...',
+      requestId,
+    });
+
     try {
       const post = await this.createPost(queryRunner, data, userId);
 
       if (files?.length) {
+        this.logger.warn(`[${requestId}] Starting file upload for ${files.length} files`);
         const uploadedFiles = await this.uploadFilesToService(files, post.id, userId);
         await this.savePostFiles(queryRunner, uploadedFiles, post.id);
       }
@@ -106,15 +118,16 @@ export class CreatePostUseCase {
     const filesAdminPassword = this.configService.filesAdminPassword;
 
     const { data } = await firstValueFrom(
-      this.httpService.post(filesServiceUrl, formData, {
-        headers: {
-          ...formData.getHeaders(),
-          Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`
-        },
-        maxBodyLength: Infinity,
-        maxContentLength: Infinity,
-
-      }),
+      this.httpService
+        .post(filesServiceUrl, formData, {
+          headers: {
+            ...formData.getHeaders(),
+            Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`,
+          },
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        })
+        .pipe(timeout(10000)),
     );
 
     if (!data?.uploadResults || data.errors?.length) {

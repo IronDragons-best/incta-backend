@@ -46,7 +46,7 @@ export class AppService {
               status: 'not responding',
               timestamp: new Date().toISOString(),
             };
-
+      console.log(filesResult);
       const notificationService =
         notificationResult.status === 'fulfilled'
           ? {
