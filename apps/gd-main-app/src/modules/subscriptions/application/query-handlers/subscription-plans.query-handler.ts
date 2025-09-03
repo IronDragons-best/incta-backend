@@ -4,8 +4,8 @@ import { NotificationService, PaymentStatusType, SubscriptionPlan } from '@commo
 import { SubscriptionQueryRepository } from '../../infrastructure/subscription.query-repository';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import {
-  SubscriptionPlanDto,
   PagedSubscriptionPlansViewDto,
+  SubscriptionPlanViewDto,
 } from '../../interface/dto/subscription-plans.view-dto';
 
 export class SubscriptionPlansQuery {
@@ -34,8 +34,8 @@ export class SubscriptionPlansHandler implements IQueryHandler<SubscriptionPlans
         : SubscriptionPlan.Personal;
     const viewDto = PagedSubscriptionPlansViewDto.mapToView(
       [
-        new SubscriptionPlanDto(SubscriptionPlan.Business, 2.49),
-        new SubscriptionPlanDto(SubscriptionPlan.Personal, 0),
+        new SubscriptionPlanViewDto(SubscriptionPlan.Business, 2.49),
+        new SubscriptionPlanViewDto(SubscriptionPlan.Personal, 0),
       ],
       currentPlan,
     );

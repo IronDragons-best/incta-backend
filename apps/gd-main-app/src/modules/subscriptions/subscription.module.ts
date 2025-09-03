@@ -10,6 +10,7 @@ import { UsersModule } from '../users/users.module';
 import { GetNewSubscriptionHandler } from './application/query-handlers/get-new-subscription.query-handler';
 import { SubscriptionQueryRepository } from './infrastructure/subscription.query-repository';
 import { SubscriptionPlansHandler } from './application/query-handlers/subscription-plans.query-handler';
+import { PaymentEventsController } from './interface/payment.controller';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { SubscriptionPlansHandler } from './application/query-handlers/subscript
     SubscriptionRepository,
     SubscriptionQueryRepository,
   ],
-  controllers: [SubscriptionController],
+  controllers: [SubscriptionController, PaymentEventsController],
 })
 export class SubscriptionModule {}
