@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { PaymentsModule } from './payments.module';
 import { PaymentsConfigService } from '@common/config/payments.service';
-import { CustomLogger } from '@monitoring';
 import { filesSetup } from '../core/files.setup';
 
 async function bootstrap() {
@@ -9,7 +8,8 @@ async function bootstrap() {
   const configService = app.get<PaymentsConfigService>(PaymentsConfigService);
 
   const port = configService.paymentServicePort;
-  const host = configService.paymentsServiceHost
+  const host = configService.paymentsServiceHost;
+
   await filesSetup(app);
 
   await app.listen(port);
