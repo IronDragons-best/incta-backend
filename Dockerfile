@@ -24,7 +24,7 @@ RUN pnpm run prisma:files:generate
 RUN pnpm run build:gd-main-app
 RUN pnpm run build:files-service
 RUN pnpm run build:notification-service
-RUN pnpm run build:payment-service
+RUN pnpm run build:payments-service
 
 # Verify Prisma client was generated
 RUN ls -la node_modules/.prisma/client/ || echo "Prisma client not found!"
