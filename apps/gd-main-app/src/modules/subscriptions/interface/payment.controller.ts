@@ -3,6 +3,17 @@ import { Controller } from '@nestjs/common';
 import { EventPattern, Payload, Transport } from '@nestjs/microservices';
 import { PaymentMethodType, PaymentStatusType, PlanType } from '@common';
 
+interface RefundProcessedPayload {
+  userId: number;
+  externalSubscriptionId: string;
+  externalRefundId: string; // Stripe: re_xxx
+  refundAmount: number;
+  currency: string;
+  refundDate: string; // ISO string
+  reason: string; // 'requested_by_customer', 'fraudulent', etc.
+  originalPaymentId: string; // ID изначального платежа
+}
+
 interface PaymentSuccessPayload {
   userId: number;
   externalSubscriptionId: string; // для обновления subscriptionId
@@ -143,6 +154,21 @@ export class PaymentEventsController {
 
     console.log(
       `Auto payment cancelled for user ${data.userId}, subscription remains active until ${data.currentPeriodEnd}`,
+    );
+  }
+
+  @EventPattern('payment.refunded', Transport.RMQ)
+  async handlePaymentRefunded(@Payload() data: RefundProcessedPayload) {
+    console.log('[Payment Refunded] Received event:', data);
+
+    // TODO: Здесь будет вызов use case для:
+    // 1. Создания записи о рефанде в PaymentInfoEntity
+    // 2. Уменьшения количества оплаченных месяцев у пользователя
+    // 3. Возможно обновление статуса подписки, если рефанд полный
+    // await this.paymentRefundedUseCase.execute(data);
+
+    console.log(
+      `Refund processed for user ${data.userId}, amount: ${data.refundAmount} ${data.currency}`,
     );
   }
 }
