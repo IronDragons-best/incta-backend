@@ -4,7 +4,7 @@
 pnpm run start:notification-service &
 
 # Start payment service in background
-pnpm run build:payments-service &
+pnpm run start:payments-service &
 
 # Start files service in background
 pnpm run start:files-service &
