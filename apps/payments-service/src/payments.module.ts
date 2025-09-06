@@ -7,7 +7,7 @@ import { CommonModule, monitoringValidationSchema, SharedConfigModule } from '@c
 import { MonitoringModule } from '@monitoring';
 import { PaymentsConfigService } from '@common/config/payments.service';
 import { Payment, PaymentSchema } from './domain/payment';
-import { PaymentRabbitInitService } from './infrastructure/rabbit.infrastructure.service';
+import { PaymentRabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
 
 @Module({
   imports: [

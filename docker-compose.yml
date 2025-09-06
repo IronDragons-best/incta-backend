@@ -12,6 +12,7 @@ services:
       - "3000:3000"
       - "3001:3001"
       - "3002:3002"
+      - "3003:3003"
     environment:
       - NODE_ENV=production
     env_file:
@@ -130,6 +131,27 @@ services:
     depends_on:
       - mongodb
 
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-staging
+    restart: unless-stopped
+    ports:
+      - "5672:5672"    # AMQP-порт
+      - "15672:15672"  # UI RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_ERLANG_COOKIE: secret
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network  # Было app_network, должно быть app-network
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   app-network:
     driver: bridge
@@ -141,3 +163,4 @@ volumes:
   logs:
   redis_data:
   mongo_data:
+  rabbitmq_data:

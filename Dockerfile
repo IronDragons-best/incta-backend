@@ -24,6 +24,7 @@ RUN pnpm run prisma:files:generate
 RUN pnpm run build:gd-main-app
 RUN pnpm run build:files-service
 RUN pnpm run build:notification-service
+RUN pnpm run build:payment-service
 
 # Verify Prisma client was generated
 RUN ls -la node_modules/.prisma/client/ || echo "Prisma client not found!"
@@ -81,7 +82,7 @@ RUN chown -R nestjs:nodejs /app
 USER nestjs
 
 # Expose ports for the services
-EXPOSE 3000 3001 3002
+EXPOSE 3000 3001 3002 3003
 
 # Use dumb-init as the entrypoint to handle signals gracefully
 ENTRYPOINT ["dumb-init", "--"]
