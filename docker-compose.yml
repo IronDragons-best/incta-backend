@@ -30,7 +30,7 @@ services:
       redis:
         condition: service_healthy
       mongodb:
-        condition: service_healthy g
+        condition: service_healthy
 
     command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
     logging:
