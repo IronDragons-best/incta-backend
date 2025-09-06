@@ -33,7 +33,12 @@ export class AppService {
       const paymentHost = this.configService.paymentServiceHost;
 
       const filesPromise: Promise<AxiosResponse<FilesCheckType>> =
-        this.http.axiosRef.get<FilesCheckType>(`${filesHost}/health`);
+        this.http.axiosRef.get<FilesCheckType>(`${filesHost}/health`, {
+          auth: {
+            username: this.configService.filesAdminLogin,
+            password: this.configService.filesAdminPassword,
+          },
+        });
 
       const notificationPromise = firstValueFrom<NotificationCheckType>(
         this.notificationClient.send('notifications-check', { requestId }),

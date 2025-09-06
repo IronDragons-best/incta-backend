@@ -3,6 +3,11 @@ export enum PlanType {
   Yearly = 'yearly',
 }
 
+export enum SubscriptionPlan {
+  Business = 'business',
+  Personal = 'personal',
+}
+
 export enum PaymentStatusType {
   'Pending' = 'pending',
   'Active' = 'active',
