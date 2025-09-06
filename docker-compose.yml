@@ -121,6 +121,12 @@ services:
       - mongo_data:/data/db
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet -u mongo_user -p mongo_password --authenticationDatabase admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   mongo-express:
     image: mongo-express:latest
