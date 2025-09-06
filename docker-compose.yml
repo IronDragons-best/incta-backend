@@ -23,9 +23,15 @@ services:
     networks:
       - app-network
     depends_on:
-      - postgres-main
-      - postgres-files
-      - redis
+      postgres-main:
+        condition: service_started
+      postgres-files:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy g
+
     command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
     logging:
       driver: "json-file"
