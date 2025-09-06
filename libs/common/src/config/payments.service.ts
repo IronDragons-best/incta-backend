@@ -56,19 +56,19 @@ export class PaymentsConfigService extends ConfigService {
   }
 
   get paymentServicePort(): number {
-    const paymentServicePort = this.get<number>('PAYMENTS_SERVICE_PORT')
+    const paymentServicePort = this.get<number>('PAYMENTS_SERVICE_PORT');
     if (!paymentServicePort) {
-      throw new Error('Payment service port is required')
+      throw new Error('Payment service port is required');
     }
-    return paymentServicePort
+    return paymentServicePort;
   }
 
   get paymentsServiceHost(): string {
-    const paymentServiceHost = this.get<string>('PAYMENTS_SERVICE_HOST')
+    const paymentServiceHost = this.get<string>('PAYMENTS_SERVICE_HOST');
     if (!paymentServiceHost) {
-      throw new Error('Payment service host is required')
+      throw new Error('Payment service host is required');
     }
-    return paymentServiceHost
+    return paymentServiceHost;
   }
 
   get nodeEnv(): string {
@@ -89,5 +89,21 @@ export class PaymentsConfigService extends ConfigService {
 
   get isTest(): boolean {
     return this.nodeEnv === 'test';
+  }
+
+  get paymentsAdminLogin(): string {
+    const login = this.get<string>('PAYMENTS_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Payments admin login is required');
+    }
+    return login;
+  }
+
+  get paymentsAdminPassword(): string {
+    const password = this.get<string>('PAYMENTS_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Payments admin password is required');
+    }
+    return password;
   }
 }

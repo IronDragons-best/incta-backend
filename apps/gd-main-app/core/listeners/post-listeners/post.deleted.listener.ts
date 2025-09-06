@@ -61,7 +61,7 @@ export class PostDeletedListener implements IEventHandler<PostDeletedEvent> {
     await firstValueFrom(
       this.httpService.delete(url, {
         headers: {
-          Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`
+          Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`,
         },
         timeout: 10000, // 10 секунд таймаут для повторной попытки
       }),

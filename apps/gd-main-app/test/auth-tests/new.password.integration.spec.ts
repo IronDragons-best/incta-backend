@@ -34,9 +34,21 @@ describe('NewPasswordUseCase', () => {
       providers: [
         NewPasswordUseCase,
         NotificationService,
-        { provide: UsersRepository, useValue: { findByRecoveryCodeWithTransaction: jest.fn(), saveWithTransaction: jest.fn() } },
-        { provide: CustomLogger, useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn() } },
-        { provide: CryptoService, useValue: { createHash: jest.fn().mockResolvedValue('hashedPassword') } },
+        {
+          provide: UsersRepository,
+          useValue: {
+            findByRecoveryCodeWithTransaction: jest.fn(),
+            saveWithTransaction: jest.fn(),
+          },
+        },
+        {
+          provide: CustomLogger,
+          useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn() },
+        },
+        {
+          provide: CryptoService,
+          useValue: { createHash: jest.fn().mockResolvedValue('hashedPassword') },
+        },
         {
           provide: DataSource,
           useValue: { createQueryRunner: () => queryRunner },
@@ -54,7 +66,10 @@ describe('NewPasswordUseCase', () => {
   it('should return 404 if user is not found by recovery code', async () => {
     usersRepository.findByRecoveryCodeWithTransaction.mockResolvedValue(null);
 
-    const result = await useCase.execute({ recoveryCode: 'invalid-code', newPassword: 'pass' });
+    const result = await useCase.execute({
+      recoveryCode: 'invalid-code',
+      newPassword: 'pass',
+    });
 
     expect(result.hasErrors()).toBe(true);
     expect(result.getStatusCode()).toBe(404);
@@ -67,7 +82,10 @@ describe('NewPasswordUseCase', () => {
 
     usersRepository.findByRecoveryCodeWithTransaction.mockResolvedValue(user);
 
-    const result = await useCase.execute({ recoveryCode: 'valid-code', newPassword: 'pass' });
+    const result = await useCase.execute({
+      recoveryCode: 'valid-code',
+      newPassword: 'pass',
+    });
 
     expect(result.hasErrors()).toBe(true);
     expect(result.getStatusCode()).toBe(400);

@@ -1,0 +1,117 @@
+import { Injectable, Logger } from '@nestjs/common';
+import Stripe from 'stripe';
+import { PaymentsConfigService } from '@common/config/payments.service';
+
+@Injectable()
+export class StripeService {
+  private readonly stripe: Stripe;
+  private readonly logger = new Logger(StripeService.name);
+
+  constructor(private readonly configService: PaymentsConfigService) {
+    this.stripe = new Stripe(this.configService.paymentSecretKey, {
+      apiVersion: '2025-02-24.acacia',
+    });
+  }
+
+  async createCustomer(email: string, userId: string): Promise<Stripe.Customer> {
+    return this.stripe.customers.create({
+      email,
+      metadata: { userId },
+    });
+  }
+
+  async createSubscription(
+    customerId: string,
+    priceId: string,
+  ): Promise<Stripe.Subscription> {
+    return this.stripe.subscriptions.create({
+      customer: customerId,
+      items: [{ price: priceId }],
+      expand: ['latest_invoice.payment_intent'],
+    });
+  }
+
+  async getSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+    return this.stripe.subscriptions.retrieve(subscriptionId);
+  }
+
+  async updateSubscription(
+    subscriptionId: string,
+    params: Stripe.SubscriptionUpdateParams,
+  ): Promise<Stripe.Subscription> {
+    return this.stripe.subscriptions.update(subscriptionId, params);
+  }
+
+  async cancelSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+    return this.stripe.subscriptions.cancel(subscriptionId);
+  }
+
+  async createPaymentIntent(
+    amount: number,
+    currency = 'usd',
+    customerId?: string,
+  ): Promise<Stripe.PaymentIntent> {
+    const params: Stripe.PaymentIntentCreateParams = {
+      amount,
+      currency,
+    };
+
+    if (customerId) {
+      params.customer = customerId;
+    }
+
+    return this.stripe.paymentIntents.create(params);
+  }
+
+  async getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
+    return this.stripe.paymentIntents.retrieve(paymentIntentId);
+  }
+
+  constructWebhookEvent(payload: string | Buffer, signature: string): Stripe.Event {
+    const webhookSecret = this.configService.paymentWebhookSignSecret;
+    return this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+  }
+
+  async listCustomerSubscriptions(
+    customerId: string,
+  ): Promise<Stripe.ApiList<Stripe.Subscription>> {
+    return this.stripe.subscriptions.list({
+      customer: customerId,
+      status: 'all',
+    });
+  }
+
+  async createCheckoutSession(
+    customerId: string,
+    priceId: string,
+    successUrl: string,
+    cancelUrl: string,
+  ): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
+  }
+
+  async retrieveCustomer(
+    customerId: string,
+  ): Promise<Stripe.Customer | Stripe.DeletedCustomer> {
+    return this.stripe.customers.retrieve(customerId);
+  }
+
+  async listInvoices(customerId: string): Promise<Stripe.ApiList<Stripe.Invoice>> {
+    return this.stripe.invoices.list({
+      customer: customerId,
+      limit: 10,
+    });
+  }
+}

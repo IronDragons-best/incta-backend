@@ -45,7 +45,12 @@ describe('Get Post By Id Integration Test', () => {
         NotificationInterceptor,
         {
           provide: CustomLogger,
-          useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn(), log: jest.fn() },
+          useValue: {
+            setContext: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            log: jest.fn(),
+          },
         },
         {
           provide: PostsQueryRepository,
@@ -104,20 +109,21 @@ describe('Get Post By Id Integration Test', () => {
         .expect(200);
 
       expect(queryBus.execute).toHaveBeenCalledWith(new GetPostByIdQuery(postId));
-      expect(response.body).toEqual(expect.objectContaining({
-        id: mockPost.id,
-        description: mockPost.description,
-        user: mockPost.user,
-        previewImages: mockPost.previewImages,
-        createdAt: expect.any(String),
-      }));
-
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: mockPost.id,
+          description: mockPost.description,
+          user: mockPost.user,
+          previewImages: mockPost.previewImages,
+          createdAt: expect.any(String),
+        }),
+      );
     });
 
     it('404 - should return not found when post does not exist', async () => {
       const postId = 999;
       const errorNotification = AppNotification.notFound('Post not found');
-      
+
       queryBus.execute.mockResolvedValue(errorNotification);
 
       const response = await request(app.getHttpServer())
@@ -125,19 +131,19 @@ describe('Get Post By Id Integration Test', () => {
         .expect(404);
 
       expect(queryBus.execute).toHaveBeenCalledWith(new GetPostByIdQuery(postId));
-      expect(response.body).toEqual(expect.objectContaining({
-        errorsMessages: expect.arrayContaining([
-          expect.objectContaining({ message: 'Post not found' }),
-        ]),
-      }));
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          errorsMessages: expect.arrayContaining([
+            expect.objectContaining({ message: 'Post not found' }),
+          ]),
+        }),
+      );
     });
 
     it('400 - should return bad request when id is invalid', async () => {
       const invalidId = 'invalid-id';
 
-      await request(app.getHttpServer())
-        .get(`/posts/${invalidId}`)
-        .expect(400);
+      await request(app.getHttpServer()).get(`/posts/${invalidId}`).expect(400);
 
       expect(queryBus.execute).not.toHaveBeenCalled();
     });

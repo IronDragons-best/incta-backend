@@ -25,9 +25,18 @@ import { DeleteAvatarFileUseCase } from './application/use-cases/delete-avatar-f
 import { APP_GUARD } from '@nestjs/core';
 import { BasicAuthGuard } from '../core/guards/basic-auth-guard';
 
-const useCases = [DeletePostFilesUseCase, UploadPostFilesUseCase, UploadUserAvatarUseCase, DeleteAvatarFileUseCase];
+const useCases = [
+  DeletePostFilesUseCase,
+  UploadPostFilesUseCase,
+  UploadUserAvatarUseCase,
+  DeleteAvatarFileUseCase,
+];
 
-const useCaseHandlers = [GetFilesByUserIdHandler, GetFilesByPostIdHandler, GetUserAvatarByUserIdHandler];
+const useCaseHandlers = [
+  GetFilesByUserIdHandler,
+  GetFilesByPostIdHandler,
+  GetUserAvatarByUserIdHandler,
+];
 
 @Module({
   imports: [

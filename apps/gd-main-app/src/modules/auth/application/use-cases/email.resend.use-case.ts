@@ -12,9 +12,7 @@ import { RecaptchaService } from '../recaptcha.service';
 import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export class EmailResendCommand {
-  constructor(
-    public readonly email: string,
-  ) {}
+  constructor(public readonly email: string) {}
 }
 
 @CommandHandler(EmailResendCommand)

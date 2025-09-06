@@ -72,7 +72,8 @@ describe('FilesServiceController', () => {
 
       expect(commandBus.execute).toHaveBeenCalledWith(expect.any(UploadPostFilesCommand));
 
-      const executedCommand = commandBus.execute.mock.calls[0][0] as UploadPostFilesCommand;
+      const executedCommand = commandBus.execute.mock
+        .calls[0][0] as UploadPostFilesCommand;
       expect(executedCommand.files).toHaveLength(1);
       expect(executedCommand.files[0].originalName).toBe('test.jpg');
       expect(executedCommand.files[0].size).toBe(1024);

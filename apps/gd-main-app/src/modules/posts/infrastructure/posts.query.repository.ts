@@ -41,9 +41,7 @@ export class PostsQueryRepository {
     return post;
   }
 
-  async getPostById(
-    id: PostEntity['id']
-  ): Promise<PostEntity | null> {
+  async getPostById(id: PostEntity['id']): Promise<PostEntity | null> {
     const post = await this.postsRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
@@ -62,17 +60,19 @@ export class PostsQueryRepository {
     const allowedSortFields = ['createdAt', 'title', 'updatedAt'];
     const pagination = PaginationBuilder.build(query, allowedSortFields);
 
-    const qb = this.postsRepository.createQueryBuilder('post')
+    const qb = this.postsRepository
+      .createQueryBuilder('post')
       .leftJoinAndSelect('post.user', 'user')
-      .leftJoinAndSelect('post.files', 'files')
-
+      .leftJoinAndSelect('post.files', 'files');
 
     if (query.userId) {
       qb.andWhere('post.userId = :userId', { userId: query.userId });
     }
 
     if (query.description) {
-      qb.andWhere('post.description LIKE :description', { description: `%${query.description}%` });
+      qb.andWhere('post.description LIKE :description', {
+        description: `%${query.description}%`,
+      });
     }
 
     qb.orderBy(`post.${pagination.sortBy}`, pagination.sortDirection);
@@ -81,6 +81,11 @@ export class PostsQueryRepository {
 
     const [items, totalCount] = await qb.getManyAndCount();
 
-    return new PagedResponse(items, totalCount, pagination.pageNumber, pagination.pageSize);
+    return new PagedResponse(
+      items,
+      totalCount,
+      pagination.pageNumber,
+      pagination.pageSize,
+    );
   }
 }
