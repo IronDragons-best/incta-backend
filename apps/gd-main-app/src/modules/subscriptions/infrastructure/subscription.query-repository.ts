@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSubscriptionEntity } from '../domain/user-subscription.entity';
 import { IsNull, Repository } from 'typeorm';
-import { PaymentStatusType } from '@common';
+import { SubscriptionStatusType } from '@common';
 
 @Injectable()
 export class SubscriptionQueryRepository {
@@ -25,7 +25,7 @@ export class SubscriptionQueryRepository {
     const subscription = await this.subscription.findOne({
       where: {
         userId,
-        status: PaymentStatusType.Active,
+        status: SubscriptionStatusType.Active,
         deletedAt: IsNull(),
       },
       order: {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSubscriptionEntity } from '../domain/user-subscription.entity';
 
@@ -10,7 +10,26 @@ export class SubscriptionRepository {
     private readonly subscriptionRepository: Repository<UserSubscriptionEntity>,
   ) {}
 
-  async save(subscription: UserSubscriptionEntity) {
-    return await this.subscriptionRepository.save(subscription);
+  async findOne(subscriptionId: string, manager?: EntityManager) {
+    const subscriptionRepository = manager
+      ? manager.getRepository(UserSubscriptionEntity)
+      : this.subscriptionRepository;
+
+    const sub = await subscriptionRepository.findOne({
+      where: {
+        subscriptionId,
+      },
+    });
+    if (!sub) {
+      return null;
+    }
+    return sub;
+  }
+
+  async save(subscription: UserSubscriptionEntity, manager?: EntityManager) {
+    const repository = manager
+      ? manager.getRepository(UserSubscriptionEntity)
+      : this.subscriptionRepository;
+    return repository.save(subscription);
   }
 }
