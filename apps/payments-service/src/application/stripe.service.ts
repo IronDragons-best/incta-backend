@@ -9,7 +9,7 @@ export class StripeService {
 
   constructor(private readonly configService: PaymentsConfigService) {
     this.stripe = new Stripe(this.configService.paymentSecretKey, {
-      apiVersion: '2025-02-24.acacia',
+      apiVersion: '2025-08-27.basil',
     });
   }
 
@@ -46,29 +46,9 @@ export class StripeService {
     return this.stripe.subscriptions.cancel(subscriptionId);
   }
 
-  async createPaymentIntent(
-    amount: number,
-    currency = 'usd',
-    customerId?: string,
-  ): Promise<Stripe.PaymentIntent> {
-    const params: Stripe.PaymentIntentCreateParams = {
-      amount,
-      currency,
-    };
-
-    if (customerId) {
-      params.customer = customerId;
-    }
-
-    return this.stripe.paymentIntents.create(params);
-  }
-
-  async getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent> {
-    return this.stripe.paymentIntents.retrieve(paymentIntentId);
-  }
-
   constructWebhookEvent(payload: string | Buffer, signature: string): Stripe.Event {
     const webhookSecret = this.configService.paymentWebhookSignSecret;
+    this.logger.log(`🚀 Payload type: ${typeof payload}, length: ${payload.length}`);
     return this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   }
 
@@ -113,5 +93,17 @@ export class StripeService {
       customer: customerId,
       limit: 10,
     });
+  }
+
+  async getPrice(priceId: string): Promise<Stripe.Price> {
+    return this.stripe.prices.retrieve(priceId);
+  }
+
+  async expireCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.expire(sessionId);
+  }
+
+  async getCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.retrieve(sessionId);
   }
 }

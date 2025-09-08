@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
-import { PaymentMethodType, PaymentStatusType } from '@common';
+import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { PaymentMethodType } from '@common';
 import { SubscriptionPeriod } from '../../../domain/payment';
 
 export class CreatePaymentInputDto {
@@ -28,25 +28,4 @@ export class CreatePaymentInputDto {
   @IsString()
   @IsOptional()
   subType?: string;
-
-  @ApiProperty({ enum: PaymentStatusType, description: 'Payment status' })
-  @IsEnum(PaymentStatusType)
-  status: PaymentStatusType;
-
-  @ApiProperty({
-    type: Number,
-    description: 'Payment amount in cents',
-    minimum: 50,
-  })
-  @IsNumber()
-  @Min(50)
-  amount: number;
-
-  @ApiProperty({
-    type: String,
-    description: 'Currency',
-    default: 'usd',
-  })
-  @IsString()
-  currency: string = 'usd';
 }

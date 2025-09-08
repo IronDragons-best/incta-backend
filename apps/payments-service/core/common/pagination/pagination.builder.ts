@@ -1,5 +1,5 @@
 import { parseOrder, pickSortField, SortOrder, toSafeNumber } from './pagination.utils';
-import { SubscriptionsQueryDto } from '../../../src/interface/dto/input/subscriptions.query.dto';
+import { PaymentQueryDto } from '../../../src/interface/dto/input/payment.query.dto';
 
 export class PaginationSettings {
   readonly pageNumber: number;
@@ -33,12 +33,12 @@ export class PaginationSettings {
 
 export class PaginationBuilder {
   static build(
-    dto: SubscriptionsQueryDto,
+    dto: PaymentQueryDto,
     allowedFields: string[],
     defaultField = 'createdAt',
   ): PaginationSettings {
-    const pageNumber = toSafeNumber(dto.pageNumber, 1);
-    const pageSize = toSafeNumber(dto.pageSize, 10);
+    const pageNumber = toSafeNumber(dto.pageNumber?.toString(), 1);
+    const pageSize = toSafeNumber(dto.pageSize?.toString(), 10);
     const sortBy = pickSortField(dto.sortBy, allowedFields, defaultField);
     const sortDirection = parseOrder(dto.sortDirection);
     return new PaginationSettings(

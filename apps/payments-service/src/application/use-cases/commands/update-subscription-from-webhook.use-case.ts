@@ -1,37 +1,65 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { SubscriptionStatus } from '../../../domain/payment';
+import { CustomLogger } from '@monitoring';
+import { NotificationService, PaymentStatusType } from '@common';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-@Injectable()
-export class UpdateSubscriptionFromWebhookUseCase {
-  private readonly logger = new Logger(UpdateSubscriptionFromWebhookUseCase.name);
+export class UpdateSubscriptionFromWebhookCommand {
+  constructor(
+    public readonly stripeSubscription: {
+      id: string;
+      status: string;
+      current_period_start: number;
+      current_period_end: number;
+      canceled_at?: number | null;
+    },
+  ) {}
+}
 
-  constructor(private readonly paymentRepository: PaymentRepository) {}
+@CommandHandler(UpdateSubscriptionFromWebhookCommand)
+export class UpdateSubscriptionFromWebhookUseCase
+  implements ICommandHandler<UpdateSubscriptionFromWebhookCommand>
+{
+  constructor(
+    private readonly paymentRepository: PaymentRepository,
+    private readonly logger: CustomLogger,
+    private readonly notification: NotificationService,
+  ) {
+    this.logger.setContext('UpdateSubscriptionFromWebhookUseCase');
+  }
 
-  async execute(stripeSubscription: {
-    id: string;
-    status: string;
-    current_period_start: number;
-    current_period_end: number;
-    canceled_at?: number | null;
-  }): Promise<void> {
+  async execute(command: UpdateSubscriptionFromWebhookCommand): Promise<any> {
+    const { stripeSubscription } = command;
+    const notify = this.notification.create();
     const subscription = await this.paymentRepository.findByStripeSubscriptionId(
       stripeSubscription.id,
     );
 
     if (!subscription) {
       this.logger.warn(`Subscription not found for Stripe ID: ${stripeSubscription.id}`);
-      return;
+      return notify.setNotFound(
+        `Subscription not found for Stripe ID: ${stripeSubscription.id}`,
+      );
     }
 
-    await this.paymentRepository.updateByStripeId(stripeSubscription.id, {
-      subscriptionStatus: this.mapStripeStatusToLocal(stripeSubscription.status),
-      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-      canceledAt: stripeSubscription.canceled_at
-        ? new Date(stripeSubscription.canceled_at * 1000)
-        : undefined,
-    });
+    try {
+      const subscriptionStatus = this.mapStripeStatusToLocal(stripeSubscription.status);
+      await this.paymentRepository.updateByStripeId(stripeSubscription.id, {
+        subscriptionStatus,
+        status: this.mapSubscriptionStatusToPaymentStatus(subscriptionStatus),
+        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+        canceledAt: stripeSubscription.canceled_at
+          ? new Date(stripeSubscription.canceled_at * 1000)
+          : undefined,
+      });
+
+      return notify.setValue({ message: 'Subscription updated successfully' });
+    } catch (error) {
+      this.logger.error('Failed to update subscription from webhook', error);
+      return notify.setBadRequest('Failed to update subscription');
+    }
   }
 
   private mapStripeStatusToLocal(stripeStatus: string): SubscriptionStatus {
@@ -46,5 +74,19 @@ export class UpdateSubscriptionFromWebhookUseCase {
     };
 
     return statusMap[stripeStatus] || SubscriptionStatus.INCOMPLETE;
+  }
+
+  private mapSubscriptionStatusToPaymentStatus(subscriptionStatus: SubscriptionStatus): PaymentStatusType {
+    const statusMap: Record<SubscriptionStatus, PaymentStatusType> = {
+      [SubscriptionStatus.ACTIVE]: PaymentStatusType.Active,
+      [SubscriptionStatus.TRIALING]: PaymentStatusType.Active,
+      [SubscriptionStatus.CANCELED]: PaymentStatusType.Canceled,
+      [SubscriptionStatus.INCOMPLETE]: PaymentStatusType.Pending,
+      [SubscriptionStatus.INCOMPLETE_EXPIRED]: PaymentStatusType.Expired,
+      [SubscriptionStatus.PAST_DUE]: PaymentStatusType.Past_due,
+      [SubscriptionStatus.UNPAID]: PaymentStatusType.Expired,
+    };
+
+    return statusMap[subscriptionStatus] || PaymentStatusType.Pending;
   }
 }

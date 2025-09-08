@@ -63,6 +63,12 @@ export class Payment {
   @Prop({ type: String, required: false })
   stripePriceId?: string;
 
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+  @Prop({ type: String, required: false })
+  stripeCheckoutSessionId?: string;
+
   @ApiProperty({ enum: SubscriptionStatus })
   @IsEnum(SubscriptionStatus)
   @IsOptional()

@@ -2,8 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
-  Delete,
   Body,
   Param,
   Query,
@@ -11,34 +9,29 @@ import {
   HttpCode,
   HttpStatus,
   Req,
-  UseGuards,
   Logger,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { PaymentsService } from '../payments.service';
-import { PaymentService } from '../application/payment.service';
-import { StripeService } from '../application/stripe.service';
-import { BasicAuthGuard } from '../../core/guards/basic-auth-guard';
+import { WebhookService } from '../application/webhook.service';
+import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
+import { GetUserPaymentsQueryCommand } from '../application/use-cases/queries/get-user-payments.query';
+import { GetPaymentsBySubscriptionQueryCommand } from '../application/use-cases/queries/get-payments-by-subscription.query';
+import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get-all-payments.query';
+import { CancelSubscriptionCommand } from '../application/use-cases/commands/cancel-subscription.use-case';
+import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
 import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
 import { PaymentQueryDto } from './dto/input/payment.query.dto';
-import { PaymentViewDto, PaymentListResponseDto } from './dto/output/payment.view.dto';
-import { PaymentsConfigService } from '@common/config/payments.service';
 import {
-
   CreatePaymentSwagger,
   GetPaymentSwagger,
   GetPaymentsSwagger,
   GetUserPaymentsSwagger,
   GetPaymentsBySubscriptionSwagger,
-  UpdatePaymentSwagger,
-  DeletePaymentSwagger,
-
-  CancelSubscriptionSwagger,
-
+  CancelPaymentSwagger,
   HealthCheckSwagger,
   StripeWebhookSwagger,
-
-  GetSubscriptionsSwagger,
 } from '../../core/decorators/swagger';
 
 @ApiTags('Payments')
@@ -48,9 +41,9 @@ export class PaymentsController {
 
   constructor(
     private readonly paymentsService: PaymentsService,
-    private readonly paymentService: PaymentService,
-    private readonly stripeService: StripeService,
-    private readonly configService: PaymentsConfigService,
+    private readonly webhookService: WebhookService,
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get('health')
@@ -61,137 +54,62 @@ export class PaymentsController {
 
   @Post('payments')
   @CreatePaymentSwagger()
-  async createPayment(
-    @Body() createPaymentDto: CreatePaymentInputDto,
-  ): Promise<PaymentViewDto> {
-    return this.paymentService.createSubscription(createPaymentDto, createPaymentDto.userEmail);
+  async createPayment(@Body() createPaymentDto: CreatePaymentInputDto) {
+    return this.commandBus.execute(new CreatePaymentCommand(createPaymentDto));
   }
 
   @Get('payments/:id')
   @GetPaymentSwagger()
-  async getPayment(@Param('id') id: string): Promise<PaymentViewDto> {
-    return this.paymentService.getPayment(id);
+  async getPayment(@Param('id') id: string) {
+    return this.queryBus.execute(new GetPaymentQueryCommand(id));
   }
 
   @Get('payments')
   @GetPaymentsSwagger()
-  async getPayments(@Query() query: PaymentQueryDto): Promise<PaymentListResponseDto> {
-    return this.paymentService.getAllPayments(query);
+  async getPayments(@Query() query: PaymentQueryDto) {
+    return this.queryBus.execute(new GetAllPaymentsQueryCommand(query));
   }
 
   @Get('users/:userId/payments')
   @GetUserPaymentsSwagger()
-  async getUserPayments(@Param('userId') userId: string): Promise<PaymentViewDto[]> {
-    return this.paymentService.getUserPayments(userId);
+  async getUserPayments(@Param('userId') userId: string) {
+    return this.queryBus.execute(new GetUserPaymentsQueryCommand(userId));
   }
 
   @Get('subscriptions/:subscriptionId/payments')
   @GetPaymentsBySubscriptionSwagger()
   async getPaymentsBySubscription(
     @Param('subscriptionId') subscriptionId: string,
-  ): Promise<PaymentViewDto[]> {
-    return this.paymentService.getPaymentsBySubscription(subscriptionId);
-  }
-
-  @Put('payments/:id')
-  @UpdatePaymentSwagger()
-  async updatePayment(
-    @Param('id') id: string,
-    @Body() updateData: Partial<CreatePaymentInputDto>,
-  ): Promise<PaymentViewDto> {
-    return this.paymentService.updatePayment(id, updateData);
-  }
-
-  @Post('payments/checkout')
-  @CreatePaymentSwagger()
-  async createCheckoutSession(
-    @Body() createPaymentDto: CreatePaymentInputDto,
   ) {
-    const customer = await this.stripeService.createCustomer(
-      createPaymentDto.userEmail,
-      createPaymentDto.userId,
-    );
-
-    // TODO
-    const session = await this.stripeService.createCheckoutSession(
-      customer.id,
-      'price_id_here',
-      'http://localhost:3000/success',
-      'http://localhost:3000/cancel',
-    );
-    
-    return { url: session.url };
+    return this.queryBus.execute(new GetPaymentsBySubscriptionQueryCommand(subscriptionId));
   }
 
   @Post('payments/:id/cancel')
-  @CancelSubscriptionSwagger()
-  async cancelPayment(@Param('id') id: string): Promise<PaymentViewDto> {
-    return this.paymentService.cancelSubscription(id);
+  @CancelPaymentSwagger()
+  async cancelPayment(@Param('id') id: string) {
+    return this.commandBus.execute(new CancelSubscriptionCommand(id));
   }
 
-  @Delete('payments/:id')
-  @DeletePaymentSwagger()
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePayment(@Param('id') id: string): Promise<void> {
-    return this.paymentService.deletePayment(id);
-  }
-
-  @Post()
+  @Post('/webhook')
   @HttpCode(HttpStatus.OK)
   @StripeWebhookSwagger()
-  async webhook(@Req() req: { body: string | Buffer }, @Headers('stripe-signature') signature: string) {
-    if (!signature) {
-      return { error: 'No signature provided' };
+  async webhook(
+    @Req() req: { body: Buffer },
+    @Headers('stripe-signature') signature: string,
+  ) {
+    if (!req.body) {
+      return { error: 'No body provided' };
     }
+    console.log("🚀 ~ webhook ~ body type:", typeof req.body);
+    console.log("🚀 ~ webhook ~ body isBuffer:", Buffer.isBuffer(req.body));
+    console.log("🚀 ~ webhook ~ body length:", req.body.length);
+    console.log("🚀 ~ webhook ~ first 100 chars:", req.body.toString().substring(0, 100));
+    console.log("🚀 ~ webhook ~ signature:", signature);
 
-    try {
-      const event = this.stripeService.constructWebhookEvent(req.body, signature);
+    console.log("🚀 ~ Raw buffer (first 200 bytes hex):", req.body.subarray(0, 200).toString('hex'));
+    console.log("🚀 ~ Raw buffer as UTF-8 string (first 200 chars):", req.body.toString('utf8', 0, 200));
 
-      switch (event.type) {
-        case 'payment_intent.succeeded':
-          await this.handlePaymentIntentSucceeded(event.data.object);
-          break;
-        case 'payment_intent.payment_failed':
-          await this.handlePaymentIntentFailed(event.data.object);
-          break;
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated':
-        case 'customer.subscription.deleted':
-          await this.paymentService.updateSubscriptionFromWebhook(event.data.object);
-          break;
-        default:
-          this.logger.log(`Unhandled event type: ${event.type}`);
-      }
+    return this.webhookService.handleStripeWebhook(req.body, signature);
 
-      return { received: true };
-    } catch (error) {
-      this.logger.error('Webhook signature verification failed', error);
-      return { error: 'Invalid signature' };
-    }
-  }
-
-  private async handlePaymentIntentSucceeded(paymentIntent: any) {
-    try {
-      const customerId = paymentIntent.customer;
-      const customer = await this.stripeService.retrieveCustomer(customerId);
-      
-      if ('metadata' in customer && customer.metadata?.userId) {
-        const priceId = this.configService.paymentPriceId;
-        const subscription = await this.stripeService.createSubscription(customerId, priceId);
-        this.logger.log(`Payment succeeded for customer ${customerId}`);
-      }
-    } catch (error) {
-      this.logger.error('Failed to handle payment_intent.succeeded', error);
-    }
-  }
-
-  private async handlePaymentIntentFailed(paymentIntent: any) {
-    try {
-      const customerId = paymentIntent.customer;
-      this.logger.log(`Payment failed for customer ${customerId}`);
-
-    } catch (error) {
-      this.logger.error('Failed to handle payment_intent.payment_failed', error);
-    }
   }
 }

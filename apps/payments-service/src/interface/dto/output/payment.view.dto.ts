@@ -30,7 +30,11 @@ export class PaymentViewDto {
   @ApiProperty({ type: Number, description: 'Sum of payment in cents' })
   amount: number;
 
-  @ApiProperty({ type: String, nullable: true, description: 'Client secret for end payment' })
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Client secret for end payment',
+  })
   clientSecret?: string;
 
   constructor(payment: Payment) {
@@ -68,5 +72,17 @@ export class PaymentListResponseDto {
     this.page = page;
     this.limit = limit;
     this.totalPages = Math.ceil(total / limit);
+  }
+}
+
+export class CreatePaymentResponseDto {
+  @ApiProperty({ 
+    type: String, 
+    description: 'Stripe checkout session URL for payment' 
+  })
+  url: string;
+
+  constructor(url: string) {
+    this.url = url;
   }
 }

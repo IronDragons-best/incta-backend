@@ -1,62 +1,69 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { StripeService } from '../../stripe.service';
 import { CreatePaymentInputDto } from '../../../interface/dto/input/payment.create.input.dto';
 import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
 import { PaymentsConfigService } from '@common/config/payments.service';
-import { PaymentMethodType, PaymentStatusType } from '@common';
+import { NotificationService, PaymentMethodType, PaymentStatusType } from '@common';
 import { SubscriptionStatus } from '../../../domain/payment';
 import { v4 as uuidv4 } from 'uuid';
+import { CustomLogger } from '@monitoring';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
-@Injectable()
-export class CreateSubscriptionUseCase {
-  private readonly logger = new Logger(CreateSubscriptionUseCase.name);
+export class CreateSubscriptionCommand {
+  constructor(
+    public readonly createPaymentDto: CreatePaymentInputDto,
+    public readonly stripeCustomerId: string,
+    public readonly checkoutSessionId: string,
+  ) {}
+}
 
+@CommandHandler(CreateSubscriptionCommand)
+export class CreateSubscriptionUseCase
+  implements ICommandHandler<CreateSubscriptionCommand>
+{
   constructor(
     private readonly paymentRepository: PaymentRepository,
     private readonly stripeService: StripeService,
     private readonly configService: PaymentsConfigService,
-  ) {}
+    private readonly logger: CustomLogger,
+    private readonly notification: NotificationService,
+  ) {
+    this.logger.setContext('Create subscription use case');
+  }
 
-  async execute(
-    createPaymentDto: CreatePaymentInputDto,
-    userEmail: string,
-  ): Promise<PaymentViewDto> {
+  async execute(command: CreateSubscriptionCommand) {
+    const { createPaymentDto, stripeCustomerId, checkoutSessionId } = command;
+    const notify = this.notification.create();
+
     try {
-      const stripeCustomer = await this.stripeService.createCustomer(
-        userEmail,
-        createPaymentDto.userId,
-      );
-
       const priceId = this.configService.paymentPriceId;
+      const price = await this.stripeService.getPrice(priceId);
 
-      const paymentIntent = await this.stripeService.createPaymentIntent(
-        createPaymentDto.amount,
-        createPaymentDto.currency,
-        stripeCustomer.id,
-      );
+      const amount = typeof price.unit_amount === 'number' ? price.unit_amount : 0;
+      const currency = price.currency || 'usd';
 
+      const paymentId = uuidv4();
       const subscription = await this.paymentRepository.create({
-        id: uuidv4(),
+        id: paymentId,
         userId: createPaymentDto.userId,
-        stripeCustomerId: stripeCustomer.id,
+        subscriptionId: paymentId,
+        stripeCustomerId: stripeCustomerId,
         stripePriceId: priceId,
+        stripeCheckoutSessionId: checkoutSessionId,
         subscriptionStatus: SubscriptionStatus.INCOMPLETE,
         period: createPaymentDto.period,
-        amount: createPaymentDto.amount,
-        currency: createPaymentDto.currency,
-        payType: createPaymentDto.payType,
+        amount: amount,
+        currency: currency,
+        payType: PaymentMethodType.Stripe,
         status: PaymentStatusType.Pending,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
-      const result = new PaymentViewDto(subscription);
-      result.clientSecret = paymentIntent.client_secret || undefined;
-      return result;
+      return notify.setValue(new PaymentViewDto(subscription));
     } catch (error) {
-      this.logger.error('Failed to create subscription', error);
-      throw new BadRequestException('Cannot create subscription.');
+      this.logger.error('Failed to create subscription record for checkout', error);
+      notify.setBadRequest('Failed to create subscription record for checkout');
     }
   }
 
