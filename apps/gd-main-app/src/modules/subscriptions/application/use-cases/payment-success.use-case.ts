@@ -55,6 +55,10 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
         endDate: new Date(dto.endDate),
       });
 
+      if (!subscription.user.hasActiveSubscription) {
+        subscription.user.updateSubscriptionStatus(true);
+      }
+
       const payment = PaymentInfoEntity.createInstance({
         userId: subscription.userId,
         subscriptionId: subscription.subscriptionId,

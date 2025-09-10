@@ -17,6 +17,7 @@ export class FileValidationPipe
   implements PipeTransform<Express.Multer.File[], ValidatedFilesData>
 {
   transform(files: Express.Multer.File[]): ValidatedFilesData {
+    console.warn('FILE VALIDATION PIPE STARTED');
     if (!files || files.length === 0) {
       throw new BadRequestException('Files not fount');
     }
@@ -55,6 +56,7 @@ export class FileValidationPipe
         `Files size can't be more than ${MAX_TOTAL_SIZE / 1024 / 1024} mb`,
       );
     }
+    console.warn('FILE VALIDATION PIPE END');
 
     return {
       files: validFiles,

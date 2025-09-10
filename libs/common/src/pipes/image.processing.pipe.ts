@@ -1,5 +1,5 @@
 import { CompressionOptions, IMAGE_COMPRESSION, ValidatedFilesData } from '@common';
-import { PipeTransform } from '@nestjs/common';
+import { Logger, PipeTransform } from '@nestjs/common';
 import sharp from 'sharp';
 
 export function ImageCompressionPipe(options: CompressionOptions = {}): PipeTransform {
@@ -13,6 +13,8 @@ export function ImageCompressionPipe(options: CompressionOptions = {}): PipeTran
     async transform(
       input: ValidatedFilesData | Express.Multer.File,
     ): Promise<ValidatedFilesData | Express.Multer.File> {
+      const logger = new Logger('ImageCompressionPipe');
+      logger.warn('IMAGE_COMPRESSION_PIPE');
       if (input && 'files' in input && Array.isArray(input.files)) {
         const compressedFiles = await Promise.all(
           input.files.map((file) =>

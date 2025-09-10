@@ -4,7 +4,6 @@ import { Ctx, EventPattern, Payload, RmqContext, Transport } from '@nestjs/micro
 import {
   PaymentFailedPayload,
   PaymentSuccessPayload,
-  RefundProcessedPayload,
   SubscriptionAutoPaymentCancelledPayload,
   SubscriptionCancelledPayload,
   SubscriptionExpiredPayload,
@@ -15,6 +14,10 @@ import { PaymentSuccessCommand } from '../application/use-cases/payment-success.
 import { CustomLogger } from '@monitoring';
 import { Channel, Message } from 'amqplib';
 import { PaymentFailedCommand } from '../application/use-cases/payment-failed.use-case';
+import { AutoPaymentCancelledCommand } from '../application/use-cases/auto-payment-cancelled.use-case';
+import { SubscriptionCancelledCommand } from '../application/use-cases/subscription-cancelled.use-case';
+import { SubscriptionExpiredCommand } from '../application/use-cases/subscription-expired.use-case';
+import { SubscriptionPastDueCommand } from '../application/use-cases/subscription.past.due.use-case';
 
 @Controller()
 export class PaymentEventsController {
@@ -73,7 +76,7 @@ export class PaymentEventsController {
     this.logger.log(`Processing subscription cancellation for user ${userId}`);
 
     try {
-      // TODO: await this.commandBus.execute(new SubscriptionCancelledCommand(data));
+      await this.commandBus.execute(new SubscriptionCancelledCommand(data));
       this.handleMessage(context, `user-${userId}`, true);
     } catch (error) {
       this.logger.error(
@@ -92,7 +95,7 @@ export class PaymentEventsController {
     this.logger.log(`Processing subscription expiration for user ${userId}`);
 
     try {
-      // TODO: await this.commandBus.execute(new SubscriptionExpiredCommand(data));
+      await this.commandBus.execute(new SubscriptionExpiredCommand(data));
       this.handleMessage(context, `user-${userId}`, true);
     } catch (error) {
       this.logger.error(
@@ -111,7 +114,7 @@ export class PaymentEventsController {
     this.logger.log(`Processing subscription past due for user ${userId}`);
 
     try {
-      // TODO: await this.commandBus.execute(new SubscriptionPastDueCommand(data));
+      await this.commandBus.execute(new SubscriptionPastDueCommand(data));
       this.handleMessage(context, `user-${userId}`, true);
     } catch (error) {
       this.logger.error(
@@ -130,7 +133,7 @@ export class PaymentEventsController {
     this.logger.log(`Processing auto payment cancellation for user ${userId}`);
 
     try {
-      // TODO: await this.commandBus.execute(new SubscriptionAutoPaymentCancelledCommand(data));
+      await this.commandBus.execute(new AutoPaymentCancelledCommand(data));
       this.handleMessage(context, `user-${userId}`, true);
     } catch (error) {
       this.logger.error(
@@ -139,23 +142,23 @@ export class PaymentEventsController {
       this.handleMessage(context, `user-${userId}`, false);
     }
   }
-
-  @EventPattern('payment.refunded', Transport.RMQ)
-  async handlePaymentRefunded(
-    @Payload() data: RefundProcessedPayload,
-    @Ctx() context: RmqContext,
-  ) {
-    const userId = data.userId;
-    this.logger.log(`Processing payment refund for user ${userId}`);
-
-    try {
-      // TODO: await this.commandBus.execute(new PaymentRefundedCommand(data));
-      this.handleMessage(context, `user-${userId}`, true);
-    } catch (error) {
-      this.logger.error(`Payment refund processing failed for user ${userId}: ${error}`);
-      this.handleMessage(context, `user-${userId}`, false);
-    }
-  }
+  // _____ DEPRECATED ______
+  // @EventPattern('payment.refunded', Transport.RMQ)
+  // async handlePaymentRefunded(
+  //   @Payload() data: RefundProcessedPayload,
+  //   @Ctx() context: RmqContext,
+  // ) {
+  //   const userId = data.userId;
+  //   this.logger.log(`Processing payment refund for user ${userId}`);
+  //
+  //   try {
+  //     // TODO: await this.commandBus.execute(new PaymentRefundedCommand(data));
+  //     this.handleMessage(context, `user-${userId}`, true);
+  //   } catch (error) {
+  //     this.logger.error(`Payment refund processing failed for user ${userId}: ${error}`);
+  //     this.handleMessage(context, `user-${userId}`, false);
+  //   }
+  // }
 
   private getRetryCount(context: RmqContext): number {
     const msg = context.getMessage() as Message;

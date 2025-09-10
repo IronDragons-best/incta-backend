@@ -19,6 +19,7 @@ export class SubscriptionRepository {
       where: {
         subscriptionId,
       },
+      relations: ['user'],
     });
     if (!sub) {
       return null;

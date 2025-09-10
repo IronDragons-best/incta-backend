@@ -4,6 +4,7 @@ import { NotificationConfigService } from '@common/config/notification.config.se
 import { EmailInfoInputDto, OauthInputDto } from '../types/email.info.input.dto';
 import { CustomLogger } from '@monitoring';
 import { NotificationService } from '@common';
+import { MemoryLoggerService } from '@monitoring/logger/memory.logger.service';
 export enum EmailType {
   CONFIRM = 'CONFIRM',
   PASSWORD = 'PASSWORD',

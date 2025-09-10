@@ -38,9 +38,9 @@
     "start:files-service": "npm run prisma:files:migrate:deploy && node -r newrelic dist/apps/files-service/main",
     "start:notification-service": "node -r newrelic dist/apps/notification-service/main",
     "start:payments-service": "node dist/apps/payments-service/main",
-    "start:dev:gd-main-app": "nest start gd-main-app --watch",
-    "start:dev:files-service": "nest start files-service --watch",
-    "start:dev:notification-service": "nest start notification-service --watch",
+    "start:dev:gd-main-app": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start gd-main-app --watch",
+    "start:dev:files-service": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start files-service --watch",
+    "start:dev:notification-service": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start notification-service --watch",
     "start:dev:payments-service": "nest start payments-service --watch",
     "docker:dev:up": "docker-compose -f docker-compose.dev.yml up -d",
     "docker:dev:down": "docker-compose -f docker-compose.dev.yml down"

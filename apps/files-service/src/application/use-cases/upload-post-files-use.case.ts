@@ -11,10 +11,7 @@ import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
 import { FilesPostRepository } from '../../infrastructure/files.post.repository';
 import { FilePostEntity } from '../../domain/file.post.entity';
 import { GetFilesByPostIdQuery } from '../query-handlers/get.files.by.post.id.query.handler';
-import {
-  TotalUploadedFilesViewDto,
-  TotalUploadedFilesViewWithPostDto,
-} from '../../../core/dto/totalUploadedFilesViewDto';
+import { TotalUploadedFilesViewWithPostDto } from '../../../core/dto/totalUploadedFilesViewDto';
 import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class UploadPostFilesCommand {
@@ -65,7 +62,7 @@ export class UploadPostFilesUseCase implements ICommandHandler<UploadPostFilesCo
           uploadedBy: userId,
           postId: postId,
           size: fileData.size,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
           type: fileData.accessType ? fileData.accessType : FileAccessType.PUBLIC,
           mimeType: fileData.mimeType,
         });
@@ -94,9 +91,8 @@ export class UploadPostFilesUseCase implements ICommandHandler<UploadPostFilesCo
       return notify.setServerError('Failed to save uploaded file information.');
     }
 
-    const savedFilesResult: AppNotification<FilePostViewDto[]> = await this.queryBus.execute(
-      new GetFilesByPostIdQuery(postId, userId),
-    );
+    const savedFilesResult: AppNotification<FilePostViewDto[]> =
+      await this.queryBus.execute(new GetFilesByPostIdQuery(postId, userId));
 
     const savedFiles: FilePostViewDto[] | null = savedFilesResult.getValue();
     if (!savedFiles || savedFiles.length === 0) {

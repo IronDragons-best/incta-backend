@@ -13,6 +13,9 @@ import { SubscriptionPlansHandler } from './application/query-handlers/subscript
 import { PaymentEventsController } from './interface/payment.controller';
 import { PaymentSuccessUseCase } from './application/use-cases/payment-success.use-case';
 import { PaymentRepository } from './infrastructure/payment.repository';
+import { SubscriptionCancelledUseCase } from './application/use-cases/subscription-cancelled.use-case';
+import { PaymentFailedUseCase } from './application/use-cases/payment-failed.use-case';
+import { AutoPaymentCancelledUseCase } from './application/use-cases/auto-payment-cancelled.use-case';
 
 @Module({
   imports: [
@@ -21,13 +24,16 @@ import { PaymentRepository } from './infrastructure/payment.repository';
   ],
   providers: [
     NotificationService,
-    CreateSubscriptionUseCase,
     SubscriptionPlansHandler,
     GetNewSubscriptionHandler,
-    PaymentSuccessUseCase,
     SubscriptionRepository,
     SubscriptionQueryRepository,
     PaymentRepository,
+    PaymentSuccessUseCase,
+    SubscriptionCancelledUseCase,
+    CreateSubscriptionUseCase,
+    AutoPaymentCancelledUseCase,
+    PaymentFailedUseCase,
   ],
   controllers: [SubscriptionController, PaymentEventsController],
 })

@@ -27,6 +27,7 @@ import { CacheModule } from '@app/cache';
 import { RabbitListenersModule } from '../core/listeners/rabbit.listeners.module';
 import { StatsModule } from './modules/stats/stats.module';
 import { SubscriptionModule } from './modules/subscriptions/subscription.module';
+import { SystemController } from '../system.controller';
 
 @Module({
   imports: [
@@ -95,7 +96,7 @@ import { SubscriptionModule } from './modules/subscriptions/subscription.module'
     LocationModule,
     StatsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, SystemController],
   providers: [AppService, RabbitInitService, AsyncLocalStorageService],
 })
 export class AppModule {}

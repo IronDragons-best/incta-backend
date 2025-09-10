@@ -15,6 +15,7 @@ import {
   Get,
   Query,
   Delete,
+  Logger,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiConsumes } from '@nestjs/swagger';
@@ -84,13 +85,16 @@ export class PostsController {
     @Body() body: CreatePostInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ) {
+    const logger = new Logger('create post');
+    logger.warn('[Controller] >>> createPost start');
     const postRes: AppNotification<PostEntity> = await this.commandBus.execute(
       new CreatePostCommand(body, files.files, user.id),
     );
     if (postRes.hasErrors()) {
+      logger.warn('[Controller] <<< createPost error');
       return postRes;
     }
-
+    logger.warn('[Controller] <<< createPost end');
     const post = await this.postsQueryRepository.getPostByIdWithUserId(
       postRes.getValue()!.id,
       user.id,
