@@ -50,7 +50,7 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=builder /app/apps/files-service/prisma ./apps/files-service/prisma
 
 # Re-generate Prisma client in production stage with only production dependencies
-RUN npx prisma generate --schema=apps/files-service/prisma/schema.prisma
+RUN pnpm prisma generate --schema=apps/files-service/prisma/schema.prisma
 
 # Copy built applications (dist folder)
 COPY --from=builder /app/dist ./dist
