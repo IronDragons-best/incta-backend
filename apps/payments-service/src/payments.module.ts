@@ -8,12 +8,19 @@ import { MonitoringModule } from '@monitoring';
 import { PaymentsConfigService } from '@common/config/payments.service';
 import { Payment, PaymentSchema } from './domain/payment';
 import { PaymentRabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
+import { RmqListenersModule } from '../core/listeners/rabbit.listeners.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     SharedConfigModule.forRoot({
       appName: 'payments-service',
       validationSchema: monitoringValidationSchema,
+    }),
+    RmqListenersModule,
+    EventEmitterModule.forRoot({
+      wildcard: true,
+      delimiter: '.',
     }),
     MonitoringModule.forRoot('payments-microservice'),
     MongooseModule.forRootAsync({
