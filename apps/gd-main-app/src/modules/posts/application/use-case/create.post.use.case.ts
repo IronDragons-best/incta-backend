@@ -61,7 +61,9 @@ export class CreatePostUseCase {
     });
 
     try {
+      this.logger.log(`[UseCase] >>> createPost instance`);
       const post = await this.createPost(queryRunner, data, userId);
+      this.logger.log(`[UseCase] <<< createPost instance`);
 
       if (files?.length) {
         this.logger.warn(`[${requestId}] Starting file upload for ${files.length} files`);

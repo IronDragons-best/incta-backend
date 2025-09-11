@@ -76,7 +76,7 @@ export interface PaymentFailedPayload {
 // Для отмены подписки
 export interface SubscriptionCancelledPayload {
   userId: number;
-  stripeSubscriptionId: string;
+  externalSubscriptionId: string;
   cancelledAt: string; // ISO string
   reason?: string;
   // Для обновления status в 'Cancelled' и установки canceledAt
@@ -85,7 +85,7 @@ export interface SubscriptionCancelledPayload {
 // Для истечения подписки
 export interface SubscriptionExpiredPayload {
   userId: number;
-  stripeSubscriptionId: string;
+  externalSubscriptionId: string;
   expiredAt: string; // ISO string
   lastPaymentAmount?: number;
   // Для обновления status в 'Expired'
@@ -94,7 +94,7 @@ export interface SubscriptionExpiredPayload {
 // Для Past Due статуса
 export interface SubscriptionPastDuePayload {
   userId: number;
-  stripeSubscriptionId: string;
+  externalSubscriptionId: string;
   pastDueDate: string; // ISO string
   unpaidAmount: number;
   // Для обновления status в 'PastDue'

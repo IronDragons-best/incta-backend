@@ -11,10 +11,7 @@ import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
 import { FilesPostRepository } from '../../infrastructure/files.post.repository';
 import { FilePostEntity } from '../../domain/file.post.entity';
 import { GetFilesByPostIdQuery } from '../query-handlers/get.files.by.post.id.query.handler';
-import {
-  TotalUploadedFilesViewDto,
-  TotalUploadedFilesViewWithPostDto,
-} from '../../../core/dto/totalUploadedFilesViewDto';
+import { TotalUploadedFilesViewWithPostDto } from '../../../core/dto/totalUploadedFilesViewDto';
 import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class UploadPostFilesCommand {

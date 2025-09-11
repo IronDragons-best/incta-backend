@@ -45,7 +45,7 @@ export class AppService {
       );
 
       const paymentsPromise: Promise<AxiosResponse<FilesCheckType>> =
-        this.http.axiosRef.get<FilesCheckType>(`${paymentHost}/api/v1/health`);
+        this.http.axiosRef.get<FilesCheckType>(`${paymentHost}/health`);
 
       const [filesResult, notificationResult, paymentResult] = await Promise.allSettled([
         filesPromise,
@@ -59,7 +59,6 @@ export class AppService {
               status: 'not responding',
               timestamp: new Date().toISOString(),
             };
-      console.log(filesResult);
       const notificationService =
         notificationResult.status === 'fulfilled'
           ? {

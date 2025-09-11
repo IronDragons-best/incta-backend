@@ -36,7 +36,7 @@ export class UserSubscriptionEntity extends BasicEntity {
   @Column({ type: 'timestamp', nullable: true })
   canceledAt?: Date;
 
-  @ManyToOne(() => User, (user) => user.subscriptions)
+  @ManyToOne(() => User, (user) => user.subscriptions, { cascade: true })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
