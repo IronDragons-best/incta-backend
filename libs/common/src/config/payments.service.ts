@@ -98,4 +98,20 @@ export class PaymentsConfigService extends ConfigService {
   get isTest(): boolean {
     return this.nodeEnv === 'test';
   }
+
+  get paymentsAdminLogin(): string {
+    const login = this.get<string>('PAYMENTS_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Payments admin login is required');
+    }
+    return login;
+  }
+
+  get paymentsAdminPassword(): string {
+    const password = this.get<string>('PAYMENTS_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Payments admin password is required');
+    }
+    return password;
+  }
 }

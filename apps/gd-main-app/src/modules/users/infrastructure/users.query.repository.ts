@@ -5,7 +5,9 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectRepository(User) private readonly usersQueryRepository: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private readonly usersQueryRepository: Repository<User>,
+  ) {}
 
   // async getUsers() {
   //   const users = await this.usersQueryRepository.find({

@@ -9,7 +9,10 @@ import request from 'supertest';
 import { AppConfigService, NotificationInterceptor, NotificationService } from '@common';
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 
-import { MockDevicesQueryRepository, MockDevicesRepository } from '../mocks/devices.flow.mocks';
+import {
+  MockDevicesQueryRepository,
+  MockDevicesRepository,
+} from '../mocks/devices.flow.mocks';
 import { MockAppConfigService } from '../mocks/common.mocks';
 
 import { DevicesRepository } from '../../src/modules/devices/infrastructure/devices.repository';
@@ -236,4 +239,4 @@ describe('DevicesController - Get Devices Integration Tests', () => {
       expect(devicesQueryRepository.findSessionsByUserId).not.toHaveBeenCalled();
     });
   });
-})
+});

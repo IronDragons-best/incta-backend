@@ -43,7 +43,10 @@ export abstract class TotalUploadedFilesViewDto<T, E = T> {
   }
 }
 
-export abstract class TotalUploadedFilesViewWithPostDto<T, E = T> extends TotalUploadedFilesViewDto<T, E> {
+export abstract class TotalUploadedFilesViewWithPostDto<
+  T,
+  E = T,
+> extends TotalUploadedFilesViewDto<T, E> {
   @ApiProperty({ default: 1 })
   postId: number;
 

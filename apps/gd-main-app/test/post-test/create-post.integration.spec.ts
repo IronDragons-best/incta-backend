@@ -225,11 +225,7 @@ describe('Create Post Integration Tests', () => {
       const postData = {
         description: 'Test post description',
       };
-      const createdPost = createMockPost(
-        99,
-        userId,
-        postData.description,
-      );
+      const createdPost = createMockPost(99, userId, postData.description);
 
       setupFileServiceMock([
         {
