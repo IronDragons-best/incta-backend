@@ -14,10 +14,10 @@ import { PaymentSuccessCommand } from '../application/use-cases/payment-success.
 import { CustomLogger } from '@monitoring';
 import { Channel, Message } from 'amqplib';
 import { PaymentFailedCommand } from '../application/use-cases/payment-failed.use-case';
-import { AutoPaymentCancelledCommand } from '../application/use-cases/auto-payment-cancelled.use-case';
 import { SubscriptionCancelledCommand } from '../application/use-cases/subscription-cancelled.use-case';
 import { SubscriptionExpiredCommand } from '../application/use-cases/subscription-expired.use-case';
 import { SubscriptionPastDueCommand } from '../application/use-cases/subscription.past.due.use-case';
+import { AutoPaymentCancelledCommand } from '../application/use-cases/auto-payment-cancelled.use-case';
 
 @Controller()
 export class PaymentEventsController {
@@ -205,10 +205,6 @@ export class PaymentEventsController {
       [this.RETRY_HEADER]: newRetryCount.toString(),
     };
 
-    console.log('Publishing to delay:');
-    console.log('Exchange: payment.delay');
-    console.log('Routing key:', originalMsg.fields.routingKey);
-    console.log('Headers:', newHeaders);
     channel.publish('payment.delay', 'payment.success', originalMsg.content, {
       headers: newHeaders,
       expiration: this.RETRY_DELAY_MS.toString(),

@@ -17,6 +17,6 @@ export class MemoryLoggerService implements OnModuleInit {
           1024
         ).toFixed(2)}MB`,
       );
-    }, 30000);
+    }, 600000);
   }
 }
