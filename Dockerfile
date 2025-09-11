@@ -18,7 +18,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Generate Prisma client BEFORE building the services
-RUN pnpm run prisma:files:generate
+RUN pnpm prisma generate --schema=apps/files-service/prisma/schema.prisma
 
 # Build all services (files-service build also includes prisma generate)
 RUN pnpm run build:gd-main-app
