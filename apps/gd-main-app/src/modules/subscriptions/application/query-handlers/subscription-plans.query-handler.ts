@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
-import { NotificationService, PaymentStatusType, SubscriptionPlan } from '@common';
+import { NotificationService, SubscriptionPlan, SubscriptionStatusType } from '@common';
 import { SubscriptionQueryRepository } from '../../infrastructure/subscription.query-repository';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import {
@@ -29,7 +29,7 @@ export class SubscriptionPlansHandler implements IQueryHandler<SubscriptionPlans
       await this.subscriptionQueryRepository.findByUserId(query.userId);
 
     const currentPlan =
-      subscriptionInfo?.status === PaymentStatusType.Active
+      subscriptionInfo?.status === SubscriptionStatusType.Active
         ? SubscriptionPlan.Business
         : SubscriptionPlan.Personal;
     const viewDto = PagedSubscriptionPlansViewDto.mapToView(

@@ -61,6 +61,7 @@ export class StripeService {
     });
   }
 
+  // TODO: add periods to createCheckoutSession
   async createCheckoutSession(
     customerId: string,
     priceId: string,

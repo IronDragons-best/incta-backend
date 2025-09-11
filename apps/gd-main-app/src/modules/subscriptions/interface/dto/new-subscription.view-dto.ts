@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaymentMethodType, PaymentStatusType, PlanType } from '@common';
+import { PaymentMethodType, PlanType, SubscriptionStatusType } from '@common';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 
 export class NewSubscriptionViewDto {
@@ -12,8 +12,8 @@ export class NewSubscriptionViewDto {
   @ApiProperty({ default: PaymentMethodType.Stripe })
   paymentMethod: PaymentMethodType;
 
-  @ApiProperty({ default: PaymentStatusType.Pending })
-  status: PaymentStatusType;
+  @ApiProperty({ default: SubscriptionStatusType.Pending })
+  status: SubscriptionStatusType;
 
   static mapToView(sub: UserSubscriptionEntity, url: string) {
     const dto = new this();

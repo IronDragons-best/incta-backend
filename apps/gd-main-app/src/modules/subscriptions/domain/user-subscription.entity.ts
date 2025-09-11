@@ -3,6 +3,7 @@ import {
   PaymentMethodType,
   PlanType,
   PaymentStatusType,
+  SubscriptionStatusType,
 } from '../../../../../../libs/common/src/types/payment.types';
 import { User } from '../../users/domain/user.entity';
 import {
@@ -18,7 +19,7 @@ export class UserSubscriptionEntity extends BasicEntity {
   planType: PlanType;
 
   @Column({ type: 'enum', enum: PaymentStatusType })
-  status: PaymentStatusType;
+  status: SubscriptionStatusType;
 
   @Column({ type: 'timestamp', nullable: true })
   startDate: Date;
@@ -51,16 +52,15 @@ export class UserSubscriptionEntity extends BasicEntity {
     sub.userId = dto.userId;
     sub.paymentMethod = dto.paymentMethod;
     sub.planType = dto.planType;
-    sub.status = PaymentStatusType.Pending;
+    sub.status = SubscriptionStatusType.Pending;
     sub.subscriptionId = dto.subscriptionId;
     return sub;
   }
 
   update(dto: UpdateSubscriptionAfterPaymentDto) {
     this.status = dto.status;
-    this.subscriptionId = dto.stripeSubscriptionId;
-    this.startDate = dto.startDate;
-    this.endDate = dto.endDate;
+    if (dto.startDate) this.startDate = dto.startDate;
+    if (dto.endDate) this.endDate = dto.endDate;
     return this;
   }
 }

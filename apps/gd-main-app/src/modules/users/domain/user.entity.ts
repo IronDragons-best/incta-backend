@@ -14,8 +14,8 @@ import { ProfileEntity } from '../../profiles/domain/profile.entity';
 import { UserSubscriptionEntity } from '../../subscriptions/domain/user-subscription.entity';
 import {
   PaymentMethodType,
-  PaymentStatusType,
   PlanType,
+  SubscriptionStatusType,
 } from '../../../../../../libs/common/src/types/payment.types';
 
 export type UserDomainDtoType = {
@@ -349,7 +349,7 @@ export class User extends BasicEntity {
   get currentSubscription(): UserSubscriptionEntity | null {
     return (
       this.subscriptions?.find(
-        (sub) => sub.status === PaymentStatusType.Active && sub.endDate > new Date(),
+        (sub) => sub.status === SubscriptionStatusType.Active && sub.endDate > new Date(),
       ) || null
     );
   }

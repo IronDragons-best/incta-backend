@@ -1,9 +1,10 @@
-import { PaymentMethodType, PlanType } from '@common';
+import { PaymentMethodType, PaymentStatusType, PlanType } from '@common';
 
 export interface CreatePaymentDto {
   userId: number;
-  subscriptionId: number;
+  subscriptionId: string;
   amount: number;
   planType: PlanType;
   paymentMethod: PaymentMethodType;
+  status: PaymentStatusType;
 }

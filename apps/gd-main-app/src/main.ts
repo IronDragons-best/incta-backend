@@ -14,12 +14,15 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [sharedConfig.rabbitMqHost],
-      queue: 'payments_queue',
+      queue: 'payment_events_queue',
       queueOptions: {
         durable: true,
         exclusive: false,
         autoDelete: false,
-        arguments: {},
+        arguments: {
+          'x-dead-letter-exchange': 'payment.dlx',
+          'x-dead-letter-routing-key': 'failed',
+        },
       },
       exchangeOptions: {
         name: 'payment.topic',
@@ -37,7 +40,7 @@ async function bootstrap() {
 
   await appSetup(app, sharedConfig);
   const port = sharedConfig.port;
-
+  await app.startAllMicroservices();
   await app.listen(port);
   console.log(`🚀 API Gateway running on: http://localhost:${port}/api/v1`);
 }

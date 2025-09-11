@@ -40,6 +40,7 @@ export class WebhookService {
             new UpdateSubscriptionFromWebhookCommand(event.data.object as any),
           );
           break;
+          // TODO: обнулять подписку в случае когда не сработало авто-списание PAST_DUE
         case 'payment_intent.payment_failed':
           await this.handlePaymentIntentFailed(event.data.object);
           break;

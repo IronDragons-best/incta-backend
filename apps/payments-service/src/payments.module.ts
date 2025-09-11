@@ -8,6 +8,7 @@ import { CommonModule, monitoringValidationSchema, SharedConfigModule } from '@c
 import { MonitoringModule } from '@monitoring';
 import { PaymentsConfigService } from '@common/config/payments.service';
 import { Payment, PaymentSchema } from './domain/payment';
+import { PaymentRabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
 import { PaymentRepository } from './infrastructure/payment.repository';
 import { StripeService } from './application/stripe.service';
 import { WebhookService } from './application/webhook.service';
@@ -45,6 +46,8 @@ import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-pay
     CommonModule,
   ],
   controllers: [PaymentsController],
+  providers: [PaymentsService, PaymentsConfigService, PaymentRabbitInitService],
+  exports: [PaymentsConfigService],
   providers: [
     PaymentsService,
     PaymentsConfigService,

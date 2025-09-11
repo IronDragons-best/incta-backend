@@ -1,4 +1,4 @@
-import { PaymentMethodType, PlanType, PaymentStatusType } from '@common';
+import { PaymentMethodType, PlanType, SubscriptionStatusType } from '@common';
 
 export class CreateSubscriptionDto {
   userId: number;
@@ -8,8 +8,7 @@ export class CreateSubscriptionDto {
 }
 
 export class UpdateSubscriptionAfterPaymentDto {
-  stripeSubscriptionId: string;
-  status: PaymentStatusType;
-  startDate: Date;
-  endDate: Date;
+  status: SubscriptionStatusType;
+  startDate?: Date;
+  endDate?: Date;
 }

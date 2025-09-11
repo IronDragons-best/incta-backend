@@ -11,6 +11,8 @@ import { GetNewSubscriptionHandler } from './application/query-handlers/get-new-
 import { SubscriptionQueryRepository } from './infrastructure/subscription.query-repository';
 import { SubscriptionPlansHandler } from './application/query-handlers/subscription-plans.query-handler';
 import { PaymentEventsController } from './interface/payment.controller';
+import { PaymentSuccessUseCase } from './application/use-cases/payment-success.use-case';
+import { PaymentRepository } from './infrastructure/payment.repository';
 
 @Module({
   imports: [
@@ -22,8 +24,10 @@ import { PaymentEventsController } from './interface/payment.controller';
     CreateSubscriptionUseCase,
     SubscriptionPlansHandler,
     GetNewSubscriptionHandler,
+    PaymentSuccessUseCase,
     SubscriptionRepository,
     SubscriptionQueryRepository,
+    PaymentRepository,
   ],
   controllers: [SubscriptionController, PaymentEventsController],
 })

@@ -12,6 +12,7 @@ services:
       - "3000:3000"
       - "3001:3001"
       - "3002:3002"
+      - "3003:3003"
     environment:
       - NODE_ENV=production
     env_file:
@@ -22,9 +23,15 @@ services:
     networks:
       - app-network
     depends_on:
-      - postgres-main
-      - postgres-files
-      - redis
+      postgres-main:
+        condition: service_started
+      postgres-files:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
     command: /bin/sh -c "chmod +x /app/start-services.sh && /app/start-services.sh"
     logging:
       driver: "json-file"
@@ -100,6 +107,63 @@ services:
       timeout: 3s
       retries: 5
 
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb-staging
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo_user
+      MONGO_INITDB_ROOT_PASSWORD: mongo_password
+      MONGO_INITDB_DATABASE: app_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet -u mongo_user -p mongo_password --authenticationDatabase admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express-staging
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: mongo_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: mongo_password
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    networks:
+      - app-network
+    depends_on:
+      - mongodb
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq-staging
+    restart: unless-stopped
+    ports:
+      - "5672:5672"    # AMQP-порт
+      - "15672:15672"  # UI RabbitMQ
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_ERLANG_COOKIE: secret
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network  # Было app_network, должно быть app-network
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   app-network:
     driver: bridge
@@ -110,3 +174,5 @@ volumes:
   pgadmin_data:
   logs:
   redis_data:
+  mongo_data:
+  rabbitmq_data:

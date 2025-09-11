@@ -7,6 +7,14 @@ export class PaymentsConfigService extends ConfigService {
     super(configService['internalConfig']);
   }
 
+  get rabbitMqHost(): string {
+    const host = this.get<string>('RABBITMQ_HOST');
+    if (!host) {
+      throw new Error('RABBITMQ_HOST is required in main app');
+    }
+    return host;
+  }
+
   get paymentMongoUrl(): string {
     const url = this.get<string>('PAYMENTS_MONGO_URL');
     if (!url) {
