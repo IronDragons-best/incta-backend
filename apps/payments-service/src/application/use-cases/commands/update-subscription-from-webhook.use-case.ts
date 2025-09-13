@@ -76,17 +76,19 @@ export class UpdateSubscriptionFromWebhookUseCase
     return statusMap[stripeStatus] || SubscriptionStatus.INCOMPLETE;
   }
 
-  private mapSubscriptionStatusToPaymentStatus(subscriptionStatus: SubscriptionStatus): PaymentStatusType {
+  private mapSubscriptionStatusToPaymentStatus(
+    subscriptionStatus: SubscriptionStatus,
+  ): PaymentStatusType {
     const statusMap: Record<SubscriptionStatus, PaymentStatusType> = {
-      [SubscriptionStatus.ACTIVE]: PaymentStatusType.Active,
-      [SubscriptionStatus.TRIALING]: PaymentStatusType.Active,
-      [SubscriptionStatus.CANCELED]: PaymentStatusType.Canceled,
-      [SubscriptionStatus.INCOMPLETE]: PaymentStatusType.Pending,
-      [SubscriptionStatus.INCOMPLETE_EXPIRED]: PaymentStatusType.Expired,
-      [SubscriptionStatus.PAST_DUE]: PaymentStatusType.Past_due,
-      [SubscriptionStatus.UNPAID]: PaymentStatusType.Expired,
+      [SubscriptionStatus.ACTIVE]: PaymentStatusType.Succeeded,
+      [SubscriptionStatus.TRIALING]: PaymentStatusType.Succeeded,
+      [SubscriptionStatus.CANCELED]: PaymentStatusType.Cancelled,
+      [SubscriptionStatus.INCOMPLETE]: PaymentStatusType.Processing,
+      [SubscriptionStatus.INCOMPLETE_EXPIRED]: PaymentStatusType.Failed,
+      [SubscriptionStatus.PAST_DUE]: PaymentStatusType.Failed,
+      [SubscriptionStatus.UNPAID]: PaymentStatusType.Failed,
     };
 
-    return statusMap[subscriptionStatus] || PaymentStatusType.Pending;
+    return statusMap[subscriptionStatus] || PaymentStatusType.Processing;
   }
 }

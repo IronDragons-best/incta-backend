@@ -1,7 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { StripeService } from './stripe.service';
-import { UpdateSubscriptionFromWebhookUseCase, UpdateSubscriptionFromWebhookCommand } from './use-cases/commands/update-subscription-from-webhook.use-case';
-import { UpdatePaymentFromWebhookUseCase, UpdatePaymentFromWebhookCommand } from './use-cases/commands/update-payment-from-webhook.use-case';
+import {
+  UpdateSubscriptionFromWebhookUseCase,
+  UpdateSubscriptionFromWebhookCommand,
+} from './use-cases/commands/update-subscription-from-webhook.use-case';
+import {
+  UpdatePaymentFromWebhookUseCase,
+  UpdatePaymentFromWebhookCommand,
+} from './use-cases/commands/update-payment-from-webhook.use-case';
+import {
+  HandlePaymentFailedUseCase,
+  HandlePaymentFailedCommand,
+} from './use-cases/commands/handle-payment-failed.use-case';
 
 @Injectable()
 export class WebhookService {
@@ -11,6 +21,7 @@ export class WebhookService {
     private readonly stripeService: StripeService,
     private readonly updateSubscriptionFromWebhookUseCase: UpdateSubscriptionFromWebhookUseCase,
     private readonly updatePaymentFromWebhookUseCase: UpdatePaymentFromWebhookUseCase,
+    private readonly handlePaymentFailedUseCase: HandlePaymentFailedUseCase,
   ) {}
 
   async handleStripeWebhook(
@@ -40,9 +51,10 @@ export class WebhookService {
             new UpdateSubscriptionFromWebhookCommand(event.data.object as any),
           );
           break;
-          // TODO: обнулять подписку в случае когда не сработало авто-списание PAST_DUE
         case 'payment_intent.payment_failed':
-          await this.handlePaymentIntentFailed(event.data.object);
+          await this.handlePaymentFailedUseCase.execute(
+            new HandlePaymentFailedCommand(event.data.object),
+          );
           break;
         case 'invoice.paid':
           await this.updatePaymentFromWebhookUseCase.execute(
@@ -70,16 +82,6 @@ export class WebhookService {
       );
     } catch (error) {
       this.logger.error('Failed to handle checkout.session.completed', error);
-    }
-  }
-
-
-  private async handlePaymentIntentFailed(paymentIntent: any) {
-    try {
-      const customerId = paymentIntent.customer;
-      this.logger.log(`Payment failed for customer ${customerId}`);
-    } catch (error) {
-      this.logger.error('Failed to handle payment_intent.payment_failed', error);
     }
   }
 }

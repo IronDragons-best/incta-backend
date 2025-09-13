@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { PaymentMethodType, PaymentStatusType } from '@common';
+import { PlanType } from '../../../domain/payment';
 
 export class PaymentQueryDto {
   @ApiProperty({
@@ -79,11 +80,9 @@ export class PaymentQueryDto {
 
   @ApiProperty({
     type: String,
-    format: 'uuid',
     required: false,
     description: 'Filter by user ID',
   })
-  @IsUUID()
   @IsOptional()
   userId?: string;
 
@@ -113,4 +112,13 @@ export class PaymentQueryDto {
   @IsString()
   @IsOptional()
   subscriptionId?: string;
+
+  @ApiProperty({
+    enum: PlanType,
+    required: false,
+    description: 'Filter by plan type',
+  })
+  @IsEnum(PlanType)
+  @IsOptional()
+  planType?: PlanType;
 }

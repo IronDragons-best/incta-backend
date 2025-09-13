@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { StripeService } from '../../stripe.service';
-import { CreateSubscriptionUseCase, CreateSubscriptionCommand } from './create-subscription.use-case';
+import {
+  CreateSubscriptionUseCase,
+  CreateSubscriptionCommand,
+} from './create-subscription.use-case';
 import { PaymentsConfigService } from '@common/config/payments.service';
 import { CreatePaymentInputDto } from '../../../interface/dto/input/payment.create.input.dto';
-import { CreatePaymentResponseDto } from '../../../interface/dto/output/payment.view.dto';
+import {
+  CreatePaymentResponseDto,
+  PaymentViewDto,
+} from '../../../interface/dto/output/payment.view.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
-import { NotificationService } from '@common';
+import { AppNotification, NotificationService } from '@common';
 
 export class CreatePaymentCommand {
   constructor(public readonly createPaymentDto: CreatePaymentInputDto) {}
@@ -34,7 +40,8 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
         createPaymentDto.userId,
       );
 
-      const priceId = this.configService.paymentPriceId;
+      const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
+      const priceId = planConfig.priceId;
       const session = await this.stripeService.createCheckoutSession(
         customer.id,
         priceId,
@@ -47,11 +54,18 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
         return notify.setBadRequest('Failed to create checkout session');
       }
 
-      await this.createSubscriptionUseCase.execute(
+      const res = await this.createSubscriptionUseCase.execute(
         new CreateSubscriptionCommand(createPaymentDto, customer.id, session.id),
-      );
+      ) as AppNotification<PaymentViewDto>;
 
-      return notify.setValue(new CreatePaymentResponseDto(session.url));
+      const data = res.getValue();
+
+      if (!data) {
+        this.logger.error('Failed to create subscription record for checkout');
+        return notify.setBadRequest('Failed to create subscription record for checkout');
+      }
+
+      return notify.setValue(new CreatePaymentResponseDto(session.url, data?.id));
     } catch (error) {
       this.logger.error('Failed to create payment', error);
       return notify.setBadRequest('Failed to create payment');

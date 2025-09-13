@@ -22,9 +22,10 @@ export enum SubscriptionStatus {
   UNPAID = 'UNPAID',
 }
 
-export enum SubscriptionPeriod {
-  MONTHLY = 'MONTHLY',
-  YEARLY = 'YEARLY',
+export enum PlanType {
+  MONTHLY = 'monthly',
+  THREE_MONTH = '3month',
+  SIX_MONTH = '6month',
 }
 
 @Schema({ timestamps: true })
@@ -75,11 +76,11 @@ export class Payment {
   @Prop({ type: String, enum: SubscriptionStatus, required: false })
   subscriptionStatus?: SubscriptionStatus;
 
-  @ApiProperty({ enum: SubscriptionPeriod })
-  @IsEnum(SubscriptionPeriod)
+  @ApiProperty({ enum: PlanType })
+  @IsEnum(PlanType)
   @IsOptional()
-  @Prop({ type: String, enum: SubscriptionPeriod, required: false })
-  period?: SubscriptionPeriod;
+  @Prop({ type: String, enum: PlanType, required: false })
+  planType?: PlanType;
 
   @ApiProperty({ type: Date })
   @IsDate()

@@ -36,7 +36,8 @@ export class CreateSubscriptionUseCase
     const notify = this.notification.create();
 
     try {
-      const priceId = this.configService.paymentPriceId;
+      const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
+      const priceId = planConfig.priceId;
       const price = await this.stripeService.getPrice(priceId);
 
       const amount = typeof price.unit_amount === 'number' ? price.unit_amount : 0;
@@ -51,11 +52,11 @@ export class CreateSubscriptionUseCase
         stripePriceId: priceId,
         stripeCheckoutSessionId: checkoutSessionId,
         subscriptionStatus: SubscriptionStatus.INCOMPLETE,
-        period: createPaymentDto.period,
+        planType: createPaymentDto.planType,
         amount: amount,
         currency: currency,
         payType: PaymentMethodType.Stripe,
-        status: PaymentStatusType.Pending,
+        status: PaymentStatusType.Processing,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -65,19 +66,5 @@ export class CreateSubscriptionUseCase
       this.logger.error('Failed to create subscription record for checkout', error);
       notify.setBadRequest('Failed to create subscription record for checkout');
     }
-  }
-
-  private mapStripeStatusToLocal(stripeStatus: string): SubscriptionStatus {
-    const statusMap: Record<string, SubscriptionStatus> = {
-      active: SubscriptionStatus.ACTIVE,
-      canceled: SubscriptionStatus.CANCELED,
-      incomplete: SubscriptionStatus.INCOMPLETE,
-      incomplete_expired: SubscriptionStatus.INCOMPLETE_EXPIRED,
-      past_due: SubscriptionStatus.PAST_DUE,
-      trialing: SubscriptionStatus.TRIALING,
-      unpaid: SubscriptionStatus.UNPAID,
-    };
-
-    return statusMap[stripeStatus] || SubscriptionStatus.INCOMPLETE;
   }
 }

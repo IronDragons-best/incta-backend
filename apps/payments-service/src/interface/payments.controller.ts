@@ -78,10 +78,10 @@ export class PaymentsController {
 
   @Get('subscriptions/:subscriptionId/payments')
   @GetPaymentsBySubscriptionSwagger()
-  async getPaymentsBySubscription(
-    @Param('subscriptionId') subscriptionId: string,
-  ) {
-    return this.queryBus.execute(new GetPaymentsBySubscriptionQueryCommand(subscriptionId));
+  async getPaymentsBySubscription(@Param('subscriptionId') subscriptionId: string) {
+    return this.queryBus.execute(
+      new GetPaymentsBySubscriptionQueryCommand(subscriptionId),
+    );
   }
 
   @Post('payments/:id/cancel')
@@ -100,16 +100,7 @@ export class PaymentsController {
     if (!req.body) {
       return { error: 'No body provided' };
     }
-    console.log("🚀 ~ webhook ~ body type:", typeof req.body);
-    console.log("🚀 ~ webhook ~ body isBuffer:", Buffer.isBuffer(req.body));
-    console.log("🚀 ~ webhook ~ body length:", req.body.length);
-    console.log("🚀 ~ webhook ~ first 100 chars:", req.body.toString().substring(0, 100));
-    console.log("🚀 ~ webhook ~ signature:", signature);
-
-    console.log("🚀 ~ Raw buffer (first 200 bytes hex):", req.body.subarray(0, 200).toString('hex'));
-    console.log("🚀 ~ Raw buffer as UTF-8 string (first 200 chars):", req.body.toString('utf8', 0, 200));
 
     return this.webhookService.handleStripeWebhook(req.body, signature);
-
   }
 }

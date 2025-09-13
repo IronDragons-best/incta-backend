@@ -18,6 +18,7 @@ import { CreatePaymentUseCase } from './application/use-cases/commands/create-pa
 import { CancelSubscriptionUseCase } from './application/use-cases/commands/cancel-subscription.use-case';
 import { UpdateSubscriptionFromWebhookUseCase } from './application/use-cases/commands/update-subscription-from-webhook.use-case';
 import { UpdatePaymentFromWebhookUseCase } from './application/use-cases/commands/update-payment-from-webhook.use-case';
+import { HandlePaymentFailedUseCase } from './application/use-cases/commands/handle-payment-failed.use-case';
 
 import { GetPaymentQuery } from './application/use-cases/queries/get-payment.query';
 import { GetUserPaymentsQuery } from './application/use-cases/queries/get-user-payments.query';
@@ -46,11 +47,10 @@ import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-pay
     CommonModule,
   ],
   controllers: [PaymentsController],
-  providers: [PaymentsService, PaymentsConfigService, PaymentRabbitInitService],
-  exports: [PaymentsConfigService],
   providers: [
     PaymentsService,
     PaymentsConfigService,
+    PaymentRabbitInitService,
     PaymentRepository,
     StripeService,
     WebhookService,
@@ -59,6 +59,7 @@ import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-pay
     CancelSubscriptionUseCase,
     UpdateSubscriptionFromWebhookUseCase,
     UpdatePaymentFromWebhookUseCase,
+    HandlePaymentFailedUseCase,
     GetPaymentQuery,
     GetUserPaymentsQuery,
     GetPaymentsBySubscriptionQuery,

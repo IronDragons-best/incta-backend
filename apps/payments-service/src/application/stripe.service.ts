@@ -43,12 +43,13 @@ export class StripeService {
   }
 
   async cancelSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
-    return this.stripe.subscriptions.cancel(subscriptionId);
+    return this.stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
   }
 
   constructWebhookEvent(payload: string | Buffer, signature: string): Stripe.Event {
     const webhookSecret = this.configService.paymentWebhookSignSecret;
-    this.logger.log(`🚀 Payload type: ${typeof payload}, length: ${payload.length}`);
     return this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   }
 
@@ -61,7 +62,6 @@ export class StripeService {
     });
   }
 
-  // TODO: add periods to createCheckoutSession
   async createCheckoutSession(
     customerId: string,
     priceId: string,

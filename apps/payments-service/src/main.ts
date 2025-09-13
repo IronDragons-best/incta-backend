@@ -10,7 +10,8 @@ async function bootstrap() {
   const configService = app.get<PaymentsConfigService>(PaymentsConfigService);
 
   app.use((req, res, next) => {
-    const isWebhook = req.originalUrl === '/webhook' || req.originalUrl === '/api/v1/webhook';
+    const isWebhook =
+      req.originalUrl === '/webhook' || req.originalUrl === '/api/v1/webhook';
 
     const chunks: Buffer[] = [];
     req.on('data', (chunk: Buffer) => {
@@ -36,13 +37,10 @@ async function bootstrap() {
   const port = configService.paymentServicePort;
   const host = configService.paymentsServiceHost;
 
-  const host = configService.paymentsServiceHost;
   await filesSetup(app);
 
   await app.listen(port);
-  console.log(`Payments microservice started on ${host}:${port}`);
+  console.log(`Payments microservice started on ${host}`);
 }
 
 bootstrap();
-
-void bootstrap();

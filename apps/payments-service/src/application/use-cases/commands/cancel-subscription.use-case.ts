@@ -38,24 +38,28 @@ export class CancelSubscriptionUseCase
       if (subscription.subscriptionStatus === SubscriptionStatus.INCOMPLETE) {
         if (subscription.stripeCheckoutSessionId) {
           try {
-            await this.stripeService.expireCheckoutSession(subscription.stripeCheckoutSessionId);
-            this.logger.log(`Expired checkout session: ${subscription.stripeCheckoutSessionId}`);
+            await this.stripeService.expireCheckoutSession(
+              subscription.stripeCheckoutSessionId,
+            );
+            this.logger.log(
+              `Expired checkout session: ${subscription.stripeCheckoutSessionId}`,
+            );
           } catch (stripeError: any) {
             this.logger.warn(`Could not expire checkout session: ${stripeError.message}`);
           }
         }
       } else if (subscription.stripeSubscriptionId) {
         await this.stripeService.cancelSubscription(subscription.stripeSubscriptionId);
-        this.logger.log(`Cancelled Stripe subscription: ${subscription.stripeSubscriptionId}`);
+        this.logger.log(
+          `Disabled auto-renewal for Stripe subscription: ${subscription.stripeSubscriptionId}`,
+        );
       }
 
       const updatedSubscription = await this.paymentRepository.update(id, {
-        subscriptionStatus: SubscriptionStatus.CANCELED,
-        status: PaymentStatusType.Canceled,
         canceledAt: new Date(),
       });
-      
-      this.logger.log(`Successfully cancelled subscription: ${id}`);
+
+      this.logger.log(`Successfully disabled auto-renewal for subscription: ${id}`);
       return notify.setValue(new PaymentViewDto(updatedSubscription!));
     } catch (error) {
       this.logger.error('Failed to cancel subscription', error);
