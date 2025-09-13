@@ -266,7 +266,6 @@ export class AppConfigService extends ConfigService {
     if (!paymentServiceHost) {
       throw new Error('Payment service host is required');
     }
-
     return paymentServiceHost;
   }
 }

@@ -1,6 +1,10 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FilesQueryRepository } from '../../infrastructure/files.query.repository';
-import { AppNotification, FilePostFromDatabaseDtoType, NotificationService } from '@common';
+import {
+  AppNotification,
+  FilePostFromDatabaseDtoType,
+  NotificationService,
+} from '@common';
 import { CustomLogger } from '@monitoring';
 import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
@@ -20,7 +24,9 @@ export class GetFilesByPostIdHandler implements IQueryHandler<GetFilesByPostIdQu
   ) {
     this.logger.setContext('GetFilesByPostIdHandler');
   }
-  async execute(query: GetFilesByPostIdQuery): Promise<AppNotification<FilePostViewDto[]>> {
+  async execute(
+    query: GetFilesByPostIdQuery,
+  ): Promise<AppNotification<FilePostViewDto[]>> {
     const notify = this.notification.create<FilePostViewDto[]>();
     const rawFiles: FilePostFromDatabaseDtoType[] | null =
       await this.filesQueryRepository.getManyByUserIdAndPostId(

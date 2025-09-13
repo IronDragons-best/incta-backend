@@ -38,8 +38,17 @@ describe('PasswordRecoveryUseCase', () => {
         RecaptchaService,
         ConfigService,
         { provide: HttpService, useValue: { post: jest.fn() } },
-        { provide: UsersRepository, useValue: { findByEmailWithTransaction: jest.fn(), saveWithTransaction: jest.fn() } },
-        { provide: CustomLogger, useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn() } },
+        {
+          provide: UsersRepository,
+          useValue: {
+            findByEmailWithTransaction: jest.fn(),
+            saveWithTransaction: jest.fn(),
+          },
+        },
+        {
+          provide: CustomLogger,
+          useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn() },
+        },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
         {
           provide: DataSource,
@@ -60,7 +69,7 @@ describe('PasswordRecoveryUseCase', () => {
 
     const result = await useCase.execute({
       email: 'notfound@example.com',
-      captchaToken: 'captcha-token-12345'
+      captchaToken: 'captcha-token-12345',
     });
 
     expect(result.hasErrors()).toBe(true);
@@ -75,7 +84,7 @@ describe('PasswordRecoveryUseCase', () => {
 
     const result = await useCase.execute({
       email: 'unconfirmed@example.com',
-      captchaToken: 'captcha-token-12345'
+      captchaToken: 'captcha-token-12345',
     });
 
     expect(result.hasErrors()).toBe(true);
@@ -95,7 +104,7 @@ describe('PasswordRecoveryUseCase', () => {
 
     const result = await useCase.execute({
       email: user.email,
-      captchaToken: 'captcha-token-12345'
+      captchaToken: 'captcha-token-12345',
     });
 
     expect(usersRepository.saveWithTransaction).toHaveBeenCalledWith(user, queryRunner);

@@ -27,7 +27,8 @@ export class NotificationServiceInfo {
 export class HealthViewDto {
   @ApiProperty({ type: MainServiceInfo }) mainService: MainServiceInfo;
   @ApiProperty({ type: FilesServiceInfo }) filesService: FilesServiceInfo;
-  @ApiProperty({ type: NotificationServiceInfo }) notificationService: NotificationServiceInfo;
+  @ApiProperty({ type: NotificationServiceInfo })
+  notificationService: NotificationServiceInfo;
 
   public static mapToView(this: void, health: HealthType) {
     const dto = new HealthViewDto();

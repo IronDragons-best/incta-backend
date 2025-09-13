@@ -12,7 +12,7 @@ export function GetStatsSwaggerDecorator() {
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Getting stats from the server, for list of the stats.',
-      type: OutputStatsViewDto
-    })
-  )
+      type: OutputStatsViewDto,
+    }),
+  );
 }

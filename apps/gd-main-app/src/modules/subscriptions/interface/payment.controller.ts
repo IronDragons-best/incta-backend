@@ -14,16 +14,16 @@ import { PaymentSuccessCommand } from '../application/use-cases/payment-success.
 import { CustomLogger } from '@monitoring';
 import { Channel, Message } from 'amqplib';
 import { PaymentFailedCommand } from '../application/use-cases/payment-failed.use-case';
+import { AutoPaymentCancelledCommand } from '../application/use-cases/auto-payment-cancelled.use-case';
 import { SubscriptionCancelledCommand } from '../application/use-cases/subscription-cancelled.use-case';
 import { SubscriptionExpiredCommand } from '../application/use-cases/subscription-expired.use-case';
 import { SubscriptionPastDueCommand } from '../application/use-cases/subscription.past.due.use-case';
-import { AutoPaymentCancelledCommand } from '../application/use-cases/auto-payment-cancelled.use-case';
 
 @Controller()
 export class PaymentEventsController {
   private readonly MAX_RETRY_ATTEMPTS = 3;
   private readonly RETRY_HEADER = 'x-retry-count';
-  private readonly RETRY_DELAY_MS = 3000;
+  private readonly RETRY_DELAY_MS = 30000;
 
   constructor(
     private readonly commandBus: CommandBus,
@@ -38,7 +38,6 @@ export class PaymentEventsController {
     @Ctx() context: RmqContext,
   ) {
     const userId = data.userId;
-    console.log(context, data);
     this.logger.log(`Processing payment success for user ${userId}`);
     console.log('hello');
     try {
@@ -164,10 +163,8 @@ export class PaymentEventsController {
   private getRetryCount(context: RmqContext): number {
     const msg = context.getMessage() as Message;
     const headers = msg.properties?.headers as Record<string, unknown> | undefined;
-    const retryCountHeader = headers?.[this.RETRY_HEADER];
-
-    const retryCount = parseInt(String(retryCountHeader), 10);
-    return isNaN(retryCount) ? 0 : retryCount;
+    const retryCountHeader = headers?.[this.RETRY_HEADER] as number | undefined;
+    return typeof retryCountHeader === 'number' ? retryCountHeader : 0;
   }
 
   private handleMessage(
@@ -202,10 +199,10 @@ export class PaymentEventsController {
 
     const newHeaders = {
       ...originalMsg.properties.headers,
-      [this.RETRY_HEADER]: newRetryCount.toString(),
+      [this.RETRY_HEADER]: newRetryCount,
     };
 
-    channel.publish('payment.delay', 'payment.success', originalMsg.content, {
+    channel.publish('payment.delay', originalMsg.fields.routingKey, originalMsg.content, {
       headers: newHeaders,
       expiration: this.RETRY_DELAY_MS.toString(),
       deliveryMode: 2,

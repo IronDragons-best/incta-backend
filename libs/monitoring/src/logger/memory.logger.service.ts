@@ -10,13 +10,13 @@ export class MemoryLoggerService implements OnModuleInit {
         global.gc();
       }
       const mem = process.memoryUsage();
-      this.logger.warn(
+      this.logger.log(
         `Memory: rss=${(mem.rss / 1024 / 1024).toFixed(2)}MB, heapUsed=${(
           mem.heapUsed /
           1024 /
           1024
         ).toFixed(2)}MB`,
       );
-    }, 600000);
+    }, 30000);
   }
 }
