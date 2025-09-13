@@ -14,8 +14,7 @@ export class RecaptchaService {
     private readonly httpService: HttpService,
   ) {
     this.secretKey = this.configService.getOrThrow<string>('RECAPTCHA_PRIVATE_KEY');
-    this.isEnabled =
-      this.configService.getOrThrow<string>('RECAPTCHA_ENABLED') !== 'false';
+    this.isEnabled = this.configService.getOrThrow<string>('RECAPTCHA_ENABLED') !== 'false';
   }
 
   async validateToken(token: string): Promise<RecaptchaResponse> {

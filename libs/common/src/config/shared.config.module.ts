@@ -85,6 +85,7 @@ export class SharedConfigModule {
         AppConfigService,
         FilesConfigService,
         NotificationConfigService,
+        PaymentsConfigService,
         'APP_NAME',
       ],
     };

@@ -126,8 +126,4 @@ export const monitoringValidationSchema = Joi.object({
   PAYMENTS_SERVICE_PORT: Joi.number().port(),
 
   PAYMENTS_SERVICE_HOST: Joi.string(),
-
-  PAYMENTS_ADMIN_LOGIN: Joi.string().required(),
-
-  PAYMENTS_ADMIN_PASSWORD: Joi.string().required(),
 });

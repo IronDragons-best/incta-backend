@@ -14,6 +14,6 @@ export class PostFileEntity extends BasicEntity {
   @Column()
   fileUrl: string;
 
-  @ManyToOne(() => PostEntity, (post) => post.files, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PostEntity, post => post.files, { onDelete: 'CASCADE' })
   post: PostEntity;
 }

@@ -33,6 +33,7 @@ async function bootstrap() {
       noAck: false,
       prefetchCount: 10,
       persistent: true,
+      isGlobalPrefetchCount: true,
     },
   });
 

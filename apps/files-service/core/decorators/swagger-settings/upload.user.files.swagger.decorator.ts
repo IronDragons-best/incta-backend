@@ -1,10 +1,4 @@
-import {
-  ApiBasicAuth,
-  ApiBody,
-  ApiConsumes,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBasicAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import { UploadFilesResponseDto } from '../../../src/interface/dto/upload.files.view.dto';
 import { ErrorResponseDto } from '@common';
