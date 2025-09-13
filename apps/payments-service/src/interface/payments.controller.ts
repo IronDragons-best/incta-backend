@@ -15,24 +15,25 @@ import { ApiTags } from '@nestjs/swagger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { PaymentsService } from '../payments.service';
 import { WebhookService } from '../application/webhook.service';
-import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
-import { GetUserPaymentsQueryCommand } from '../application/use-cases/queries/get-user-payments.query';
-import { GetPaymentsBySubscriptionQueryCommand } from '../application/use-cases/queries/get-payments-by-subscription.query';
-import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get-all-payments.query';
-import { CancelSubscriptionCommand } from '../application/use-cases/commands/cancel-subscription.use-case';
-import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
-import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
-import { PaymentQueryDto } from './dto/input/payment.query.dto';
+
 import {
-  CreatePaymentSwagger,
-  GetPaymentSwagger,
-  GetPaymentsSwagger,
-  GetUserPaymentsSwagger,
-  GetPaymentsBySubscriptionSwagger,
   CancelPaymentSwagger,
+  CreatePaymentSwagger,
+  GetPaymentsBySubscriptionSwagger,
+  GetPaymentsSwagger,
+  GetPaymentSwagger,
+  GetUserPaymentsSwagger,
   HealthCheckSwagger,
   StripeWebhookSwagger,
 } from '../../core/decorators/swagger';
+import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
+import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
+import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
+import { PaymentQueryDto } from './dto/input/payment.query.dto';
+import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get-all-payments.query';
+import { GetUserPaymentsQueryCommand } from '../application/use-cases/queries/get-user-payments.query';
+import { GetPaymentsBySubscriptionQueryCommand } from '../application/use-cases/queries/get-payments-by-subscription.query';
+import { CancelSubscriptionCommand } from '../application/use-cases/commands/cancel-subscription.use-case';
 
 @ApiTags('Payments')
 @Controller()
