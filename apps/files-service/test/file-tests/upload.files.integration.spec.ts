@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileValidationPipe } from '@common/pipes/file.validation.pipe';
-import { AppNotification } from '@common';
+import { AppNotification, FilesConfigService } from '@common';
 import { UploadPostFilesCommand } from '../../src/application/use-cases/upload-post-files-use.case';
 
 describe('FilesServiceController', () => {
@@ -22,6 +22,7 @@ describe('FilesServiceController', () => {
         { provide: CommandBus, useValue: commandBus },
         QueryBus,
         FileValidationPipe,
+        { provide: FilesConfigService, useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' } },
       ],
     }).compile();
 

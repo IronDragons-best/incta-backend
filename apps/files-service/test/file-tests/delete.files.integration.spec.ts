@@ -3,7 +3,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 
 import { FilesServiceController } from '../../src/interface/files-service.controller';
 import { FilesServiceService } from '../../src/application/files-service.service';
-import { AppNotification } from '@common';
+import { AppNotification, FilesConfigService } from '@common';
 
 describe('FilesController', () => {
   let controller: FilesServiceController;
@@ -18,6 +18,7 @@ describe('FilesController', () => {
         { provide: FilesServiceService, useValue: {} },
         { provide: CommandBus, useValue: commandBus },
         { provide: QueryBus, useClass: QueryBus },
+        { provide: FilesConfigService, useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' } },
       ],
     }).compile();
 
