@@ -23,20 +23,74 @@ export class PaymentsConfigService extends ConfigService {
     return url;
   }
 
-  get paymentProductId(): string {
-    const productId = this.get<string>('PAYMENT_PRODUCT_ID');
+  get paymentMonthlyProductId(): string {
+    const productId = this.get<string>('PAYMENT_MONTHLY_PRODUCT_ID');
     if (!productId) {
-      throw new Error('Payment Product Id is required');
+      throw new Error('Payment Monthly Product Id is required');
     }
     return productId;
   }
 
-  get paymentPriceId(): string {
-    const productId = this.get<string>('PAYMENT_PRICE_ID');
+  get paymentMonthlyPriceId(): string {
+    const priceId = this.get<string>('PAYMENT_MONTHLY_PRICE_ID');
+    if (!priceId) {
+      throw new Error('Payment Monthly Price Id is required');
+    }
+    return priceId;
+  }
+
+  get payment3MonthProductId(): string {
+    const productId = this.get<string>('PAYMENT_3MONTH_PRODUCT_ID');
     if (!productId) {
-      throw new Error('Payment Product Id is required');
+      throw new Error('Payment 3Month Product Id is required');
     }
     return productId;
+  }
+
+  get payment3MonthPriceId(): string {
+    const priceId = this.get<string>('PAYMENT_3MONTH_PRICE_ID');
+    if (!priceId) {
+      throw new Error('Payment 3Month Price Id is required');
+    }
+    return priceId;
+  }
+
+  get payment6MonthProductId(): string {
+    const productId = this.get<string>('PAYMENT_6MONTH_PRODUCT_ID');
+    if (!productId) {
+      throw new Error('Payment 6Month Product Id is required');
+    }
+    return productId;
+  }
+
+  get payment6MonthPriceId(): string {
+    const priceId = this.get<string>('PAYMENT_6MONTH_PRICE_ID');
+    if (!priceId) {
+      throw new Error('Payment 6Month Price Id is required');
+    }
+    return priceId;
+  }
+
+  getPlanConfig(planType: string): { productId: string; priceId: string } {
+    switch (planType) {
+      case 'monthly':
+        return {
+          productId: this.paymentMonthlyProductId,
+          priceId: this.paymentMonthlyPriceId,
+        };
+      case '3month':
+        return {
+          productId: this.payment3MonthProductId,
+          priceId: this.payment3MonthPriceId,
+        };
+      case '6month':
+        return {
+          productId: this.payment6MonthProductId,
+          priceId: this.payment6MonthPriceId,
+        };
+      default:
+        throw new Error(`Unsupported plan type: ${planType}`);
+    }
   }
 
   get paymentSecretKey(): string {
@@ -53,14 +107,6 @@ export class PaymentsConfigService extends ConfigService {
       throw new Error('Payment Webhook Sign Secret is required');
     }
     return signSecret;
-  }
-
-  get paymentWebhookUrl(): string {
-    const webhookUrl = this.get<string>('PAYMENT_WEBHOOK_URL');
-    if (!webhookUrl) {
-      throw new Error('Payment Webhook Url is required');
-    }
-    return webhookUrl;
   }
 
   get paymentServicePort(): number {
@@ -97,5 +143,21 @@ export class PaymentsConfigService extends ConfigService {
 
   get isTest(): boolean {
     return this.nodeEnv === 'test';
+  }
+
+  get paymentsAdminLogin(): string {
+    const login = this.get<string>('PAYMENTS_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Payments admin login is required');
+    }
+    return login;
+  }
+
+  get paymentsAdminPassword(): string {
+    const password = this.get<string>('PAYMENTS_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Payments admin password is required');
+    }
+    return password;
   }
 }

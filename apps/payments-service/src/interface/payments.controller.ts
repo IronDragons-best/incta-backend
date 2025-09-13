@@ -1,31 +1,106 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Req,
+  Logger,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { PaymentsService } from '../payments.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PaymentSuccessEvent } from '../../core/events/payment-success.event';
-import { PaymentMethodType, PaymentStatusType, PlanType } from '@common';
+import { WebhookService } from '../application/webhook.service';
+import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
+import { GetUserPaymentsQueryCommand } from '../application/use-cases/queries/get-user-payments.query';
+import { GetPaymentsBySubscriptionQueryCommand } from '../application/use-cases/queries/get-payments-by-subscription.query';
+import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get-all-payments.query';
+import { CancelSubscriptionCommand } from '../application/use-cases/commands/cancel-subscription.use-case';
+import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
+import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
+import { PaymentQueryDto } from './dto/input/payment.query.dto';
+import {
+  CreatePaymentSwagger,
+  GetPaymentSwagger,
+  GetPaymentsSwagger,
+  GetUserPaymentsSwagger,
+  GetPaymentsBySubscriptionSwagger,
+  CancelPaymentSwagger,
+  HealthCheckSwagger,
+  StripeWebhookSwagger,
+} from '../../core/decorators/swagger';
 
+@ApiTags('Payments')
 @Controller()
 export class PaymentsController {
+  private readonly logger = new Logger(PaymentsController.name);
+
   constructor(
     private readonly paymentsService: PaymentsService,
-    private readonly event: EventEmitter2,
+    private readonly webhookService: WebhookService,
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get('health')
+  @HealthCheckSwagger()
   getHealth() {
-    const event = new PaymentSuccessEvent({
-      userId: 123,
-      externalSubscriptionId: 'sadasd',
-      status: PaymentStatusType.Succeeded,
-      startDate: new Date().toISOString(),
-      endDate: new Date().toISOString(),
-      planType: PlanType.Monthly,
-      paymentMethod: PaymentMethodType.Stripe,
-      paymentAmount: 1,
-      externalPaymentId: 'asdasd',
-      billingDate: new Date().toISOString(),
-    });
-    this.event.emit('payment.success', event);
     return this.paymentsService.check();
+  }
+
+  @Post('payments')
+  @CreatePaymentSwagger()
+  async createPayment(@Body() createPaymentDto: CreatePaymentInputDto) {
+    return this.commandBus.execute(new CreatePaymentCommand(createPaymentDto));
+  }
+
+  @Get('payments/:id')
+  @GetPaymentSwagger()
+  async getPayment(@Param('id') id: string) {
+    return this.queryBus.execute(new GetPaymentQueryCommand(id));
+  }
+
+  @Get('payments')
+  @GetPaymentsSwagger()
+  async getPayments(@Query() query: PaymentQueryDto) {
+    return this.queryBus.execute(new GetAllPaymentsQueryCommand(query));
+  }
+
+  @Get('users/:userId/payments')
+  @GetUserPaymentsSwagger()
+  async getUserPayments(@Param('userId') userId: string) {
+    return this.queryBus.execute(new GetUserPaymentsQueryCommand(userId));
+  }
+
+  @Get('subscriptions/:subscriptionId/payments')
+  @GetPaymentsBySubscriptionSwagger()
+  async getPaymentsBySubscription(@Param('subscriptionId') subscriptionId: string) {
+    return this.queryBus.execute(
+      new GetPaymentsBySubscriptionQueryCommand(subscriptionId),
+    );
+  }
+
+  @Post('payments/:id/cancel')
+  @CancelPaymentSwagger()
+  async cancelPayment(@Param('id') id: string) {
+    return this.commandBus.execute(new CancelSubscriptionCommand(id));
+  }
+
+  @Post('/webhook')
+  @HttpCode(HttpStatus.OK)
+  @StripeWebhookSwagger()
+  async webhook(
+    @Req() req: { body: Buffer },
+    @Headers('stripe-signature') signature: string,
+  ) {
+    if (!req.body) {
+      return { error: 'No body provided' };
+    }
+
+    return this.webhookService.handleStripeWebhook(req.body, signature);
   }
 }

@@ -41,7 +41,7 @@
     "start:dev:gd-main-app": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start gd-main-app --watch",
     "start:dev:files-service": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start files-service --watch",
     "start:dev:notification-service": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start notification-service --watch",
-    "start:dev:payments-service": "nest start payments-service --watch",
+    "start:dev:payments-service": "set NODE_OPTIONS=--expose-gc --max-old-space-size=512 && nest start payments-service --watch",
     "docker:dev:up": "docker-compose -f docker-compose.dev.yml up -d",
     "docker:dev:down": "docker-compose -f docker-compose.dev.yml down"
   },
