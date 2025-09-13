@@ -5,8 +5,7 @@ export function DeleteUserFilesSwagger() {
   return applyDecorators(
     ApiOperation({
       summary: 'Delete User Avatar by User ID',
-      description:
-        'This endpoint allows you to delete the user avatar associated with a specific user.',
+      description: 'This endpoint allows you to delete the user avatar associated with a specific user.',
     }),
     ApiBasicAuth('basic'),
     ApiResponse({
@@ -21,5 +20,5 @@ export function DeleteUserFilesSwagger() {
       status: HttpStatus.BAD_REQUEST,
       description: 'Some user avatar could not be deleted due to errors.',
     }),
-  );
+  )
 }

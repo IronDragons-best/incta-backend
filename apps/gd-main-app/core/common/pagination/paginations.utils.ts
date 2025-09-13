@@ -6,14 +6,10 @@ export const parseOrder = (value?: string): SortOrder => {
   return normalized === 'asc' ? 'ASC' : 'DESC';
 };
 
-export const pickSortField = (
-  candidate: string | string[] | undefined,
-  allowed: string[],
-  fallback: string,
-): string => {
+export const pickSortField = (candidate: string | string[] | undefined, allowed: string[], fallback: string): string => {
   if (!candidate) return fallback;
   if (Array.isArray(candidate)) {
-    const match = candidate.find((field) => allowed.includes(field));
+    const match = candidate.find(field => allowed.includes(field));
     return match ?? fallback;
   }
   return allowed.includes(candidate) ? candidate : fallback;

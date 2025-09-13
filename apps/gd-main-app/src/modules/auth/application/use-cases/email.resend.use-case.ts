@@ -8,8 +8,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../../../users/domain/user.entity';
 import { EmailResendEvent } from '../../../../../core/events/user-events/email.resend.event';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { RecaptchaService } from '../recaptcha.service';
-import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
 export class EmailResendCommand {
   constructor(public readonly email: string) {}

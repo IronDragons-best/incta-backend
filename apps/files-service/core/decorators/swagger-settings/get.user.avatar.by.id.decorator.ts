@@ -9,11 +9,11 @@ export function GetUserAvatarByIdDecorator() {
     }),
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
-      description: 'User not found or no user avatar associated with the user.',
+      description: 'User not found or no user avatar associated with the user.'
     }),
     ApiResponse({
       status: HttpStatus.OK,
-      type: FileUserViewDto,
-    }),
-  );
+      type: FileUserViewDto
+    })
+  )
 }

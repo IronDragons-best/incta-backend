@@ -39,29 +39,24 @@ export class GetPostByIdHandler implements IQueryHandler<GetPostByIdQuery> {
       if (!post.files.length) {
         const imagesFiles = await this.getPreviewImageUrl(post.user.id, post.id);
         if (imagesFiles) {
-          post.files = imagesFiles.map((file) => ({
+          post.files = imagesFiles.map(file => ({
             id: file.id,
             fileName: file.originalName,
             fileUrl: file.uploadedUrl,
-          }));
+          }))
         } else {
           this.logger.warn(`No preview image found for post ${query.id}`);
         }
       }
 
-      return PostEntity.mapToDomainDto(post);
+      return PostEntity.mapToDomainDto(post)
     } catch (error) {
       this.logger.error(`Error retrieving post with id ${query.id}: ${error.message}`);
-      return notify.setServerError(
-        'Internal Server Error occurred while retrieving post',
-      );
+      return notify.setServerError('Internal Server Error occurred while retrieving post');
     }
   }
 
-  private async getPreviewImageUrl(
-    userId: PostEntity['user']['id'],
-    postId: PostEntity['id'],
-  ) {
+  private async getPreviewImageUrl(userId: PostEntity['user']['id'], postId: PostEntity['id']) {
     const filesServiceUrl = `${this.configService.filesUrl}/api/v1/files/${userId}/post/${postId}`;
 
     const { data } = await firstValueFrom(
@@ -70,13 +65,13 @@ export class GetPostByIdHandler implements IQueryHandler<GetPostByIdQuery> {
           'Content-Type': 'application/json',
         },
       }),
-    );
+    )
 
     if (!data || !data.files) {
       this.logger.warn(`No preview image found for post ${postId}`);
-      return;
+      return
     }
 
-    return data.files;
+    return data.files
   }
 }

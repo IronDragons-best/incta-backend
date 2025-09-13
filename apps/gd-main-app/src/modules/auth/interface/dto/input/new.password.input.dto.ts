@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Length, Matches, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  Length,
+  Matches,
+  IsNotEmpty,
+} from 'class-validator';
 import { Trim } from '../../../../../../core/decorators/transform/trim';
 import { userPasswordConstraints } from '../../../../users/constants/user.constants';
 
@@ -15,7 +20,8 @@ export class NewPasswordInputDto {
   @Trim()
   @Length(userPasswordConstraints.minLength, userPasswordConstraints.maxLength)
   @Matches(userPasswordConstraints.pattern, {
-    message: 'Password must include uppercase, lowercase, number, and special character.',
+    message:
+      'Password must include uppercase, lowercase, number, and special character.',
   })
   newPassword: string;
 

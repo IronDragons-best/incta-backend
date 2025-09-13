@@ -19,7 +19,7 @@ export class DeviceViewDto {
     example: 'Chrome',
     nullable: true,
   })
-  deviceName: string | null;
+  deviceName: string | null
 
   @ApiProperty({
     description: 'IP address of the device.',

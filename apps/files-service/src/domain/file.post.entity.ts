@@ -4,6 +4,7 @@ import { FileAccessType, FilePostFromDatabaseDtoType } from '@common';
 import { FileRequestEntity } from './file.request.entity';
 
 export class FilePostEntity {
+
   constructor(
     public id: number,
     public filename: string,

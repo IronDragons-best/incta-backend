@@ -18,7 +18,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Generate Prisma client BEFORE building the services
-RUN pnpm run prisma:files:generate
+RUN pnpm prisma generate --schema=apps/files-service/prisma/schema.prisma
 
 # Build all services (files-service build also includes prisma generate)
 RUN pnpm run build:gd-main-app
@@ -43,14 +43,18 @@ RUN npm install -g pnpm
 COPY package.json ./
 COPY pnpm-lock.yaml ./
 
-# Install ONLY production dependencies
+# Install production dependencies + prisma CLI temporarily for generation
 RUN pnpm install --frozen-lockfile --prod
+RUN pnpm add prisma@6.12.0 --save-dev
 
 # IMPORTANT: Copy Prisma schema BEFORE generating client in production
 COPY --from=builder /app/apps/files-service/prisma ./apps/files-service/prisma
 
-# Re-generate Prisma client in production stage with only production dependencies
-RUN npx prisma generate --schema=apps/files-service/prisma/schema.prisma
+# Generate Prisma client in production stage with same version as builder
+RUN pnpm prisma generate --schema=apps/files-service/prisma/schema.prisma
+
+# Remove prisma CLI after generation to keep image small
+RUN pnpm remove prisma
 
 # Copy built applications (dist folder)
 COPY --from=builder /app/dist ./dist
@@ -68,8 +72,6 @@ COPY newrelic.js ./
 
 # Copy the startup script
 COPY start-services.sh ./start-services.sh
-
-
 
 # Create a non-root user
 RUN addgroup -g 1001 -S nodejs

@@ -33,12 +33,7 @@ export class S3StorageAdapter {
     uploadType: UploadType,
     postId?: number,
   ): Promise<{ filename: string; url: string; key: string }> {
-    const { key, filename } = this.generateS3Key(
-      file.originalName,
-      userId,
-      uploadType,
-      postId,
-    );
+    const { key, filename } = this.generateS3Key(file.originalName, userId, uploadType, postId);
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -64,12 +59,7 @@ export class S3StorageAdapter {
     uploadType: UploadType,
     postId?: number,
   ): Promise<{ filename: string; url: string; key: string }> {
-    const { key, filename } = this.generateS3Key(
-      file.originalName,
-      userId,
-      uploadType,
-      postId,
-    );
+    const { key, filename } = this.generateS3Key(file.originalName, userId, uploadType, postId);
 
     if (!file.stream) {
       throw new Error('Stream is required for stream upload');

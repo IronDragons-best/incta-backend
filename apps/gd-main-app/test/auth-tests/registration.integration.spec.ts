@@ -66,7 +66,7 @@ describe('RegistrationUseCase', () => {
       password: '',
       passwordConfirmation: '',
       agreeToTerms: false,
-      captchaToken: 'captcha-token-12345',
+      captchaToken: 'captcha-token-12345'
     };
     const notification = new AppNotification().setBadRequest(
       'bad credentials',

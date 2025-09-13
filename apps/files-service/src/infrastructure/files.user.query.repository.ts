@@ -4,15 +4,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class FilesUserQueryRepository extends PrismaService {
-  async getManyAvatarsByUserId(
-    userId: number,
-  ): Promise<FileUserFromDatabaseDtoType[] | null> {
+  async getManyAvatarsByUserId(userId: number): Promise<FileUserFromDatabaseDtoType[] | null> {
     try {
       const files = await this.fileUser.findMany({
         where: { uploadedBy: userId },
         orderBy: { createdAt: 'asc' },
       });
-      return (files as FileUserFromDatabaseDtoType[]) ?? null;
+      return files as FileUserFromDatabaseDtoType[] ?? null;
     } catch (error) {
       return null;
     }

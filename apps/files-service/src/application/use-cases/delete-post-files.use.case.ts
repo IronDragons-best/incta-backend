@@ -5,7 +5,9 @@ import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 
 export class DeletePostFilesCommand {
-  constructor(public readonly postId: number) {}
+  constructor(
+    public readonly postId: number
+  ) {}
 }
 
 @CommandHandler(DeletePostFilesCommand)
@@ -29,7 +31,7 @@ export class DeletePostFilesUseCase implements ICommandHandler<DeletePostFilesCo
       return notify.setNotFound(`Files for post with id ${postId} not found.`);
     }
 
-    const keys = files.map((f) => f.s3Key);
+    const keys = files.map(f => f.s3Key);
 
     try {
       await this.fileAdapter.deleteMultipleObjects(keys);
