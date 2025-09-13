@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
-import { SubscriptionStatus } from '../../../domain/payment';
+import { Payment, SubscriptionStatus } from '../../../domain/payment';
 import { CustomLogger } from '@monitoring';
-import { NotificationService, PaymentStatusType } from '@common';
+import { NotificationService, PaymentStatusType, PlanType } from '@common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PaymentFailedEvent } from '../../../../core/events/payment-failed.event';
+import { StripePaymentIntent } from '../../../domain/types/stripe.types';
 
 export class HandlePaymentFailedCommand {
-  constructor(public readonly paymentIntentData: any) {}
+  constructor(public readonly paymentIntentData: StripePaymentIntent) {}
 }
 
 @CommandHandler(HandlePaymentFailedCommand)
@@ -17,6 +19,7 @@ export class HandlePaymentFailedUseCase
     private readonly paymentRepository: PaymentRepository,
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger.setContext('Handle payment failed use case');
   }
@@ -38,7 +41,7 @@ export class HandlePaymentFailedUseCase
         return notify.setBadRequest('No customer ID found in payment intent data');
       }
 
-      let payment;
+      let payment: Payment | null | undefined = undefined;
 
       if (stripeSubscriptionId) {
         payment =
@@ -78,6 +81,20 @@ export class HandlePaymentFailedUseCase
         this.logger.error(`Failed to update payment: ${payment.id}`);
         return notify.setBadRequest('Failed to update payment status');
       }
+
+      this.eventEmitter.emit(
+        'payment.failed',
+        new PaymentFailedEvent({
+          userId: payment.userId,
+          externalSubscriptionId: payment.stripeSubscriptionId!,
+          status: PaymentStatusType.Failed,
+          planType: payment.planType as unknown as PlanType,
+          attemptedAmount: paymentIntentData.amount / 100,
+          currency: paymentIntentData.currency,
+          failureDate: new Date().toISOString(),
+          paymentMethod: payment.payType,
+        }),
+      );
 
       this.logger.log(
         `Payment and subscription status updated after failed payment: ${payment.id}`,

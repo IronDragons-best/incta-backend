@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { CustomLogger } from '@monitoring';
 import { NotificationService, PaymentStatusType } from '@common';
-import { SubscriptionStatus } from '../../../domain/payment';
+import { Payment, SubscriptionStatus } from '../../../domain/payment';
+import { StripeInvoice } from '../../../domain/types/stripe.types';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export class UpdatePaymentFromWebhookCommand {
-  constructor(public readonly invoiceData: any) {}
+  constructor(public readonly invoiceData: StripeInvoice) {}
 }
 
 @CommandHandler(UpdatePaymentFromWebhookCommand)
@@ -17,6 +18,7 @@ export class UpdatePaymentFromWebhookUseCase
     private readonly paymentRepository: PaymentRepository,
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger.setContext('Update payment from webhook use case');
   }
@@ -36,7 +38,7 @@ export class UpdatePaymentFromWebhookUseCase
         return notify.setBadRequest('No customer ID found in invoice data');
       }
 
-      let payment;
+      let payment: Payment | null | undefined = undefined;
 
       if (stripeSubscriptionId) {
         payment =
@@ -63,12 +65,18 @@ export class UpdatePaymentFromWebhookUseCase
       }
 
       // Обновляем статус платежа и активируем подписку при успешном платеже
-      const updateData: any = {
+      const updateData: {
+        status: PaymentStatusType;
+        subscriptionStatus?: SubscriptionStatus;
+      } = {
         status: PaymentStatusType.Succeeded,
       };
 
       // Если у платежа есть подписка и она была неполная, активируем её
-      if (payment.subscriptionId && payment.subscriptionStatus === SubscriptionStatus.INCOMPLETE) {
+      if (
+        payment.subscriptionId &&
+        payment.subscriptionStatus === SubscriptionStatus.INCOMPLETE
+      ) {
         updateData.subscriptionStatus = SubscriptionStatus.ACTIVE;
         this.logger.log(`Activating subscription for payment: ${payment.id}`);
       }
@@ -79,6 +87,21 @@ export class UpdatePaymentFromWebhookUseCase
         this.logger.error(`Failed to update payment: ${payment.id}`);
         return notify.setBadRequest('Failed to update payment status');
       }
+
+      this.eventEmitter.emit('payment.success', {
+        userId: payment.userId,
+        externalSubscriptionId: stripeSubscriptionId,
+        status: PaymentStatusType.Succeeded,
+        startDate: new Date(invoiceData.period_start * 1000).toISOString(),
+        endDate: new Date(invoiceData.period_end * 1000).toISOString(),
+        planType: payment.planType,
+        paymentMethod: payment.payType,
+        paymentAmount: invoiceData.amount_paid / 100, // Stripe в центах
+        externalPaymentId: invoiceData.id,
+        billingDate: new Date(
+          invoiceData.status_transitions.paid_at * 1000,
+        ).toISOString(),
+      });
 
       this.logger.log(`Payment status updated to active: ${payment.id}`);
       return notify.setValue({ success: true, paymentId: payment.id });

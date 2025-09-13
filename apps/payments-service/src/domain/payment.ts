@@ -35,10 +35,10 @@ export class Payment {
   @Prop({ type: String, required: true })
   id: string;
 
-  @ApiProperty({ type: String, format: 'uuid' })
+  @ApiProperty({ type: Number, format: 'uuid' })
   @IsUUID()
-  @Prop({ type: String, required: true })
-  userId: string;
+  @Prop({ type: Number, required: true })
+  userId: number;
 
   @ApiProperty({ type: String })
   @IsString()

@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { SubscriptionStatus } from '../../../domain/payment';
 import { CustomLogger } from '@monitoring';
@@ -45,6 +44,7 @@ export class UpdateSubscriptionFromWebhookUseCase
 
     try {
       const subscriptionStatus = this.mapStripeStatusToLocal(stripeSubscription.status);
+
       await this.paymentRepository.updateByStripeId(stripeSubscription.id, {
         subscriptionStatus,
         status: this.mapSubscriptionStatusToPaymentStatus(subscriptionStatus),

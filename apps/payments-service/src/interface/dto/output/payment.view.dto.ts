@@ -6,8 +6,8 @@ export class PaymentViewDto {
   @ApiProperty({ type: String, format: 'uuid' })
   id: string;
 
-  @ApiProperty({ type: String })
-  userId: string;
+  @ApiProperty({ type: Number })
+  userId: number;
 
   @ApiProperty({ type: String })
   subscriptionId: string;

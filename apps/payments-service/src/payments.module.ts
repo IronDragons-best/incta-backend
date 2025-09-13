@@ -24,6 +24,7 @@ import { GetPaymentQuery } from './application/use-cases/queries/get-payment.que
 import { GetUserPaymentsQuery } from './application/use-cases/queries/get-user-payments.query';
 import { GetPaymentsBySubscriptionQuery } from './application/use-cases/queries/get-payments-by-subscription.query';
 import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-payments.query';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-pay
       appName: 'payments-service',
       validationSchema: monitoringValidationSchema,
     }),
+    EventEmitterModule.forRoot(),
     MonitoringModule.forRoot('payments-microservice'),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

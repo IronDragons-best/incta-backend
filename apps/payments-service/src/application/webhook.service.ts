@@ -12,6 +12,8 @@ import {
   HandlePaymentFailedUseCase,
   HandlePaymentFailedCommand,
 } from './use-cases/commands/handle-payment-failed.use-case';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { StripeInvoice, StripePaymentIntent } from '../domain/types/stripe.types';
 
 @Injectable()
 export class WebhookService {
@@ -22,6 +24,7 @@ export class WebhookService {
     private readonly updateSubscriptionFromWebhookUseCase: UpdateSubscriptionFromWebhookUseCase,
     private readonly updatePaymentFromWebhookUseCase: UpdatePaymentFromWebhookUseCase,
     private readonly handlePaymentFailedUseCase: HandlePaymentFailedUseCase,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async handleStripeWebhook(
@@ -45,20 +48,24 @@ export class WebhookService {
           await this.updateSubscriptionFromWebhookUseCase.execute(
             new UpdateSubscriptionFromWebhookCommand(event.data.object as any),
           );
+          console.log(event.data.object);
           break;
         case 'customer.subscription.deleted':
           await this.updateSubscriptionFromWebhookUseCase.execute(
             new UpdateSubscriptionFromWebhookCommand(event.data.object as any),
           );
+
           break;
         case 'payment_intent.payment_failed':
           await this.handlePaymentFailedUseCase.execute(
-            new HandlePaymentFailedCommand(event.data.object),
+            new HandlePaymentFailedCommand(event.data.object as StripePaymentIntent),
           );
           break;
         case 'invoice.paid':
           await this.updatePaymentFromWebhookUseCase.execute(
-            new UpdatePaymentFromWebhookCommand(event.data.object),
+            new UpdatePaymentFromWebhookCommand(
+              event.data.object as unknown as StripeInvoice,
+            ),
           );
           break;
         default:

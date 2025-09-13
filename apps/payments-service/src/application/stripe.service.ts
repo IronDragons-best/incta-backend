@@ -13,7 +13,7 @@ export class StripeService {
     });
   }
 
-  async createCustomer(email: string, userId: string): Promise<Stripe.Customer> {
+  async createCustomer(email: string, userId: number): Promise<Stripe.Customer> {
     return this.stripe.customers.create({
       email,
       metadata: { userId },

@@ -60,8 +60,6 @@ export interface PaymentFailedPayload {
   userId: number;
   externalSubscriptionId: string; // ID подписки у провайдера
   status: PaymentStatusType;
-  errorCode: string;
-  errorMessage: string;
   planType: PlanType;
   attemptedAmount: number;
   currency: string;
