@@ -16,10 +16,13 @@ import { PaymentRepository } from './infrastructure/payment.repository';
 import { SubscriptionCancelledUseCase } from './application/use-cases/subscription-cancelled.use-case';
 import { PaymentFailedUseCase } from './application/use-cases/payment-failed.use-case';
 import { AutoPaymentCancelledUseCase } from './application/use-cases/auto-payment-cancelled.use-case';
+import { CancelRenewalUseCase } from './application/use-cases/cancel-renewal.use-case';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     UsersModule,
+    HttpModule,
     TypeOrmModule.forFeature([UserSubscriptionEntity, PaymentInfoEntity]),
   ],
   providers: [
@@ -31,6 +34,7 @@ import { AutoPaymentCancelledUseCase } from './application/use-cases/auto-paymen
     PaymentRepository,
     PaymentSuccessUseCase,
     SubscriptionCancelledUseCase,
+    CancelRenewalUseCase,
     CreateSubscriptionUseCase,
     AutoPaymentCancelledUseCase,
     PaymentFailedUseCase,

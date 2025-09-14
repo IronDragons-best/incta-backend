@@ -33,4 +33,15 @@ export class SubscriptionRepository {
       : this.subscriptionRepository;
     return repository.save(subscription);
   }
+  async checkOwnership(subId: string, userId: number): Promise<boolean> {
+    const subscription = await this.subscriptionRepository.findOne({
+      where: { subscriptionId: subId },
+      select: ['id', 'userId'],
+    });
+
+    if (!subscription) {
+      return true;
+    }
+    return subscription.userId === userId;
+  }
 }

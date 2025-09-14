@@ -29,7 +29,7 @@ export class SubscriptionPlansHandler implements IQueryHandler<SubscriptionPlans
       await this.subscriptionQueryRepository.findByUserId(query.userId);
 
     const currentPlan =
-      subscriptionInfo?.status === SubscriptionStatusType.Active
+      subscriptionInfo?.status === SubscriptionStatusType.ACTIVE
         ? SubscriptionPlan.Business
         : SubscriptionPlan.Personal;
     const viewDto = PagedSubscriptionPlansViewDto.mapToView(

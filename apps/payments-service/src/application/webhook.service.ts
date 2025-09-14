@@ -38,7 +38,7 @@ export class WebhookService {
     try {
       const event = this.stripeService.constructWebhookEvent(body, signature);
       this.logger.log(`Received Stripe webhook: ${event.type}`);
-
+      console.log(event);
       switch (event.type) {
         case 'checkout.session.completed':
           await this.handleCheckoutSessionCompleted(event.data.object);
@@ -57,6 +57,7 @@ export class WebhookService {
 
           break;
         case 'payment_intent.payment_failed':
+          console.log('Payment failed for payment failed');
           await this.handlePaymentFailedUseCase.execute(
             new HandlePaymentFailedCommand(event.data.object as StripePaymentIntent),
           );

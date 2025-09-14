@@ -19,6 +19,7 @@ export class PaymentSuccessListener extends PaymentBaseRabbitListener {
 
   @OnEvent('payment.success')
   handlePaymentSuccess(event: PaymentSuccessEvent) {
+    console.log('from listener success ', event.payload);
     const record = new RmqRecordBuilder(event.payload)
       .setOptions({
         deliveryMode: 2,

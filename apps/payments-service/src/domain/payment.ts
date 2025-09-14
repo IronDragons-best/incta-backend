@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
-import { PaymentMethodType, PaymentStatusType } from '@common';
+import { PaymentMethodType, PaymentStatusType, SubscriptionStatusType } from '@common';
 
 export type PaymentDocument = Payment & Document;
 
@@ -10,16 +10,6 @@ export enum PaymentStatus {
   CANCEL = 'CANCEL',
   PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
-}
-
-export enum SubscriptionStatus {
-  ACTIVE = 'ACTIVE',
-  CANCELED = 'CANCELED',
-  PAST_DUE = 'PAST_DUE',
-  INCOMPLETE = 'INCOMPLETE',
-  INCOMPLETE_EXPIRED = 'INCOMPLETE_EXPIRED',
-  TRIALING = 'TRIALING',
-  UNPAID = 'UNPAID',
 }
 
 export enum PlanType {
@@ -70,11 +60,11 @@ export class Payment {
   @Prop({ type: String, required: false })
   stripeCheckoutSessionId?: string;
 
-  @ApiProperty({ enum: SubscriptionStatus })
-  @IsEnum(SubscriptionStatus)
+  @ApiProperty({ enum: SubscriptionStatusType })
+  @IsEnum(SubscriptionStatusType)
   @IsOptional()
-  @Prop({ type: String, enum: SubscriptionStatus, required: false })
-  subscriptionStatus?: SubscriptionStatus;
+  @Prop({ type: String, enum: SubscriptionStatusType, required: false })
+  subscriptionStatus?: SubscriptionStatusType;
 
   @ApiProperty({ enum: PlanType })
   @IsEnum(PlanType)

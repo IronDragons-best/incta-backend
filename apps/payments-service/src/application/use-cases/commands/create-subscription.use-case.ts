@@ -3,8 +3,12 @@ import { StripeService } from '../../stripe.service';
 import { CreatePaymentInputDto } from '../../../interface/dto/input/payment.create.input.dto';
 import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
 import { PaymentsConfigService } from '@common/config/payments.service';
-import { NotificationService, PaymentMethodType, PaymentStatusType } from '@common';
-import { SubscriptionStatus } from '../../../domain/payment';
+import {
+  NotificationService,
+  PaymentMethodType,
+  PaymentStatusType,
+  SubscriptionStatusType,
+} from '@common';
 import { v4 as uuidv4 } from 'uuid';
 import { CustomLogger } from '@monitoring';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
@@ -51,7 +55,7 @@ export class CreateSubscriptionUseCase
         stripeCustomerId: stripeCustomerId,
         stripePriceId: priceId,
         stripeCheckoutSessionId: checkoutSessionId,
-        subscriptionStatus: SubscriptionStatus.INCOMPLETE,
+        subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
         planType: createPaymentDto.planType,
         amount: amount,
         currency: currency,

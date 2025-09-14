@@ -31,7 +31,7 @@ export class PaymentInfoEntity extends BasicEntity {
   billingDate: Date;
 
   @Column({ name: 'subscription_id' })
-  subscriptionId: string;
+  subscriptionId: number;
 
   @ManyToOne(() => UserSubscriptionEntity, (sub) => sub.payments)
   @JoinColumn({ name: 'subscription_id' })

@@ -56,6 +56,7 @@ export class PaymentsController {
   @Post('payments')
   @CreatePaymentSwagger()
   async createPayment(@Body() createPaymentDto: CreatePaymentInputDto) {
+    console.log('hello');
     return this.commandBus.execute(new CreatePaymentCommand(createPaymentDto));
   }
 

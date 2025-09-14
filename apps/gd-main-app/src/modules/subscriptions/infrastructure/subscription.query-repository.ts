@@ -25,7 +25,7 @@ export class SubscriptionQueryRepository {
     const subscription = await this.subscription.findOne({
       where: {
         userId,
-        status: SubscriptionStatusType.Active,
+        status: SubscriptionStatusType.ACTIVE,
         deletedAt: IsNull(),
       },
       order: {

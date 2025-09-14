@@ -48,13 +48,20 @@ export class OwnershipGuard implements CanActivate {
     const request: Request = context.switchToHttp().getRequest();
     const user = request.user as { id: number };
     const paramName = config.paramName || 'id';
-    const resourceId = Number.parseInt(request.params[paramName]);
+    const rawId = request.params[paramName];
+    let resourceId: string | number;
+    if (/^\d+$/.test(rawId)) {
+      resourceId = Number.parseInt(rawId, 10);
+    } else {
+      resourceId = rawId; // оставляем строкой (например, UUID Stripe)
+    }
 
     if (!user || !user.id) {
       throw new ForbiddenException('User not authenticated');
     }
 
-    if (!resourceId || isNaN(resourceId)) {
+    console.log(resourceId);
+    if (!resourceId) {
       throw new BadRequestException('Invalid parameter');
     }
 

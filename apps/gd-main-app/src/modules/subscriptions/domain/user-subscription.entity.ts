@@ -18,7 +18,7 @@ export class UserSubscriptionEntity extends BasicEntity {
   @Column({ type: 'enum', enum: PlanType })
   planType: PlanType;
 
-  @Column({ type: 'enum', enum: PaymentStatusType })
+  @Column({ type: 'enum', enum: SubscriptionStatusType })
   status: SubscriptionStatusType;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -52,7 +52,7 @@ export class UserSubscriptionEntity extends BasicEntity {
     sub.userId = dto.userId;
     sub.paymentMethod = dto.paymentMethod;
     sub.planType = dto.planType;
-    sub.status = SubscriptionStatusType.Pending;
+    sub.status = SubscriptionStatusType.INCOMPLETE;
     sub.subscriptionId = dto.subscriptionId;
     return sub;
   }

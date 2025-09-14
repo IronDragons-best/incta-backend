@@ -40,7 +40,7 @@ export class SubscriptionCancelledUseCase
       }
 
       subscription.update({
-        status: SubscriptionStatusType.Cancelled,
+        status: SubscriptionStatusType.CANCELED,
         endDate: new Date(),
       });
       subscription.user.updateSubscriptionStatus(false);

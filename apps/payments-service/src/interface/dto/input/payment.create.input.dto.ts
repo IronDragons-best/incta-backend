@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsInt } from 'class-validator';
 import { PaymentMethodType } from '@common';
 import { PlanType } from '../../../domain/payment';
 
 export class CreatePaymentInputDto {
   @ApiProperty({ type: Number, description: 'User ID' })
-  @IsString()
+  @IsInt()
   userId: number;
 
   @ApiProperty({ type: String, format: 'email', description: 'User email address' })

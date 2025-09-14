@@ -1,8 +1,13 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
-import { Payment, SubscriptionStatus } from '../../../domain/payment';
+import { Payment } from '../../../domain/payment';
 import { CustomLogger } from '@monitoring';
-import { NotificationService, PaymentStatusType, PlanType } from '@common';
+import {
+  NotificationService,
+  PaymentStatusType,
+  PlanType,
+  SubscriptionStatusType,
+} from '@common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentFailedEvent } from '../../../../core/events/payment-failed.event';
 import { StripePaymentIntent } from '../../../domain/types/stripe.types';
@@ -73,7 +78,7 @@ export class HandlePaymentFailedUseCase
 
       const updatedPayment = await this.paymentRepository.update(payment.id, {
         status: PaymentStatusType.Failed,
-        subscriptionStatus: SubscriptionStatus.CANCELED,
+        subscriptionStatus: SubscriptionStatusType.CANCELED,
         canceledAt: new Date(),
       });
 

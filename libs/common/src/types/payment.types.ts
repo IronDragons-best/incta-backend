@@ -1,6 +1,7 @@
 export enum PlanType {
-  Monthly = 'monthly',
-  Yearly = 'yearly',
+  MONTHLY = 'monthly',
+  THREE_MONTH = '3month',
+  SIX_MONTH = '6month',
 }
 
 export enum SubscriptionPlan {
@@ -9,12 +10,13 @@ export enum SubscriptionPlan {
 }
 
 export enum SubscriptionStatusType {
-  'Pending' = 'pending', // Создана, ожидает оплаты
-  'Active' = 'active', // Активна и оплачена
-  'Expired' = 'expired', // Истекла естественным путем
-  'Cancelled' = 'cancelled', // Принудительно отменена
-  'PastDue' = 'past_due', // Просрочена (несколько неудачных оплат)
-  'Failed' = 'failed', // Если оплата не прошла
+  ACTIVE = 'ACTIVE',
+  CANCELED = 'CANCELED',
+  PAST_DUE = 'PAST_DUE',
+  INCOMPLETE = 'INCOMPLETE',
+  INCOMPLETE_EXPIRED = 'INCOMPLETE_EXPIRED',
+  TRIALING = 'TRIALING',
+  UNPAID = 'UNPAID',
 }
 
 export enum PaymentStatusType {
@@ -76,6 +78,7 @@ export interface SubscriptionCancelledPayload {
   userId: number;
   externalSubscriptionId: string;
   cancelledAt: string; // ISO string
+  status: SubscriptionStatusType;
   reason?: string;
   // Для обновления status в 'Cancelled' и установки canceledAt
 }

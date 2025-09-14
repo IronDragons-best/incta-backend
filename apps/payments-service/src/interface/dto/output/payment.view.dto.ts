@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PaymentMethodType, PaymentStatusType } from '@common';
-import { Payment, PlanType, SubscriptionStatus } from '../../../domain/payment';
+import { PaymentMethodType, PaymentStatusType, SubscriptionStatusType } from '@common';
+import { Payment, PlanType } from '../../../domain/payment';
 
 export class PaymentViewDto {
   @ApiProperty({ type: String, format: 'uuid' })
@@ -41,11 +41,11 @@ export class PaymentViewDto {
   clientSecret?: string;
 
   @ApiProperty({
-    enum: SubscriptionStatus,
+    enum: SubscriptionStatusType,
     nullable: true,
     description: 'Subscription status',
   })
-  subscriptionStatus?: SubscriptionStatus;
+  subscriptionStatus?: SubscriptionStatusType;
 
   @ApiProperty({ type: Date, nullable: true, description: 'Current period start date' })
   currentPeriodStart?: Date;
@@ -86,7 +86,10 @@ export class PaymentViewDto {
   private calculateIsActive(payment: Payment): boolean {
     if (!payment.subscriptionStatus) return false;
 
-    const activeStatuses = [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIALING];
+    const activeStatuses = [
+      SubscriptionStatusType.ACTIVE,
+      SubscriptionStatusType.TRIALING,
+    ];
     const isStatusActive = activeStatuses.includes(payment.subscriptionStatus);
     const isNotCanceled = !payment.canceledAt;
     const isNotExpired =

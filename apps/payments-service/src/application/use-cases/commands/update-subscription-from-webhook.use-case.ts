@@ -1,8 +1,10 @@
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
-import { SubscriptionStatus } from '../../../domain/payment';
+
 import { CustomLogger } from '@monitoring';
-import { NotificationService, PaymentStatusType } from '@common';
+import { NotificationService, PaymentStatusType, SubscriptionStatusType } from '@common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SubscriptionCancelledEvent } from '../../../../core/events/subscription-cancelled.event';
 
 export class UpdateSubscriptionFromWebhookCommand {
   constructor(
@@ -12,6 +14,10 @@ export class UpdateSubscriptionFromWebhookCommand {
       current_period_start: number;
       current_period_end: number;
       canceled_at?: number | null;
+      cancellation_details?: {
+        cancellation_reason?: 'user_request' | 'automatic' | 'fraud' | 'non_payment';
+        comment?: string;
+      } | null;
     },
   ) {}
 }
@@ -24,6 +30,7 @@ export class UpdateSubscriptionFromWebhookUseCase
     private readonly paymentRepository: PaymentRepository,
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger.setContext('UpdateSubscriptionFromWebhookUseCase');
   }
@@ -55,6 +62,23 @@ export class UpdateSubscriptionFromWebhookUseCase
           : undefined,
       });
 
+      if (
+        subscriptionStatus === SubscriptionStatusType.CANCELED ||
+        subscriptionStatus === SubscriptionStatusType.INCOMPLETE_EXPIRED ||
+        subscriptionStatus === SubscriptionStatusType.PAST_DUE ||
+        subscriptionStatus === SubscriptionStatusType.UNPAID
+      ) {
+        this.eventEmitter.emit(
+          'subscription.cancelled',
+          new SubscriptionCancelledEvent({
+            userId: subscription.userId,
+            externalSubscriptionId: subscription.id,
+            cancelledAt: new Date().toISOString(),
+            status: subscriptionStatus,
+            reason: stripeSubscription.cancellation_details?.cancellation_reason,
+          }),
+        );
+      }
       return notify.setValue({ message: 'Subscription updated successfully' });
     } catch (error) {
       this.logger.error('Failed to update subscription from webhook', error);
@@ -62,31 +86,31 @@ export class UpdateSubscriptionFromWebhookUseCase
     }
   }
 
-  private mapStripeStatusToLocal(stripeStatus: string): SubscriptionStatus {
-    const statusMap: Record<string, SubscriptionStatus> = {
-      active: SubscriptionStatus.ACTIVE,
-      canceled: SubscriptionStatus.CANCELED,
-      incomplete: SubscriptionStatus.INCOMPLETE,
-      incomplete_expired: SubscriptionStatus.INCOMPLETE_EXPIRED,
-      past_due: SubscriptionStatus.PAST_DUE,
-      trialing: SubscriptionStatus.TRIALING,
-      unpaid: SubscriptionStatus.UNPAID,
+  private mapStripeStatusToLocal(stripeStatus: string): SubscriptionStatusType {
+    const statusMap: Record<string, SubscriptionStatusType> = {
+      active: SubscriptionStatusType.ACTIVE,
+      canceled: SubscriptionStatusType.CANCELED,
+      incomplete: SubscriptionStatusType.INCOMPLETE,
+      incomplete_expired: SubscriptionStatusType.INCOMPLETE_EXPIRED,
+      past_due: SubscriptionStatusType.PAST_DUE,
+      trialing: SubscriptionStatusType.TRIALING,
+      unpaid: SubscriptionStatusType.UNPAID,
     };
 
-    return statusMap[stripeStatus] || SubscriptionStatus.INCOMPLETE;
+    return statusMap[stripeStatus] || SubscriptionStatusType.INCOMPLETE;
   }
 
   private mapSubscriptionStatusToPaymentStatus(
-    subscriptionStatus: SubscriptionStatus,
+    subscriptionStatus: SubscriptionStatusType,
   ): PaymentStatusType {
-    const statusMap: Record<SubscriptionStatus, PaymentStatusType> = {
-      [SubscriptionStatus.ACTIVE]: PaymentStatusType.Succeeded,
-      [SubscriptionStatus.TRIALING]: PaymentStatusType.Succeeded,
-      [SubscriptionStatus.CANCELED]: PaymentStatusType.Cancelled,
-      [SubscriptionStatus.INCOMPLETE]: PaymentStatusType.Processing,
-      [SubscriptionStatus.INCOMPLETE_EXPIRED]: PaymentStatusType.Failed,
-      [SubscriptionStatus.PAST_DUE]: PaymentStatusType.Failed,
-      [SubscriptionStatus.UNPAID]: PaymentStatusType.Failed,
+    const statusMap: Record<SubscriptionStatusType, PaymentStatusType> = {
+      [SubscriptionStatusType.ACTIVE]: PaymentStatusType.Succeeded,
+      [SubscriptionStatusType.TRIALING]: PaymentStatusType.Succeeded,
+      [SubscriptionStatusType.CANCELED]: PaymentStatusType.Cancelled,
+      [SubscriptionStatusType.INCOMPLETE]: PaymentStatusType.Processing,
+      [SubscriptionStatusType.INCOMPLETE_EXPIRED]: PaymentStatusType.Failed,
+      [SubscriptionStatusType.PAST_DUE]: PaymentStatusType.Failed,
+      [SubscriptionStatusType.UNPAID]: PaymentStatusType.Failed,
     };
 
     return statusMap[subscriptionStatus] || PaymentStatusType.Processing;

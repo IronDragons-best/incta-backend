@@ -41,8 +41,8 @@ export class PaymentFailedUseCase implements ICommandHandler<PaymentFailedComman
 
       let newSubscriptionStatus = sub.status;
 
-      if (sub.status === SubscriptionStatusType.Pending) {
-        newSubscriptionStatus = SubscriptionStatusType.Failed;
+      if (sub.status === SubscriptionStatusType.INCOMPLETE) {
+        newSubscriptionStatus = SubscriptionStatusType.UNPAID;
       }
 
       sub.update({
@@ -51,7 +51,7 @@ export class PaymentFailedUseCase implements ICommandHandler<PaymentFailedComman
 
       const paymentInfo = PaymentInfoEntity.createInstance({
         userId: payload.userId,
-        subscriptionId: payload.externalSubscriptionId,
+        subscriptionId: sub.id,
         amount: payload.attemptedAmount,
         planType: payload.planType,
         paymentMethod: payload.paymentMethod,

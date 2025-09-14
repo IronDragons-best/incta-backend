@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +20,13 @@ import { GetNewSubscriptionQuery } from '../application/query-handlers/get-new-s
 import { AppNotification } from '@common';
 import { SubscriptionPlansQuery } from '../application/query-handlers/subscription-plans.query-handler';
 import { SubscriptionPlansSwagger } from '../../../../core/decorators/swagger-settings/subscriptions/subscription-plans.swagger-decorator';
+import {
+  CheckOwnership,
+  OwnershipGuard,
+} from '../../../../core/guards/ownership/ownership.guard';
+import { SubscriptionRepository } from '../infrastructure/subscription.repository';
+import { CancelRenewalCommand } from '../application/use-cases/cancel-renewal.use-case';
+import { CancelRenewalSwagger } from '../../../../core/decorators/swagger-settings/subscriptions/cancel-renewal.swagger.decorator';
 
 @Controller('subscriptions')
 export class SubscriptionController {
@@ -36,12 +45,7 @@ export class SubscriptionController {
   ) {
     const result: AppNotification<{ subscriptionId: number; checkoutUrl: string }> =
       await this.commandBus.execute(
-        new CreateSubscriptionCommand(
-          user.id,
-          dto.planType,
-          dto.paymentMethod,
-          dto.duration,
-        ),
+        new CreateSubscriptionCommand(user.id, dto.planType, dto.paymentMethod),
       );
     if (result.hasErrors()) {
       return result;
@@ -56,7 +60,16 @@ export class SubscriptionController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Delete('auto-renewal/:subscriptionId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard, OwnershipGuard)
+  @CheckOwnership({ repository: SubscriptionRepository, paramName: 'subscriptionId' })
+  @CancelRenewalSwagger()
+  async cancelAutoRenewal(@Param('subscriptionId') subscriptionId: string) {
+    console.log(subscriptionId);
+    await this.commandBus.execute(new CancelRenewalCommand(subscriptionId));
+  }
+
   @SubscriptionPlansSwagger()
   @HttpCode(HttpStatus.OK)
   @Get('tariffs')

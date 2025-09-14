@@ -1,10 +1,9 @@
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { StripeService } from '../../stripe.service';
 import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
-import { SubscriptionStatus } from '../../../domain/payment';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
-import { NotificationService, PaymentStatusType } from '@common';
+import { NotificationService, SubscriptionStatusType } from '@common';
 
 export class CancelSubscriptionCommand {
   constructor(public readonly id: string) {}
@@ -35,7 +34,7 @@ export class CancelSubscriptionUseCase
     }
 
     try {
-      if (subscription.subscriptionStatus === SubscriptionStatus.INCOMPLETE) {
+      if (subscription.subscriptionStatus === SubscriptionStatusType.INCOMPLETE) {
         if (subscription.stripeCheckoutSessionId) {
           try {
             await this.stripeService.expireCheckoutSession(

@@ -11,6 +11,7 @@ import { DataSource } from 'typeorm';
 import { PaymentInfoEntity } from '../../domain/payment-info.entity';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import { PaymentRepository } from '../../infrastructure/payment.repository';
+import { NotFoundException } from '@nestjs/common';
 
 export class PaymentSuccessCommand {
   constructor(public dto: PaymentSuccessPayload) {}
@@ -45,8 +46,8 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
 
       let newSubscriptionStatus = subscription.status;
 
-      if (subscription.status === SubscriptionStatusType.Pending) {
-        newSubscriptionStatus = SubscriptionStatusType.Active;
+      if (subscription.status === SubscriptionStatusType.INCOMPLETE) {
+        newSubscriptionStatus = SubscriptionStatusType.ACTIVE;
       }
 
       subscription.update({
@@ -61,7 +62,7 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
 
       const payment = PaymentInfoEntity.createInstance({
         userId: subscription.userId,
-        subscriptionId: subscription.subscriptionId,
+        subscriptionId: subscription.id,
         amount: dto.paymentAmount,
         planType: dto.planType,
         paymentMethod: dto.paymentMethod,

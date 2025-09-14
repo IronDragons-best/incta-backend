@@ -349,7 +349,7 @@ export class User extends BasicEntity {
   get currentSubscription(): UserSubscriptionEntity | null {
     return (
       this.subscriptions?.find(
-        (sub) => sub.status === SubscriptionStatusType.Active && sub.endDate > new Date(),
+        (sub) => sub.status === SubscriptionStatusType.ACTIVE && sub.endDate > new Date(),
       ) || null
     );
   }

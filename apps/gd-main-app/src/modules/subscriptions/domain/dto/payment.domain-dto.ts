@@ -2,7 +2,7 @@ import { PaymentMethodType, PaymentStatusType, PlanType } from '@common';
 
 export interface CreatePaymentDto {
   userId: number;
-  subscriptionId: string;
+  subscriptionId: number;
   amount: number;
   planType: PlanType;
   paymentMethod: PaymentMethodType;

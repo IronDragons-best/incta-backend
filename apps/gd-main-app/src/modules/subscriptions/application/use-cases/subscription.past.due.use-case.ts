@@ -37,7 +37,7 @@ export class SubscriptionPastDueUseCase
         );
       }
       subscription.update({
-        status: SubscriptionStatusType.PastDue,
+        status: SubscriptionStatusType.PAST_DUE,
         endDate: new Date(),
       });
       subscription.user.updateSubscriptionStatus(false);

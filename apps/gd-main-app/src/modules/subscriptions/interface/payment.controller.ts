@@ -37,10 +37,10 @@ export class PaymentEventsController {
     @Payload() data: PaymentSuccessPayload,
     @Ctx() context: RmqContext,
   ) {
+    console.log('somedata ', data);
     const userId = data.userId;
-    console.log(context, data);
     this.logger.log(`Processing payment success for user ${userId}`);
-    console.log('hello');
+    console.log('payment success');
     try {
       await this.commandBus.execute(new PaymentSuccessCommand(data));
       this.handleMessage(context, `user-${userId}`, true);
@@ -86,7 +86,7 @@ export class PaymentEventsController {
       this.handleMessage(context, `user-${userId}`, false);
     }
   }
-
+  //DEPRECATED
   @EventPattern('subscription.expired', Transport.RMQ)
   async handleSubscriptionExpired(
     @Payload() data: SubscriptionExpiredPayload,
@@ -105,7 +105,7 @@ export class PaymentEventsController {
       this.handleMessage(context, `user-${userId}`, false);
     }
   }
-
+  //DEPRECATED
   @EventPattern('subscription.past_due', Transport.RMQ)
   async handleSubscriptionPastDue(
     @Payload() data: SubscriptionPastDuePayload,
@@ -125,6 +125,7 @@ export class PaymentEventsController {
     }
   }
 
+  //DEPRECATED
   @EventPattern('subscription.auto_payment_cancelled', Transport.RMQ)
   async handleSubscriptionAutoPaymentCancelled(
     @Payload() data: SubscriptionAutoPaymentCancelledPayload,

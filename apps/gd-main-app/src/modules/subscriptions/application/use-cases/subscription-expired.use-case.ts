@@ -38,7 +38,7 @@ export class SubscriptionExpiredUseCase
         );
       }
       subscription.update({
-        status: SubscriptionStatusType.Expired,
+        status: SubscriptionStatusType.INCOMPLETE_EXPIRED,
         endDate: new Date(),
       });
       subscription.user.updateSubscriptionStatus(false);

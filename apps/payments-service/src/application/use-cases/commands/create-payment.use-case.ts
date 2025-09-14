@@ -1,4 +1,3 @@
-import { Injectable } from '@nestjs/common';
 import { StripeService } from '../../stripe.service';
 import {
   CreateSubscriptionUseCase,
@@ -54,9 +53,9 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
         return notify.setBadRequest('Failed to create checkout session');
       }
 
-      const res = await this.createSubscriptionUseCase.execute(
+      const res = (await this.createSubscriptionUseCase.execute(
         new CreateSubscriptionCommand(createPaymentDto, customer.id, session.id),
-      ) as AppNotification<PaymentViewDto>;
+      )) as AppNotification<PaymentViewDto>;
 
       const data = res.getValue();
 
