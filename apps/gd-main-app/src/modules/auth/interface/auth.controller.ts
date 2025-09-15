@@ -269,7 +269,7 @@ export class AuthController {
     if (!tokens) {
       return result.setServerError('Something went wrong while retrieving tokens');
     }
-    const successRedirectUrl = `${this.configService.productionUrl}/auth/callback#accessToken=${tokens.accessToken}`;
+    const successRedirectUrl = `${this.configService.productionUrl}/auth/callback`;
 
     return new TokenResponseDto(
       tokens.accessToken,

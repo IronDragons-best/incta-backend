@@ -11,13 +11,13 @@ import { GetNewSubscriptionHandler } from './application/query-handlers/get-new-
 import { SubscriptionQueryRepository } from './infrastructure/subscription.query-repository';
 import { SubscriptionPlansHandler } from './application/query-handlers/subscription-plans.query-handler';
 import { PaymentEventsController } from './interface/payment.controller';
-import { PaymentSuccessUseCase } from './application/use-cases/payment-success.use-case';
 import { PaymentRepository } from './infrastructure/payment.repository';
 import { SubscriptionCancelledUseCase } from './application/use-cases/subscription-cancelled.use-case';
 import { PaymentFailedUseCase } from './application/use-cases/payment-failed.use-case';
 import { AutoPaymentCancelledUseCase } from './application/use-cases/auto-payment-cancelled.use-case';
 import { CancelRenewalUseCase } from './application/use-cases/cancel-renewal.use-case';
 import { HttpModule } from '@nestjs/axios';
+import { PaymentSuccessUseCase } from './application/use-cases/payment-success.use-case';
 
 @Module({
   imports: [

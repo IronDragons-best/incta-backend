@@ -11,7 +11,6 @@ import { DataSource } from 'typeorm';
 import { PaymentInfoEntity } from '../../domain/payment-info.entity';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import { PaymentRepository } from '../../infrastructure/payment.repository';
-import { NotFoundException } from '@nestjs/common';
 
 export class PaymentSuccessCommand {
   constructor(public dto: PaymentSuccessPayload) {}
