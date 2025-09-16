@@ -16,6 +16,7 @@ export enum PlanType {
   MONTHLY = 'monthly',
   THREE_MONTH = '3month',
   SIX_MONTH = '6month',
+  YEARLY = 'yearly',
 }
 
 @Schema({ timestamps: true })
@@ -89,6 +90,11 @@ export class Payment {
   @IsOptional()
   @Prop({ type: Date, required: false })
   canceledAt?: Date;
+
+  @ApiProperty({ type: Boolean })
+  @IsOptional()
+  @Prop({ type: Boolean, required: false, default: false })
+  cancelAtPeriodEnd?: boolean;
 
   @ApiProperty({ type: Date })
   @IsDate()

@@ -48,10 +48,29 @@ export class CancelSubscriptionUseCase
           }
         }
       } else if (subscription.stripeSubscriptionId) {
-        await this.stripeService.cancelSubscription(subscription.stripeSubscriptionId);
+        const canceledStripeSubscription = await this.stripeService.cancelSubscription(subscription.stripeSubscriptionId);
         this.logger.log(
           `Disabled auto-renewal for Stripe subscription: ${subscription.stripeSubscriptionId}`,
         );
+
+        const updateData: any = {
+          canceledAt: canceledStripeSubscription.canceled_at
+            ? new Date(canceledStripeSubscription.canceled_at * 1000)
+            : new Date(),
+        };
+
+        if (canceledStripeSubscription.start_date) {
+          updateData.currentPeriodStart = new Date(canceledStripeSubscription.start_date * 1000);
+        }
+
+        if (canceledStripeSubscription.cancel_at && canceledStripeSubscription.cancel_at_period_end) {
+          updateData.currentPeriodEnd = new Date(canceledStripeSubscription.cancel_at * 1000);
+        }
+
+        const updatedSubscription = await this.paymentRepository.update(id, updateData);
+
+        this.logger.log(`Successfully disabled auto-renewal for subscription: ${id}`);
+        return notify.setValue(new PaymentViewDto(updatedSubscription!));
       }
 
       const updatedSubscription = await this.paymentRepository.update(id, {

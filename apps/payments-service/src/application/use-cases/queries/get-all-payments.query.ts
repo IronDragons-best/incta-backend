@@ -46,19 +46,41 @@ export class GetAllPaymentsQuery implements IQueryHandler<GetAllPaymentsQueryCom
     offset: number,
     limit: number,
   ): Promise<Payment[]> {
+    const filters = {
+      userId: queryDto.userId,
+      payType: queryDto.payType,
+      status: queryDto.status,
+      subscriptionId: queryDto.subscriptionId,
+      planType: queryDto.planType,
+    };
+
     if (!this.hasFilters(queryDto)) {
       return this.paymentRepository.findAll(offset, limit);
     }
 
-    return this.paymentRepository.findAll(offset, limit);
+    return this.paymentRepository.findWithFilters(
+      filters,
+      offset,
+      limit,
+      queryDto.sortBy,
+      queryDto.sortDirection as 'ASC' | 'DESC'
+    );
   }
 
   private async getFilteredPaymentsCount(queryDto: PaymentQueryDto): Promise<number> {
+    const filters = {
+      userId: queryDto.userId,
+      payType: queryDto.payType,
+      status: queryDto.status,
+      subscriptionId: queryDto.subscriptionId,
+      planType: queryDto.planType,
+    };
+
     if (!this.hasFilters(queryDto)) {
       return this.paymentRepository.count();
     }
 
-    return this.paymentRepository.count();
+    return this.paymentRepository.countWithFilters(filters);
   }
 
   private hasFilters(queryDto: PaymentQueryDto): boolean {
@@ -66,7 +88,8 @@ export class GetAllPaymentsQuery implements IQueryHandler<GetAllPaymentsQueryCom
       queryDto.userId ||
       queryDto.payType ||
       queryDto.status ||
-      queryDto.subscriptionId
+      queryDto.subscriptionId ||
+      queryDto.planType
     );
   }
 }

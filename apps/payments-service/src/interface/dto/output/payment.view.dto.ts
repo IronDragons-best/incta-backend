@@ -16,7 +16,7 @@ export class PaymentViewDto {
   createdAt: Date;
 
   @ApiProperty({ type: Date, nullable: true })
-  expiresAt?: Date;
+  expiresAt?: Date | null;
 
   @ApiProperty({ enum: PaymentMethodType })
   payType: PaymentMethodType;
@@ -25,7 +25,7 @@ export class PaymentViewDto {
   planType?: PlanType;
 
   @ApiProperty({ type: String, nullable: true })
-  subType?: string;
+  subType?: string | null;
 
   @ApiProperty({ enum: PaymentStatusType })
   status: PaymentStatusType;
@@ -33,12 +33,6 @@ export class PaymentViewDto {
   @ApiProperty({ type: Number, description: 'Sum of payment in cents' })
   amount: number;
 
-  @ApiProperty({
-    type: String,
-    nullable: true,
-    description: 'Client secret for end payment',
-  })
-  clientSecret?: string;
 
   @ApiProperty({
     enum: SubscriptionStatusType,
@@ -48,13 +42,13 @@ export class PaymentViewDto {
   subscriptionStatus?: SubscriptionStatusType;
 
   @ApiProperty({ type: Date, nullable: true, description: 'Current period start date' })
-  currentPeriodStart?: Date;
+  currentPeriodStart?: Date | null;
 
   @ApiProperty({ type: Date, nullable: true, description: 'Current period end date' })
-  currentPeriodEnd?: Date;
+  currentPeriodEnd?: Date | null;
 
   @ApiProperty({ type: Date, nullable: true, description: 'Cancellation date' })
-  canceledAt?: Date;
+  canceledAt?: Date | null;
 
   @ApiProperty({ type: Boolean, description: 'Is subscription currently active' })
   isActive: boolean;
@@ -67,17 +61,17 @@ export class PaymentViewDto {
     this.userId = payment.userId;
     this.subscriptionId = payment.subscriptionId || '';
     this.createdAt = payment.createdAt;
-    this.expiresAt = payment.expiresAt;
+    this.expiresAt = payment.expiresAt || null;
     this.payType = payment.payType;
     this.planType = payment.planType;
-    this.subType = payment.subType;
+    this.subType = payment.subType || null;
     this.status = payment.status;
     this.amount = payment.amount;
 
     this.subscriptionStatus = payment.subscriptionStatus;
-    this.currentPeriodStart = payment.currentPeriodStart;
-    this.currentPeriodEnd = payment.currentPeriodEnd;
-    this.canceledAt = payment.canceledAt;
+    this.currentPeriodStart = payment.currentPeriodStart || null;
+    this.currentPeriodEnd = payment.currentPeriodEnd || null;
+    this.canceledAt = payment.canceledAt || null;
 
     this.isActive = this.calculateIsActive(payment);
     this.isExpired = this.calculateIsExpired(payment);
@@ -91,11 +85,10 @@ export class PaymentViewDto {
       SubscriptionStatusType.TRIALING,
     ];
     const isStatusActive = activeStatuses.includes(payment.subscriptionStatus);
-    const isNotCanceled = !payment.canceledAt;
     const isNotExpired =
       !payment.currentPeriodEnd || payment.currentPeriodEnd > new Date();
 
-    return isStatusActive && isNotCanceled && isNotExpired;
+    return isStatusActive && isNotExpired;
   }
 
   private calculateIsExpired(payment: Payment): boolean {

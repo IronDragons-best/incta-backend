@@ -1,11 +1,15 @@
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
-import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
+import { PaymentListResponseDto } from '../../../interface/dto/output/payment.view.dto';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
 import { NotificationService } from '@common';
 
 export class GetPaymentsBySubscriptionQueryCommand {
-  constructor(public readonly subscriptionId: string) {}
+  constructor(
+    public readonly subscriptionId: string,
+    public readonly page: number = 1,
+    public readonly limit: number = 50
+  ) {}
 }
 
 @QueryHandler(GetPaymentsBySubscriptionQueryCommand)
@@ -21,12 +25,18 @@ export class GetPaymentsBySubscriptionQuery
   }
 
   async execute(command: GetPaymentsBySubscriptionQueryCommand): Promise<any> {
-    const { subscriptionId } = command;
+    const { subscriptionId, page, limit } = command;
     const notify = this.notification.create();
 
     try {
-      const payments = await this.paymentRepository.findBySubscriptionId(subscriptionId);
-      const result = payments.map((payment) => new PaymentViewDto(payment));
+      const offset = (page - 1) * limit;
+
+      const [payments, total] = await Promise.all([
+        this.paymentRepository.findBySubscriptionId(subscriptionId, offset, limit),
+        this.paymentRepository.countBySubscriptionId(subscriptionId),
+      ]);
+
+      const result = new PaymentListResponseDto(payments, total, page, limit);
       return notify.setValue(result);
     } catch (error) {
       this.logger.error('Failed to get payments by subscription', error);

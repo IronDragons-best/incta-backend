@@ -30,6 +30,7 @@ import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
 import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
 import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
 import { PaymentQueryDto } from './dto/input/payment.query.dto';
+import { PaginationQueryDto } from './dto/input/pagination.query.dto';
 import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get-all-payments.query';
 import { GetUserPaymentsQueryCommand } from '../application/use-cases/queries/get-user-payments.query';
 import { GetPaymentsBySubscriptionQueryCommand } from '../application/use-cases/queries/get-payments-by-subscription.query';
@@ -74,15 +75,23 @@ export class PaymentsController {
 
   @Get('users/:userId/payments')
   @GetUserPaymentsSwagger()
-  async getUserPayments(@Param('userId') userId: string) {
-    return this.queryBus.execute(new GetUserPaymentsQueryCommand(userId));
+  async getUserPayments(
+    @Param('userId') userId: string,
+    @Query() query: PaginationQueryDto
+  ) {
+    return this.queryBus.execute(
+      new GetUserPaymentsQueryCommand(parseInt(userId), query.page, query.limit)
+    );
   }
 
   @Get('subscriptions/:subscriptionId/payments')
   @GetPaymentsBySubscriptionSwagger()
-  async getPaymentsBySubscription(@Param('subscriptionId') subscriptionId: string) {
+  async getPaymentsBySubscription(
+    @Param('subscriptionId') subscriptionId: string,
+    @Query() query: PaginationQueryDto
+  ) {
     return this.queryBus.execute(
-      new GetPaymentsBySubscriptionQueryCommand(subscriptionId),
+      new GetPaymentsBySubscriptionQueryCommand(subscriptionId, query.page, query.limit),
     );
   }
 

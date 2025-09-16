@@ -71,7 +71,23 @@ export class PaymentsConfigService extends ConfigService {
     return priceId;
   }
 
-  getPlanConfig(planType: string): { productId: string; priceId: string } {
+  get paymentYearProductId(): string {
+    const productId = this.get<string>('PAYMENT_YEAR_PRODUCT_ID');
+    if (!productId) {
+      throw new Error('Payment Year Product Id is required');
+    }
+    return productId;
+  }
+
+  get paymentYearPriceId(): string {
+    const priceId = this.get<string>('PAYMENT_YEAR_PRICE_ID');
+    if (!priceId) {
+      throw new Error('Payment Year Price Id is required');
+    }
+    return priceId;
+  }
+
+  getPlanConfig(planType: 'monthly' | '3month' | '6month' | 'yearly'): { productId: string; priceId: string } {
     switch (planType) {
       case 'monthly':
         return {
@@ -87,6 +103,11 @@ export class PaymentsConfigService extends ConfigService {
         return {
           productId: this.payment6MonthProductId,
           priceId: this.payment6MonthPriceId,
+        };
+      case 'yearly':
+        return {
+          productId: this.paymentYearProductId,
+          priceId: this.paymentYearPriceId,
         };
       default:
         throw new Error(`Unsupported plan type: ${planType}`);

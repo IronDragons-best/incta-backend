@@ -53,12 +53,30 @@ export interface StripeSubscription {
     | 'past_due'
     | 'canceled'
     | 'unpaid';
-  current_period_start: number;
-  current_period_end: number;
+  start_date?: number;
+  current_period_start?: number;
+  current_period_end?: number;
+  cancel_at?: number | null;
   canceled_at?: number | null;
   cancel_at_period_end?: boolean;
+  cancellation_details?: {
+    cancellation_reason?: 'user_request' | 'automatic' | 'fraud' | 'non_payment';
+    comment?: string;
+  } | null;
   latest_invoice?: string;
   metadata?: {
     [key: string]: string;
   };
+}
+
+export interface StripeCheckoutSession {
+  id: string;
+  customer: string | null;
+  subscription: string | null;
+  payment_intent: string | null;
+  mode: 'payment' | 'setup' | 'subscription';
+  status: 'open' | 'complete' | 'expired';
+  url: string | null;
+  success_url: string;
+  cancel_url: string;
 }

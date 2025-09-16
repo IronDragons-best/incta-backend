@@ -5,15 +5,20 @@ import { NotificationService, PaymentStatusType, SubscriptionStatusType } from '
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubscriptionCancelledEvent } from '../../../../core/events/subscription-cancelled.event';
+import { SubscriptionPastDueEvent } from '../../../../core/events/subscription-past-due.event';
 
 export class UpdateSubscriptionFromWebhookCommand {
   constructor(
     public readonly stripeSubscription: {
       id: string;
       status: string;
-      current_period_start: number;
-      current_period_end: number;
+      customer?: string;
+      start_date?: number;
+      current_period_start?: number;
+      current_period_end?: number;
+      cancel_at?: number | null;
       canceled_at?: number | null;
+      cancel_at_period_end?: boolean;
       cancellation_details?: {
         cancellation_reason?: 'user_request' | 'automatic' | 'fraud' | 'non_payment';
         comment?: string;
@@ -38,9 +43,27 @@ export class UpdateSubscriptionFromWebhookUseCase
   async execute(command: UpdateSubscriptionFromWebhookCommand): Promise<any> {
     const { stripeSubscription } = command;
     const notify = this.notification.create();
-    const subscription = await this.paymentRepository.findByStripeSubscriptionId(
+
+    let subscription = await this.paymentRepository.findByStripeSubscriptionId(
       stripeSubscription.id,
     );
+
+    if (!subscription && stripeSubscription.customer) {
+      const customerSubscriptions = await this.paymentRepository.findByStripeCustomerId(
+        stripeSubscription.customer as string,
+      );
+
+      subscription = customerSubscriptions.find(
+        sub => !sub.stripeSubscriptionId || sub.subscriptionStatus !== SubscriptionStatusType.CANCELED
+      ) || null;
+
+      if (subscription) {
+        subscription = await this.paymentRepository.update(subscription.id, {
+          stripeSubscriptionId: stripeSubscription.id,
+        });
+        this.logger.log(`Updated subscription ${subscription?.id} with Stripe subscription ID: ${stripeSubscription.id}`);
+      }
+    }
 
     if (!subscription) {
       this.logger.warn(`Subscription not found for Stripe ID: ${stripeSubscription.id}`);
@@ -52,20 +75,42 @@ export class UpdateSubscriptionFromWebhookUseCase
     try {
       const subscriptionStatus = this.mapStripeStatusToLocal(stripeSubscription.status);
 
-      await this.paymentRepository.updateByStripeId(stripeSubscription.id, {
+      const updateData: any = {
         subscriptionStatus,
         status: this.mapSubscriptionStatusToPaymentStatus(subscriptionStatus),
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
         canceledAt: stripeSubscription.canceled_at
           ? new Date(stripeSubscription.canceled_at * 1000)
           : undefined,
-      });
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
+      };
 
-      if (
+      if (stripeSubscription.current_period_start) {
+        updateData.currentPeriodStart = new Date(stripeSubscription.current_period_start * 1000);
+      } else if (stripeSubscription.start_date) {
+        updateData.currentPeriodStart = new Date(stripeSubscription.start_date * 1000);
+      }
+
+      if (stripeSubscription.current_period_end) {
+        updateData.currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000);
+      } else if (stripeSubscription.cancel_at && stripeSubscription.cancel_at_period_end) {
+        updateData.currentPeriodEnd = new Date(stripeSubscription.cancel_at * 1000);
+      }
+
+      await this.paymentRepository.updateByStripeId(stripeSubscription.id, updateData);
+
+      if (subscriptionStatus === SubscriptionStatusType.PAST_DUE) {
+        this.eventEmitter.emit(
+          'subscription.past_due',
+          new SubscriptionPastDueEvent({
+            userId: subscription.userId,
+            externalSubscriptionId: subscription.id,
+            pastDueDate: new Date().toISOString(),
+            unpaidAmount: 0,
+          }),
+        );
+      } else if (
         subscriptionStatus === SubscriptionStatusType.CANCELED ||
         subscriptionStatus === SubscriptionStatusType.INCOMPLETE_EXPIRED ||
-        subscriptionStatus === SubscriptionStatusType.PAST_DUE ||
         subscriptionStatus === SubscriptionStatusType.UNPAID
       ) {
         this.eventEmitter.emit(
@@ -76,6 +121,22 @@ export class UpdateSubscriptionFromWebhookUseCase
             cancelledAt: new Date().toISOString(),
             status: subscriptionStatus,
             reason: stripeSubscription.cancellation_details?.cancellation_reason,
+          }),
+        );
+      } else if (
+        subscriptionStatus === SubscriptionStatusType.ACTIVE &&
+        stripeSubscription.cancel_at_period_end
+      ) {
+        this.eventEmitter.emit(
+          'subscription.cancelled',
+          new SubscriptionCancelledEvent({
+            userId: subscription.userId,
+            externalSubscriptionId: subscription.id,
+            cancelledAt: stripeSubscription.canceled_at
+              ? new Date(stripeSubscription.canceled_at * 1000).toISOString()
+              : new Date().toISOString(),
+            status: SubscriptionStatusType.CANCELED,
+            reason: 'user_request',
           }),
         );
       }

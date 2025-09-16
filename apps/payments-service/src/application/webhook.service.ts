@@ -13,7 +13,8 @@ import {
   HandlePaymentFailedCommand,
 } from './use-cases/commands/handle-payment-failed.use-case';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { StripeInvoice, StripePaymentIntent } from '../domain/types/stripe.types';
+import { StripeInvoice, StripePaymentIntent, StripeSubscription, StripeCheckoutSession } from '../domain/types/stripe.types';
+import { PaymentRepository } from '../infrastructure/payment.repository';
 
 @Injectable()
 export class WebhookService {
@@ -25,6 +26,7 @@ export class WebhookService {
     private readonly updatePaymentFromWebhookUseCase: UpdatePaymentFromWebhookUseCase,
     private readonly handlePaymentFailedUseCase: HandlePaymentFailedUseCase,
     private readonly eventEmitter: EventEmitter2,
+    private readonly paymentRepository: PaymentRepository,
   ) {}
 
   async handleStripeWebhook(
@@ -41,18 +43,18 @@ export class WebhookService {
       console.log(event);
       switch (event.type) {
         case 'checkout.session.completed':
-          await this.handleCheckoutSessionCompleted(event.data.object);
+          await this.handleCheckoutSessionCompleted(event.data.object as unknown as StripeCheckoutSession);
           break;
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
           await this.updateSubscriptionFromWebhookUseCase.execute(
-            new UpdateSubscriptionFromWebhookCommand(event.data.object as any),
+            new UpdateSubscriptionFromWebhookCommand(event.data.object as unknown as StripeSubscription),
           );
           console.log(event.data.object);
           break;
         case 'customer.subscription.deleted':
           await this.updateSubscriptionFromWebhookUseCase.execute(
-            new UpdateSubscriptionFromWebhookCommand(event.data.object as any),
+            new UpdateSubscriptionFromWebhookCommand(event.data.object as unknown as StripeSubscription),
           );
 
           break;
@@ -64,9 +66,7 @@ export class WebhookService {
           break;
         case 'invoice.paid':
           await this.updatePaymentFromWebhookUseCase.execute(
-            new UpdatePaymentFromWebhookCommand(
-              event.data.object as unknown as StripeInvoice,
-            ),
+            new UpdatePaymentFromWebhookCommand(event.data.object as unknown as StripeInvoice),
           );
           break;
         default:
@@ -80,14 +80,28 @@ export class WebhookService {
     }
   }
 
-  private async handleCheckoutSessionCompleted(session: any) {
+  private async handleCheckoutSessionCompleted(session: StripeCheckoutSession) {
     try {
       const customerId = session.customer;
       const sessionId = session.id;
+      const subscriptionId = session.subscription;
 
       this.logger.log(
-        `Checkout session completed for customer ${customerId}, session ${sessionId}`,
+        `Checkout session completed for customer ${customerId}, session ${sessionId}, subscription ${subscriptionId}`,
       );
+
+      if (subscriptionId) {
+        const payment = await this.paymentRepository.findByStripeCheckoutSessionId(sessionId);
+
+        if (payment) {
+          await this.paymentRepository.updateByCheckoutSessionId(sessionId, {
+            stripeSubscriptionId: subscriptionId,
+          });
+          this.logger.log(`Updated payment ${payment.id} with Stripe subscription ID: ${subscriptionId}`);
+        } else {
+          this.logger.warn(`Payment not found for checkout session: ${sessionId}`);
+        }
+      }
     } catch (error) {
       this.logger.error('Failed to handle checkout.session.completed', error);
     }
