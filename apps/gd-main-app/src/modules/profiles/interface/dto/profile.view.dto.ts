@@ -2,28 +2,32 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProfileEntity } from '../../domain/profile.entity';
 
 export class ProfileViewDto {
-  @ApiProperty({ default: 1, description: 'User id' })
+  @ApiProperty({ type: Number, example: 1, description: 'User id' })
   userId: number;
 
-  @ApiProperty({ default: 'username' })
+  @ApiProperty({ type: String, example: 'username' })
   username: string;
 
-  @ApiProperty({ default: 'John' })
+  @ApiProperty({ type: String, example: 'John', nullable: true })
   firstname: string | null;
 
-  @ApiProperty({ default: 'Doe' })
+  @ApiProperty({ type: String, example: 'Doe', nullable: true })
   lastname: string | null;
 
-  @ApiProperty({ default: 'New York', nullable: true })
+  @ApiProperty({ type: String, example: 'New York', nullable: true })
   city: string | null;
 
-  @ApiProperty({ default: 'USA', nullable: true })
+  @ApiProperty({ type: String, example: 'USA', nullable: true })
   country: string | null;
 
-  @ApiProperty({ default: 'Something about me', nullable: true })
+  @ApiProperty({ type: String, example: 'Something about me', nullable: true })
   aboutMe: string | null;
 
-  @ApiProperty({ default: 'https://s3-storage.com/bucket/somefile', nullable: true })
+  @ApiProperty({
+    type: String,
+    example: 'https://s3-storage.com/bucket/somefile',
+    nullable: true,
+  })
   avatarUrl: string | null;
 
   static mapToView(profile: ProfileEntity) {
