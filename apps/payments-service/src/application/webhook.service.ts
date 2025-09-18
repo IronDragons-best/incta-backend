@@ -13,7 +13,12 @@ import {
   HandlePaymentFailedCommand,
 } from './use-cases/commands/handle-payment-failed.use-case';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { StripeInvoice, StripePaymentIntent, StripeSubscription, StripeCheckoutSession } from '../domain/types/stripe.types';
+import {
+  StripeInvoice,
+  StripePaymentIntent,
+  StripeSubscription,
+  StripeCheckoutSession,
+} from '../domain/types/stripe.types';
 import { PaymentRepository } from '../infrastructure/payment.repository';
 
 @Injectable()
@@ -40,33 +45,38 @@ export class WebhookService {
     try {
       const event = this.stripeService.constructWebhookEvent(body, signature);
       this.logger.log(`Received Stripe webhook: ${event.type}`);
-      console.log(event);
       switch (event.type) {
         case 'checkout.session.completed':
-          await this.handleCheckoutSessionCompleted(event.data.object as unknown as StripeCheckoutSession);
+          await this.handleCheckoutSessionCompleted(
+            event.data.object as unknown as StripeCheckoutSession,
+          );
           break;
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
           await this.updateSubscriptionFromWebhookUseCase.execute(
-            new UpdateSubscriptionFromWebhookCommand(event.data.object as unknown as StripeSubscription),
+            new UpdateSubscriptionFromWebhookCommand(
+              event.data.object as unknown as StripeSubscription,
+            ),
           );
-          console.log(event.data.object);
           break;
         case 'customer.subscription.deleted':
           await this.updateSubscriptionFromWebhookUseCase.execute(
-            new UpdateSubscriptionFromWebhookCommand(event.data.object as unknown as StripeSubscription),
+            new UpdateSubscriptionFromWebhookCommand(
+              event.data.object as unknown as StripeSubscription,
+            ),
           );
 
           break;
         case 'payment_intent.payment_failed':
-          console.log('Payment failed for payment failed');
           await this.handlePaymentFailedUseCase.execute(
             new HandlePaymentFailedCommand(event.data.object as StripePaymentIntent),
           );
           break;
         case 'invoice.paid':
           await this.updatePaymentFromWebhookUseCase.execute(
-            new UpdatePaymentFromWebhookCommand(event.data.object as unknown as StripeInvoice),
+            new UpdatePaymentFromWebhookCommand(
+              event.data.object as unknown as StripeInvoice,
+            ),
           );
           break;
         default:
@@ -91,13 +101,16 @@ export class WebhookService {
       );
 
       if (subscriptionId) {
-        const payment = await this.paymentRepository.findByStripeCheckoutSessionId(sessionId);
+        const payment =
+          await this.paymentRepository.findByStripeCheckoutSessionId(sessionId);
 
         if (payment) {
           await this.paymentRepository.updateByCheckoutSessionId(sessionId, {
             stripeSubscriptionId: subscriptionId,
           });
-          this.logger.log(`Updated payment ${payment.id} with Stripe subscription ID: ${subscriptionId}`);
+          this.logger.log(
+            `Updated payment ${payment.id} with Stripe subscription ID: ${subscriptionId}`,
+          );
         } else {
           this.logger.warn(`Payment not found for checkout session: ${sessionId}`);
         }

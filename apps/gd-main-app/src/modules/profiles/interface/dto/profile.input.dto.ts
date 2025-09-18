@@ -1,11 +1,10 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsISO8601, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsStringWithTrim } from '../../../../../core/decorators/validation/is.string.with.trim';
 import {
   dateOfBirthConstraints,
   firstAndLastNameConstraints,
 } from '../../constants/profile.constants';
-import { IsDateDMY } from '../../../../../core/decorators/validation/is.date.dmy';
 
 export class ProfileInputDto {
   // FIRST NAME
@@ -36,13 +35,12 @@ export class ProfileInputDto {
 
   // DATE OF BIRTH
   @ApiProperty({
-    description: 'Date of birth in format dd.mm.yyyy',
+    description: 'Date of birth in ISO 8601 format',
     required: false,
-    example: '15.05.2000',
-    pattern: dateOfBirthConstraints.patternString,
+    example: '2000-05-15T00:00:00.000Z',
   })
   @IsOptional()
-  @IsDateDMY()
+  @IsISO8601()
   dateOfBirth?: string;
 
   // COUNTRY ID

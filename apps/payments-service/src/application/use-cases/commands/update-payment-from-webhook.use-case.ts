@@ -44,7 +44,6 @@ export class UpdatePaymentFromWebhookUseCase
       if (stripeSubscriptionId) {
         payment =
           await this.paymentRepository.findByStripeSubscriptionId(stripeSubscriptionId);
-
         if (payment) {
           this.logger.log(`Found payment by subscription ID: ${payment.id}`);
         }
@@ -88,7 +87,6 @@ export class UpdatePaymentFromWebhookUseCase
         this.logger.error(`Failed to update payment: ${payment.id}`);
         return notify.setBadRequest('Failed to update payment status');
       }
-
       this.eventEmitter.emit(
         'payment.success',
         new PaymentSuccessEvent({

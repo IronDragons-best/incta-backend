@@ -11,6 +11,8 @@ import { DataSource } from 'typeorm';
 import { PaymentInfoEntity } from '../../domain/payment-info.entity';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import { PaymentRepository } from '../../infrastructure/payment.repository';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PaymentSuccessNotificationEvent } from '../../../../../core/events/websocket-events/payment-success.event';
 
 export class PaymentSuccessCommand {
   constructor(public dto: PaymentSuccessPayload) {}
@@ -23,6 +25,7 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly paymentRepository: PaymentRepository,
     @InjectDataSource() private dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger.setContext('PaymentSuccessUseCase');
   }
@@ -70,6 +73,15 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
 
       await this.subscriptionRepository.save(subscription, manager);
       await this.paymentRepository.save(payment, manager);
+      this.eventEmitter.emit(
+        'payment.success.notification',
+        new PaymentSuccessNotificationEvent(
+          dto.userId,
+          dto.planType,
+          dto.paymentMethod,
+          dto.endDate,
+        ),
+      );
     });
   }
 }

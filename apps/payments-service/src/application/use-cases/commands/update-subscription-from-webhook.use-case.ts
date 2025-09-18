@@ -50,18 +50,23 @@ export class UpdateSubscriptionFromWebhookUseCase
 
     if (!subscription && stripeSubscription.customer) {
       const customerSubscriptions = await this.paymentRepository.findByStripeCustomerId(
-        stripeSubscription.customer as string,
+        stripeSubscription.customer,
       );
 
-      subscription = customerSubscriptions.find(
-        sub => !sub.stripeSubscriptionId || sub.subscriptionStatus !== SubscriptionStatusType.CANCELED
-      ) || null;
+      subscription =
+        customerSubscriptions.find(
+          (sub) =>
+            !sub.stripeSubscriptionId ||
+            sub.subscriptionStatus !== SubscriptionStatusType.CANCELED,
+        ) || null;
 
       if (subscription) {
         subscription = await this.paymentRepository.update(subscription.id, {
           stripeSubscriptionId: stripeSubscription.id,
         });
-        this.logger.log(`Updated subscription ${subscription?.id} with Stripe subscription ID: ${stripeSubscription.id}`);
+        this.logger.log(
+          `Updated subscription ${subscription?.id} with Stripe subscription ID: ${stripeSubscription.id}`,
+        );
       }
     }
 
@@ -85,17 +90,24 @@ export class UpdateSubscriptionFromWebhookUseCase
       };
 
       if (stripeSubscription.current_period_start) {
-        updateData.currentPeriodStart = new Date(stripeSubscription.current_period_start * 1000);
+        updateData.currentPeriodStart = new Date(
+          stripeSubscription.current_period_start * 1000,
+        );
       } else if (stripeSubscription.start_date) {
         updateData.currentPeriodStart = new Date(stripeSubscription.start_date * 1000);
       }
 
       if (stripeSubscription.current_period_end) {
-        updateData.currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000);
-      } else if (stripeSubscription.cancel_at && stripeSubscription.cancel_at_period_end) {
+        updateData.currentPeriodEnd = new Date(
+          stripeSubscription.current_period_end * 1000,
+        );
+      } else if (
+        stripeSubscription.cancel_at &&
+        stripeSubscription.cancel_at_period_end
+      ) {
         updateData.currentPeriodEnd = new Date(stripeSubscription.cancel_at * 1000);
       }
-
+      console.log('id: ', stripeSubscription.id);
       await this.paymentRepository.updateByStripeId(stripeSubscription.id, updateData);
 
       if (subscriptionStatus === SubscriptionStatusType.PAST_DUE) {

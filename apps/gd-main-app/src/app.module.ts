@@ -28,11 +28,13 @@ import { RabbitListenersModule } from '../core/listeners/rabbit.listeners.module
 import { StatsModule } from './modules/stats/stats.module';
 import { SubscriptionModule } from './modules/subscriptions/subscription.module';
 import { SystemController } from '../system.controller';
+import { WebsocketModule } from './modules/websockets/websocket.module';
 
 @Module({
   imports: [
     OwnershipModule,
     CacheModule,
+    WebsocketModule,
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',
       validationSchema: validationSchema,
