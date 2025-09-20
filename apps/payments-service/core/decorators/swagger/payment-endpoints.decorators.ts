@@ -7,7 +7,6 @@ import {
   PaymentListResponseDto,
   CreatePaymentResponseDto,
 } from '../../../src/interface/dto/output/payment.view.dto';
-import { UserPaymentsViewDto } from '../../../src/interface/dto/output/user-payments.view.dto';
 
 export const CreatePaymentSwagger = () =>
   applyDecorators(
@@ -34,7 +33,8 @@ export const CreateAdditionalSubscriptionSwagger = () =>
     }),
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,
-      description: 'Invalid data: invalid userId (must be positive integer), invalid existingSubscriptionId (must be valid UUID), user already has active subscription without existing ID, subscription does not belong to user, or cannot extend inactive subscription',
+      description:
+        'Invalid data: invalid userId (must be positive integer), invalid existingSubscriptionId (must be valid UUID), user already has active subscription without existing ID, subscription does not belong to user, or cannot extend inactive subscription',
     }),
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
@@ -113,14 +113,22 @@ export const GetPaymentsSwagger = () =>
     ApiQuery({
       name: 'subscriptionStatus',
       required: false,
-      enum: ['ACTIVE', 'CANCELED', 'PAST_DUE', 'INCOMPLETE', 'INCOMPLETE_EXPIRED', 'TRIALING', 'UNPAID'],
+      enum: [
+        'ACTIVE',
+        'CANCELED',
+        'PAST_DUE',
+        'INCOMPLETE',
+        'INCOMPLETE_EXPIRED',
+        'TRIALING',
+        'UNPAID',
+      ],
       description: 'Filter by subscription status',
     }),
     ApiResponse({
       status: HttpStatus.OK,
       description: 'List of payments',
       type: PaymentListResponseDto,
-    })
+    }),
   );
 
 export const GetUserPaymentsSwagger = () =>
@@ -130,7 +138,7 @@ export const GetUserPaymentsSwagger = () =>
     ApiResponse({
       status: HttpStatus.OK,
       description: 'User payments',
-      type: UserPaymentsViewDto,
+      type: PaymentListResponseDto,
     }),
   );
 
@@ -164,6 +172,7 @@ export const CancelPaymentSwagger = () =>
     }),
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,
-      description: 'Subscription is already canceled, or cannot cancel subscription with current status (only ACTIVE, INCOMPLETE, or TRIALING subscriptions can be canceled)',
+      description:
+        'Subscription is already canceled, or cannot cancel subscription with current status (only ACTIVE, INCOMPLETE, or TRIALING subscriptions can be canceled)',
     }),
   );

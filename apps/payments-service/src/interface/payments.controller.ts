@@ -31,7 +31,6 @@ import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
 import { CreateAdditionalSubscriptionInputDto } from './dto/input/additional-subscription.input.dto';
 import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
 import { CreateAdditionalSubscriptionCommand } from '../application/use-cases/commands/create-additional-subscription.use-case';
-import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
 import { PaymentQueryDto } from './dto/input/payment.query.dto';
 import { PaginationQueryDto } from './dto/input/pagination.query.dto';
 import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get-all-payments.query';
@@ -60,20 +59,17 @@ export class PaymentsController {
   @Post('payments')
   @CreatePaymentSwagger()
   async createPayment(@Body() createPaymentDto: CreatePaymentInputDto) {
-    console.log('hello');
     return this.commandBus.execute(new CreatePaymentCommand(createPaymentDto));
   }
 
   @Post('payments/additional')
   @CreateAdditionalSubscriptionSwagger()
-  async createAdditionalSubscription(@Body() createAdditionalSubscriptionDto: CreateAdditionalSubscriptionInputDto) {
-    return this.commandBus.execute(new CreateAdditionalSubscriptionCommand(createAdditionalSubscriptionDto));
-  }
-
-  @Get('payments/:id')
-  @GetPaymentSwagger()
-  async getPayment(@Param('id') id: string) {
-    return this.queryBus.execute(new GetPaymentQueryCommand(id));
+  async createAdditionalSubscription(
+    @Body() createAdditionalSubscriptionDto: CreateAdditionalSubscriptionInputDto,
+  ) {
+    return this.commandBus.execute(
+      new CreateAdditionalSubscriptionCommand(createAdditionalSubscriptionDto),
+    );
   }
 
   @Get('payments')
@@ -95,9 +91,7 @@ export class PaymentsController {
 
   @Get('subscriptions/:subscriptionId/payments')
   @GetPaymentsBySubscriptionSwagger()
-  async getPaymentsBySubscription(
-    @Param('subscriptionId') subscriptionId: string,
-  ) {
+  async getPaymentsBySubscription(@Param('subscriptionId') subscriptionId: string) {
     return this.queryBus.execute(
       new GetPaymentsBySubscriptionQueryCommand(subscriptionId),
     );

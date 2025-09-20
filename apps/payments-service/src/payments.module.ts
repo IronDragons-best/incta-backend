@@ -21,7 +21,6 @@ import { UpdateSubscriptionFromWebhookUseCase } from './application/use-cases/co
 import { UpdatePaymentFromWebhookUseCase } from './application/use-cases/commands/update-payment-from-webhook.use-case';
 import { HandlePaymentFailedUseCase } from './application/use-cases/commands/handle-payment-failed.use-case';
 
-import { GetPaymentQuery } from './application/use-cases/queries/get-payment.query';
 import { GetUserPaymentsQuery } from './application/use-cases/queries/get-user-payments.query';
 import { GetPaymentsBySubscriptionQuery } from './application/use-cases/queries/get-payments-by-subscription.query';
 import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-payments.query';
@@ -66,7 +65,6 @@ import { RmqListenersModule } from '../core/listeners/rabbit.listeners.module';
     UpdateSubscriptionFromWebhookUseCase,
     UpdatePaymentFromWebhookUseCase,
     HandlePaymentFailedUseCase,
-    GetPaymentQuery,
     GetUserPaymentsQuery,
     GetPaymentsBySubscriptionQuery,
     GetAllPaymentsQuery,

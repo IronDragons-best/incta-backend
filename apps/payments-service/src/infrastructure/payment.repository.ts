@@ -33,7 +33,6 @@ export class PaymentRepository {
       .exec();
   }
 
-
   async update(id: string, updateData: Partial<Payment>): Promise<Payment | null> {
     return this.paymentModel
       .findOneAndUpdate(
@@ -96,6 +95,33 @@ export class PaymentRepository {
       .exec();
   }
 
+  async findByStripeCustomerId(stripeCustomerId: string): Promise<Payment | null> {
+    return this.paymentModel
+      .findOne({
+        stripeCustomerId,
+        deletedAt: { $exists: false },
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findByStripeCustomerIdWithoutSubscription(
+    stripeCustomerId: string,
+  ): Promise<Payment | null> {
+    return this.paymentModel
+      .findOne({
+        stripeCustomerId,
+        deletedAt: { $exists: false },
+        $or: [
+          { stripeSubscriptionId: { $exists: false } },
+          { stripeSubscriptionId: null },
+          { stripeSubscriptionId: '' },
+        ],
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
   async updateByStripeId(
     stripeSubscriptionId: string,
     updateData: Partial<Payment>,
@@ -108,7 +134,6 @@ export class PaymentRepository {
       )
       .exec();
   }
-
 
   async findWithFilters(
     filters: {

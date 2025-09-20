@@ -36,6 +36,44 @@ export class CreateSubscriptionUseCase
     const notify = this.notification.create();
 
     try {
+      const existingActiveSubscriptions = await this.paymentRepository.findByUserId(
+        createPaymentDto.userId,
+        0,
+        10,
+      );
+
+      const activeSubscription = existingActiveSubscriptions.find(
+        (sub) => sub.subscriptionStatus === SubscriptionStatusType.ACTIVE,
+      );
+
+      if (activeSubscription) {
+        this.logger.warn(
+          `User ${createPaymentDto.userId} already has an active subscription: ${activeSubscription.id}`,
+        );
+        return notify.setBadRequest(
+          'User already has an active subscription. Use additional subscription endpoint to extend existing subscription.',
+        );
+      }
+
+      const pendingSubscription = existingActiveSubscriptions.find(
+        (sub) =>
+          sub.subscriptionStatus === SubscriptionStatusType.INCOMPLETE ||
+          sub.status === PaymentStatusType.Processing,
+      );
+
+      if (pendingSubscription) {
+        this.logger.warn(
+          `User ${createPaymentDto.userId} has a pending subscription: ${pendingSubscription.id}`,
+        );
+        return notify.setBadRequest(
+          'User has a pending subscription. Please complete or cancel it before creating a new one.',
+        );
+      }
+
+      const customer = await this.stripeService.createCustomerByUserId(
+        createPaymentDto.userId,
+      );
+
       const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
       const priceId = planConfig.priceId;
       const price = await this.stripeService.getPrice(priceId);
@@ -47,6 +85,7 @@ export class CreateSubscriptionUseCase
       const subscription = await this.paymentRepository.create({
         id: paymentId,
         userId: createPaymentDto.userId,
+        stripeCustomerId: customer.id,
         subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
         planType: createPaymentDto.planType,
         amount: amount,

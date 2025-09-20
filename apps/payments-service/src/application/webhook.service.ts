@@ -65,20 +65,41 @@ export class WebhookService {
               event.data.object as unknown as StripeSubscription,
             ),
           );
-
+          break;
+        case 'customer.created':
+          this.logger.log(`Customer created: ${(event.data.object as any).id}`);
+          break;
+        case 'customer.updated':
+          this.logger.log(`Customer updated: ${(event.data.object as any).id}`);
+          break;
+        case 'payment_intent.created':
+          this.logger.log(`Payment intent created: ${(event.data.object as any).id}`);
+          break;
+        case 'payment_intent.succeeded':
+          this.logger.log(`Payment intent succeeded: ${(event.data.object as any).id}`);
           break;
         case 'payment_intent.payment_failed':
           await this.handlePaymentFailedUseCase.execute(
             new HandlePaymentFailedCommand(event.data.object as StripePaymentIntent),
           );
           break;
+        case 'invoice.created':
+          this.logger.log(`Invoice created: ${(event.data.object as any).id}`);
+          break;
+        case 'invoice.finalized':
+          this.logger.log(`Invoice finalized: ${(event.data.object as any).id}`);
+          break;
         case 'invoice.paid':
         case 'invoice.payment_succeeded':
-        case 'invoice_payment.paid':
           await this.updatePaymentFromWebhookUseCase.execute(
             new UpdatePaymentFromWebhookCommand(
               event.data.object as unknown as StripeInvoice,
             ),
+          );
+          break;
+        case 'invoice_payment.paid':
+          this.logger.log(
+            `Invoice payment event: ${event.type} - ${(event.data.object as any).id}`,
           );
           break;
         default:

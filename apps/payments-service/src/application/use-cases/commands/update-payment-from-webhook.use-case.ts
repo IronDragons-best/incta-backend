@@ -32,14 +32,31 @@ export class UpdatePaymentFromWebhookUseCase
       this.logger.log(`Processing invoice.paid for invoice: ${invoiceData.id}`);
 
       const stripeCustomerId = invoiceData.customer;
-      const stripeSubscriptionId = invoiceData.subscription;
+      let stripeSubscriptionId = invoiceData.subscription;
 
-      if (!stripeCustomerId) {
-        this.logger.error('No customer ID found in invoice data');
-        return notify.setBadRequest('No customer ID found in invoice data');
+      if (!stripeSubscriptionId) {
+        if (invoiceData.parent?.subscription_details?.subscription) {
+          stripeSubscriptionId = invoiceData.parent.subscription_details.subscription;
+          this.logger.log(
+            `Found subscription ID in parent.subscription_details: ${stripeSubscriptionId}`,
+          );
+        }
+        else if (
+          invoiceData.lines?.data?.[0]?.parent?.subscription_item_details?.subscription
+        ) {
+          stripeSubscriptionId =
+            invoiceData.lines.data[0].parent.subscription_item_details.subscription;
+          this.logger.log(
+            `Found subscription ID in lines.data[0].parent.subscription_item_details: ${stripeSubscriptionId}`,
+          );
+        }
       }
 
-      let payment: Payment | null | undefined = undefined;
+      this.logger.log(
+        `Extracted - Customer ID: ${stripeCustomerId}, Subscription ID: ${stripeSubscriptionId}`,
+      );
+
+      let payment: Payment | null = null;
 
       if (stripeSubscriptionId) {
         payment =
@@ -47,13 +64,24 @@ export class UpdatePaymentFromWebhookUseCase
         if (payment) {
           this.logger.log(`Found payment by subscription ID: ${payment.id}`);
         } else {
-          this.logger.warn(`No payment found with subscription ID: ${stripeSubscriptionId}`);
+          this.logger.warn(
+            `No payment found with subscription ID: ${stripeSubscriptionId}`,
+          );
+        }
+      }
+
+      if (!payment && stripeCustomerId) {
+        payment = await this.paymentRepository.findByStripeCustomerId(stripeCustomerId);
+        if (payment) {
+          this.logger.log(`Found payment by customer ID: ${payment.id}`);
+        } else {
+          this.logger.warn(`No payment found with customer ID: ${stripeCustomerId}`);
         }
       }
 
       if (!payment) {
-        this.logger.warn(
-          `No payment found for invoice: ${invoiceData.id}, customer: ${stripeCustomerId}`,
+        this.logger.error(
+          `No payment found for invoice: ${invoiceData.id}, customer: ${stripeCustomerId}, subscription: ${stripeSubscriptionId}`,
         );
         return notify.setBadRequest('No payment found for this invoice');
       }

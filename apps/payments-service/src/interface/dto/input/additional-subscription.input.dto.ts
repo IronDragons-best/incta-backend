@@ -21,7 +21,7 @@ export class CreateAdditionalSubscriptionInputDto {
     type: String,
     required: false,
     description: 'UUID of existing subscription to extend',
-    format: 'uuid'
+    format: 'uuid',
   })
   @IsString({ message: 'Existing subscription ID must be a string' })
   @IsUUID('4', { message: 'Existing subscription ID must be a valid UUID' })

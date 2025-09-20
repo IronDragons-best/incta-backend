@@ -4,6 +4,7 @@ import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
 import { NotificationService, SubscriptionStatusType } from '@common';
+import { isUUID } from 'class-validator';
 
 export class CancelSubscriptionCommand {
   constructor(public readonly id: string) {}
@@ -26,10 +27,11 @@ export class CancelSubscriptionUseCase
     const { id } = command;
     const notify = this.notification.create();
 
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!id || !uuidRegex.test(id)) {
+    if (!id || !isUUID(id)) {
       this.logger.error(`Invalid subscription ID format: ${id}`);
-      return notify.setBadRequest('Invalid subscription ID format. Must be a valid UUID.');
+      return notify.setBadRequest(
+        'Invalid subscription ID format. Must be a valid UUID.',
+      );
     }
 
     const subscription = await this.paymentRepository.findById(id);
@@ -39,7 +41,7 @@ export class CancelSubscriptionUseCase
       return notify.setNotFound('Subscription not found');
     }
 
-    if (subscription.subscriptionStatus === SubscriptionStatusType.CANCELED) {
+    if (subscription.currentPeriodEnd) {
       this.logger.warn(`Subscription ${id} is already canceled`);
       return notify.setBadRequest('Subscription is already canceled');
     }
@@ -50,10 +52,10 @@ export class CancelSubscriptionUseCase
       subscription.subscriptionStatus !== SubscriptionStatusType.TRIALING
     ) {
       this.logger.warn(
-        `Cannot cancel subscription ${id} with status: ${subscription.subscriptionStatus}`
+        `Cannot cancel subscription ${id} with status: ${subscription.subscriptionStatus}`,
       );
       return notify.setBadRequest(
-        `Cannot cancel subscription with status: ${subscription.subscriptionStatus}`
+        `Cannot cancel subscription with status: ${subscription.subscriptionStatus}`,
       );
     }
 

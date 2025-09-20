@@ -29,7 +29,19 @@ export class Payment {
   @IsString()
   @IsOptional()
   @Prop({ type: String, required: false })
+  stripeCustomerId?: string;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsOptional()
+  @Prop({ type: String, required: false })
   stripeSubscriptionId?: string;
+
+  @ApiProperty({ type: String, description: 'Parent subscription ID for additional payments' })
+  @IsString()
+  @IsOptional()
+  @Prop({ type: String, required: false })
+  parentSubscriptionId?: string;
 
   @ApiProperty({ enum: SubscriptionStatusType })
   @IsEnum(SubscriptionStatusType)

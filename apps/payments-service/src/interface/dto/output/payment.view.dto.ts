@@ -34,6 +34,9 @@ export class PaymentViewDto {
   @ApiProperty({ type: Date, nullable: true, description: 'Current period end date' })
   currentPeriodEnd?: Date | null;
 
+  @ApiProperty({ type: String, nullable: true, description: 'Parent subscription ID for additional payments' })
+  parentSubscriptionId?: string | null;
+
   @ApiProperty({ type: Boolean, description: 'Is subscription currently active' })
   isActive: boolean;
 
@@ -51,6 +54,7 @@ export class PaymentViewDto {
     this.subscriptionStatus = payment.subscriptionStatus;
     this.currentPeriodStart = payment.currentPeriodStart || null;
     this.currentPeriodEnd = payment.currentPeriodEnd || null;
+    this.parentSubscriptionId = payment.parentSubscriptionId || null;
 
     this.isActive = this.calculateIsActive(payment);
     this.isExpired = this.calculateIsExpired(payment);
@@ -75,8 +79,6 @@ export class PaymentViewDto {
     return payment.currentPeriodEnd < new Date();
   }
 }
-
-
 
 export class PaymentListResponseDto {
   @ApiProperty({ type: [PaymentViewDto] })

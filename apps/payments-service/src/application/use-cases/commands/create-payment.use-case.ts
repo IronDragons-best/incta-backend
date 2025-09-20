@@ -44,10 +44,15 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
         new CreateSubscriptionCommand(createPaymentDto),
       )) as AppNotification<PaymentViewDto>;
 
+      if (res.hasErrors()) {
+        const errorMessage = res.getErrors()?.[0]?.message || 'Failed to create subscription record for checkout';
+        return notify.setBadRequest(errorMessage);
+      }
+
       const data = res.getValue();
 
       if (!data) {
-        this.logger.error('Failed to create subscription record for checkout');
+        this.logger.error('Failed to create subscription record for checkout - data is null');
         return notify.setBadRequest('Failed to create subscription record for checkout');
       }
 

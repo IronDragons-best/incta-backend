@@ -19,7 +19,6 @@ export class StripeService {
     });
   }
 
-
   async createSubscription(
     customerId: string,
     priceId: string,

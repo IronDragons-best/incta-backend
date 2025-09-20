@@ -42,7 +42,10 @@ export class CreateAdditionalSubscriptionUseCase
     const notify = this.notification.create();
 
     try {
-      if (!createAdditionalSubscriptionDto.userId || createAdditionalSubscriptionDto.userId <= 0) {
+      if (
+        !createAdditionalSubscriptionDto.userId ||
+        createAdditionalSubscriptionDto.userId <= 0
+      ) {
         this.logger.error('Invalid userId provided');
         return notify.setBadRequest('Invalid userId provided');
       }
@@ -50,44 +53,47 @@ export class CreateAdditionalSubscriptionUseCase
       const existingActiveSubscriptions = await this.paymentRepository.findByUserId(
         createAdditionalSubscriptionDto.userId,
         0,
-        10
+        10,
       );
 
       const activeSubscription = existingActiveSubscriptions.find(
-        (sub) => sub.subscriptionStatus === SubscriptionStatusType.ACTIVE
+        (sub) => sub.subscriptionStatus === SubscriptionStatusType.ACTIVE,
       );
 
       if (activeSubscription && !createAdditionalSubscriptionDto.existingSubscriptionId) {
         this.logger.warn(
-          `User ${createAdditionalSubscriptionDto.userId} already has an active subscription but no existing subscription ID provided`
+          `User ${createAdditionalSubscriptionDto.userId} already has an active subscription but no existing subscription ID provided`,
         );
         return notify.setBadRequest(
-          'User already has an active subscription. Please provide existing subscription ID to extend it.'
+          'User already has an active subscription. Please provide existing subscription ID to extend it.',
         );
       }
 
+      let existingSubscription;
       if (createAdditionalSubscriptionDto.existingSubscriptionId) {
-        const existingSubscription = await this.paymentRepository.findById(
-          createAdditionalSubscriptionDto.existingSubscriptionId
+        existingSubscription = await this.paymentRepository.findById(
+          createAdditionalSubscriptionDto.existingSubscriptionId,
         );
 
         if (!existingSubscription) {
           this.logger.error(
-            `Existing subscription not found: ${createAdditionalSubscriptionDto.existingSubscriptionId}`
+            `Existing subscription not found: ${createAdditionalSubscriptionDto.existingSubscriptionId}`,
           );
           return notify.setNotFound('Existing subscription not found');
         }
 
         if (existingSubscription.userId !== createAdditionalSubscriptionDto.userId) {
           this.logger.error(
-            `Subscription ${createAdditionalSubscriptionDto.existingSubscriptionId} does not belong to user ${createAdditionalSubscriptionDto.userId}`
+            `Subscription ${createAdditionalSubscriptionDto.existingSubscriptionId} does not belong to user ${createAdditionalSubscriptionDto.userId}`,
           );
-          return notify.setBadRequest('Subscription does not belong to the specified user');
+          return notify.setBadRequest(
+            'Subscription does not belong to the specified user',
+          );
         }
 
         if (existingSubscription.subscriptionStatus !== SubscriptionStatusType.ACTIVE) {
           this.logger.error(
-            `Subscription ${createAdditionalSubscriptionDto.existingSubscriptionId} is not active. Status: ${existingSubscription.subscriptionStatus}`
+            `Subscription ${createAdditionalSubscriptionDto.existingSubscriptionId} is not active. Status: ${existingSubscription.subscriptionStatus}`,
           );
           return notify.setBadRequest('Cannot extend inactive subscription');
         }
@@ -106,44 +112,76 @@ export class CreateAdditionalSubscriptionUseCase
       const amount = typeof price.unit_amount === 'number' ? price.unit_amount : 0;
       const currency = price.currency || 'usd';
 
-      const additionalSubscriptionId = uuidv4();
-      const additionalSubscription = await this.paymentRepository.create({
-        id: additionalSubscriptionId,
-        userId: createAdditionalSubscriptionDto.userId,
-        subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
-        planType: createAdditionalSubscriptionDto.planType,
-        amount: amount,
-        currency: currency,
-        payType: PaymentMethodType.Stripe,
-        status: PaymentStatusType.Processing,
-      });
-
-      const session = await this.stripeService.createCheckoutSession(
-        customer.id,
-        priceId,
-        'http://localhost:3000/success',
-        'http://localhost:3000/cancel',
-        additionalSubscriptionId,
-      );
-
-      if (!session || !session.url) {
-        this.logger.error('Failed to create checkout session for additional subscription');
-        return notify.setBadRequest('Failed to create checkout session');
-      }
-
-      this.logger.log(
-        `Created additional subscription record for user ${createAdditionalSubscriptionDto.userId}: ${additionalSubscriptionId}`
-      );
-
       if (createAdditionalSubscriptionDto.existingSubscriptionId) {
+        const additionalPaymentId = uuidv4();
+        const additionalPayment = await this.paymentRepository.create({
+          id: additionalPaymentId,
+          userId: createAdditionalSubscriptionDto.userId,
+          stripeCustomerId: customer.id,
+          subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
+          planType: createAdditionalSubscriptionDto.planType,
+          amount: amount,
+          currency: currency,
+          payType: PaymentMethodType.Stripe,
+          status: PaymentStatusType.Processing,
+          parentSubscriptionId: createAdditionalSubscriptionDto.existingSubscriptionId,
+        });
+
+        const session = await this.stripeService.createCheckoutSession(
+          customer.id,
+          priceId,
+          'http://localhost:3000/success?type=extension',
+          'http://localhost:3000/cancel',
+          additionalPaymentId,
+        );
+
+        if (!session || !session.url) {
+          this.logger.error('Failed to create checkout session for subscription extension');
+          return notify.setBadRequest('Failed to create checkout session');
+        }
+
         this.logger.log(
-          `Additional subscription ${additionalSubscriptionId} will extend existing subscription ${createAdditionalSubscriptionDto.existingSubscriptionId}`
+          `Created additional payment record for extending subscription ${createAdditionalSubscriptionDto.existingSubscriptionId}: ${additionalPaymentId}`,
+        );
+
+        return notify.setValue(
+          new CreatePaymentResponseDto(session.url, additionalPaymentId),
+        );
+      } else {
+        const newSubscriptionId = uuidv4();
+        const newSubscription = await this.paymentRepository.create({
+          id: newSubscriptionId,
+          userId: createAdditionalSubscriptionDto.userId,
+          stripeCustomerId: customer.id,
+          subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
+          planType: createAdditionalSubscriptionDto.planType,
+          amount: amount,
+          currency: currency,
+          payType: PaymentMethodType.Stripe,
+          status: PaymentStatusType.Processing,
+        });
+
+        const session = await this.stripeService.createCheckoutSession(
+          customer.id,
+          priceId,
+          'http://localhost:3000/success',
+          'http://localhost:3000/cancel',
+          newSubscriptionId,
+        );
+
+        if (!session || !session.url) {
+          this.logger.error('Failed to create checkout session for new subscription');
+          return notify.setBadRequest('Failed to create checkout session');
+        }
+
+        this.logger.log(
+          `Created new subscription record for user ${createAdditionalSubscriptionDto.userId}: ${newSubscriptionId}`,
+        );
+
+        return notify.setValue(
+          new CreatePaymentResponseDto(session.url, newSubscriptionId),
         );
       }
-
-      return notify.setValue(
-        new CreatePaymentResponseDto(session.url, additionalSubscription.id)
-      );
     } catch (error) {
       this.logger.error('Failed to create additional subscription', error);
       return notify.setBadRequest('Failed to create additional subscription');

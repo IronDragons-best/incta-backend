@@ -3,7 +3,7 @@ import { PaymentViewDto } from './payment.view.dto';
 
 export class UserPaymentsViewDto {
   @ApiProperty({
-    type: [PaymentViewDto]
+    type: [PaymentViewDto],
   })
   items: PaymentViewDto[];
 
