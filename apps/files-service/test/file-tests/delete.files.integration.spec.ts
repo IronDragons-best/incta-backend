@@ -18,7 +18,10 @@ describe('FilesController', () => {
         { provide: FilesServiceService, useValue: {} },
         { provide: CommandBus, useValue: commandBus },
         { provide: QueryBus, useClass: QueryBus },
-        { provide: FilesConfigService, useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' } },
+        {
+          provide: FilesConfigService,
+          useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' },
+        },
       ],
     }).compile();
 

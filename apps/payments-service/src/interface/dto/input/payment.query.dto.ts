@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
-import { PaymentMethodType, PaymentStatusType } from '@common';
+import { PaymentMethodType, PaymentStatusType, SubscriptionStatusType } from '@common';
 import { PlanType } from '../../../domain/payment';
 
 export class PaymentQueryDto {
@@ -21,19 +21,6 @@ export class PaymentQueryDto {
   @ApiProperty({
     type: Number,
     required: false,
-    description: 'Page number',
-    minimum: 1,
-    default: 1,
-  })
-  @IsNumber()
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  @Min(1)
-  pageNumber?: number = 1;
-
-  @ApiProperty({
-    type: Number,
-    required: false,
     description: 'Number of items per page',
     minimum: 1,
     maximum: 100,
@@ -44,20 +31,6 @@ export class PaymentQueryDto {
   @Transform(({ value }) => parseInt(value))
   @Min(1)
   limit?: number = 10;
-
-  @ApiProperty({
-    type: Number,
-    required: false,
-    description: 'Page size',
-    minimum: 1,
-    maximum: 100,
-    default: 10,
-  })
-  @IsNumber()
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  @Min(1)
-  pageSize?: number = 10;
 
   @ApiProperty({
     type: String,
@@ -77,6 +50,15 @@ export class PaymentQueryDto {
   @IsString()
   @IsOptional()
   sortDirection?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Filter by payment ID',
+  })
+  @IsString()
+  @IsOptional()
+  id?: string;
 
   @ApiProperty({
     type: String,
@@ -105,15 +87,6 @@ export class PaymentQueryDto {
   status?: PaymentStatusType;
 
   @ApiProperty({
-    type: String,
-    required: false,
-    description: 'Filter by subscription ID',
-  })
-  @IsString()
-  @IsOptional()
-  subscriptionId?: string;
-
-  @ApiProperty({
     enum: PlanType,
     required: false,
     description: 'Filter by plan type',
@@ -121,4 +94,13 @@ export class PaymentQueryDto {
   @IsEnum(PlanType)
   @IsOptional()
   planType?: PlanType;
+
+  @ApiProperty({
+    enum: SubscriptionStatusType,
+    required: false,
+    description: 'Filter by subscription status',
+  })
+  @IsEnum(SubscriptionStatusType)
+  @IsOptional()
+  subscriptionStatus?: SubscriptionStatusType;
 }

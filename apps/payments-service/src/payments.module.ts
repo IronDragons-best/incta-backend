@@ -15,12 +15,12 @@ import { WebhookService } from './application/webhook.service';
 
 import { CreateSubscriptionUseCase } from './application/use-cases/commands/create-subscription.use-case';
 import { CreatePaymentUseCase } from './application/use-cases/commands/create-payment.use-case';
+import { CreateAdditionalSubscriptionUseCase } from './application/use-cases/commands/create-additional-subscription.use-case';
 import { CancelSubscriptionUseCase } from './application/use-cases/commands/cancel-subscription.use-case';
 import { UpdateSubscriptionFromWebhookUseCase } from './application/use-cases/commands/update-subscription-from-webhook.use-case';
 import { UpdatePaymentFromWebhookUseCase } from './application/use-cases/commands/update-payment-from-webhook.use-case';
 import { HandlePaymentFailedUseCase } from './application/use-cases/commands/handle-payment-failed.use-case';
 
-import { GetPaymentQuery } from './application/use-cases/queries/get-payment.query';
 import { GetUserPaymentsQuery } from './application/use-cases/queries/get-user-payments.query';
 import { GetPaymentsBySubscriptionQuery } from './application/use-cases/queries/get-payments-by-subscription.query';
 import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-payments.query';
@@ -60,11 +60,11 @@ import { RmqListenersModule } from '../core/listeners/rabbit.listeners.module';
     WebhookService,
     CreateSubscriptionUseCase,
     CreatePaymentUseCase,
+    CreateAdditionalSubscriptionUseCase,
     CancelSubscriptionUseCase,
     UpdateSubscriptionFromWebhookUseCase,
     UpdatePaymentFromWebhookUseCase,
     HandlePaymentFailedUseCase,
-    GetPaymentQuery,
     GetUserPaymentsQuery,
     GetPaymentsBySubscriptionQuery,
     GetAllPaymentsQuery,

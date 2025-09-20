@@ -49,29 +49,32 @@ export class UpdateSubscriptionFromWebhookUseCase
     );
 
     if (!subscription && stripeSubscription.customer) {
-      const customerSubscriptions = await this.paymentRepository.findByStripeCustomerId(
-        stripeSubscription.customer,
-      );
-
       subscription =
-        customerSubscriptions.find(
-          (sub) =>
-            !sub.stripeSubscriptionId ||
-            sub.subscriptionStatus !== SubscriptionStatusType.CANCELED,
-        ) || null;
+        await this.paymentRepository.findByStripeCustomerIdWithoutSubscription(
+          stripeSubscription.customer,
+        );
+
+      if (!subscription) {
+        subscription = await this.paymentRepository.findByStripeCustomerId(
+          stripeSubscription.customer,
+        );
+      }
 
       if (subscription) {
-        subscription = await this.paymentRepository.update(subscription.id, {
+        this.logger.log(
+          `Found subscription by customer ID: ${stripeSubscription.customer}, updating with subscription ID: ${stripeSubscription.id}`,
+        );
+        await this.paymentRepository.update(subscription.id, {
           stripeSubscriptionId: stripeSubscription.id,
         });
-        this.logger.log(
-          `Updated subscription ${subscription?.id} with Stripe subscription ID: ${stripeSubscription.id}`,
-        );
+        subscription.stripeSubscriptionId = stripeSubscription.id;
       }
     }
 
     if (!subscription) {
-      this.logger.warn(`Subscription not found for Stripe ID: ${stripeSubscription.id}`);
+      this.logger.warn(
+        `No subscription found for Stripe subscription ID: ${stripeSubscription.id} or customer ID: ${stripeSubscription.customer}`,
+      );
       return notify.setNotFound(
         `Subscription not found for Stripe ID: ${stripeSubscription.id}`,
       );

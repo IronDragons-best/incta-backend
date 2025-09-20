@@ -14,11 +14,7 @@ import { CustomLogger } from '@monitoring';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class CreateSubscriptionCommand {
-  constructor(
-    public readonly createPaymentDto: CreatePaymentInputDto,
-    public readonly stripeCustomerId: string,
-    public readonly checkoutSessionId: string,
-  ) {}
+  constructor(public readonly createPaymentDto: CreatePaymentInputDto) {}
 }
 
 @CommandHandler(CreateSubscriptionCommand)
@@ -36,10 +32,48 @@ export class CreateSubscriptionUseCase
   }
 
   async execute(command: CreateSubscriptionCommand) {
-    const { createPaymentDto, stripeCustomerId, checkoutSessionId } = command;
+    const { createPaymentDto } = command;
     const notify = this.notification.create();
 
     try {
+      const existingActiveSubscriptions = await this.paymentRepository.findByUserId(
+        createPaymentDto.userId,
+        0,
+        10,
+      );
+
+      const activeSubscription = existingActiveSubscriptions.find(
+        (sub) => sub.subscriptionStatus === SubscriptionStatusType.ACTIVE,
+      );
+
+      if (activeSubscription) {
+        this.logger.warn(
+          `User ${createPaymentDto.userId} already has an active subscription: ${activeSubscription.id}`,
+        );
+        return notify.setBadRequest(
+          'User already has an active subscription. Use additional subscription endpoint to extend existing subscription.',
+        );
+      }
+
+      const pendingSubscription = existingActiveSubscriptions.find(
+        (sub) =>
+          sub.subscriptionStatus === SubscriptionStatusType.INCOMPLETE ||
+          sub.status === PaymentStatusType.Processing,
+      );
+
+      if (pendingSubscription) {
+        this.logger.warn(
+          `User ${createPaymentDto.userId} has a pending subscription: ${pendingSubscription.id}`,
+        );
+        return notify.setBadRequest(
+          'User has a pending subscription. Please complete or cancel it before creating a new one.',
+        );
+      }
+
+      const customer = await this.stripeService.createCustomerByUserId(
+        createPaymentDto.userId,
+      );
+
       const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
       const priceId = planConfig.priceId;
       const price = await this.stripeService.getPrice(priceId);
@@ -51,18 +85,13 @@ export class CreateSubscriptionUseCase
       const subscription = await this.paymentRepository.create({
         id: paymentId,
         userId: createPaymentDto.userId,
-        subscriptionId: paymentId,
-        stripeCustomerId: stripeCustomerId,
-        stripePriceId: priceId,
-        stripeCheckoutSessionId: checkoutSessionId,
+        stripeCustomerId: customer.id,
         subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
         planType: createPaymentDto.planType,
         amount: amount,
         currency: currency,
         payType: PaymentMethodType.Stripe,
         status: PaymentStatusType.Processing,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       return notify.setValue(new PaymentViewDto(subscription));

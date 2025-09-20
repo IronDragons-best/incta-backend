@@ -1,8 +1,12 @@
-import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
+} from 'class-validator';
 import { ConfigService } from '@nestjs/config';
 
 export function IsCaptchaRequired(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isCaptchaRequired',
       target: object.constructor,

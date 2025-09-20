@@ -32,39 +32,60 @@ export class UpdatePaymentFromWebhookUseCase
       this.logger.log(`Processing invoice.paid for invoice: ${invoiceData.id}`);
 
       const stripeCustomerId = invoiceData.customer;
-      const stripeSubscriptionId = invoiceData.subscription;
+      let stripeSubscriptionId = invoiceData.subscription;
 
-      if (!stripeCustomerId) {
-        this.logger.error('No customer ID found in invoice data');
-        return notify.setBadRequest('No customer ID found in invoice data');
+      if (!stripeSubscriptionId) {
+        if (invoiceData.parent?.subscription_details?.subscription) {
+          stripeSubscriptionId = invoiceData.parent.subscription_details.subscription;
+          this.logger.log(
+            `Found subscription ID in parent.subscription_details: ${stripeSubscriptionId}`,
+          );
+        }
+        else if (
+          invoiceData.lines?.data?.[0]?.parent?.subscription_item_details?.subscription
+        ) {
+          stripeSubscriptionId =
+            invoiceData.lines.data[0].parent.subscription_item_details.subscription;
+          this.logger.log(
+            `Found subscription ID in lines.data[0].parent.subscription_item_details: ${stripeSubscriptionId}`,
+          );
+        }
       }
 
-      let payment: Payment | null | undefined = undefined;
+      this.logger.log(
+        `Extracted - Customer ID: ${stripeCustomerId}, Subscription ID: ${stripeSubscriptionId}`,
+      );
+
+      let payment: Payment | null = null;
 
       if (stripeSubscriptionId) {
         payment =
           await this.paymentRepository.findByStripeSubscriptionId(stripeSubscriptionId);
         if (payment) {
           this.logger.log(`Found payment by subscription ID: ${payment.id}`);
+        } else {
+          this.logger.warn(
+            `No payment found with subscription ID: ${stripeSubscriptionId}`,
+          );
         }
       }
 
-      if (!payment) {
-        const payments =
-          await this.paymentRepository.findByStripeCustomerId(stripeCustomerId);
-        payment = payments.find((p) => p.status === PaymentStatusType.Processing);
-
+      if (!payment && stripeCustomerId) {
+        payment = await this.paymentRepository.findByStripeCustomerId(stripeCustomerId);
         if (payment) {
-          this.logger.log(`Found pending payment by customer ID: ${payment.id}`);
+          this.logger.log(`Found payment by customer ID: ${payment.id}`);
+        } else {
+          this.logger.warn(`No payment found with customer ID: ${stripeCustomerId}`);
         }
       }
 
       if (!payment) {
-        this.logger.warn(`No payment found for customer: ${stripeCustomerId}`);
+        this.logger.error(
+          `No payment found for invoice: ${invoiceData.id}, customer: ${stripeCustomerId}, subscription: ${stripeSubscriptionId}`,
+        );
         return notify.setBadRequest('No payment found for this invoice');
       }
 
-      // Обновляем статус платежа и активируем подписку при успешном платеже
       const updateData: {
         status: PaymentStatusType;
         subscriptionStatus?: SubscriptionStatusType;
@@ -72,11 +93,7 @@ export class UpdatePaymentFromWebhookUseCase
         status: PaymentStatusType.Succeeded,
       };
 
-      // Если у платежа есть подписка и она была неполная, активируем её
-      if (
-        payment.subscriptionId &&
-        payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE
-      ) {
+      if (payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE) {
         updateData.subscriptionStatus = SubscriptionStatusType.ACTIVE;
         this.logger.log(`Activating subscription for payment: ${payment.id}`);
       }
@@ -87,23 +104,32 @@ export class UpdatePaymentFromWebhookUseCase
         this.logger.error(`Failed to update payment: ${payment.id}`);
         return notify.setBadRequest('Failed to update payment status');
       }
-      this.eventEmitter.emit(
-        'payment.success',
-        new PaymentSuccessEvent({
-          userId: payment.userId,
-          externalSubscriptionId: stripeSubscriptionId,
-          status: PaymentStatusType.Succeeded,
-          startDate: new Date(invoiceData.period_start * 1000).toISOString(),
-          endDate: new Date(invoiceData.period_end * 1000).toISOString(),
-          planType: payment.planType!,
-          paymentMethod: payment.payType,
-          paymentAmount: invoiceData.amount_paid / 100, // Stripe в центах
-          externalPaymentId: invoiceData.id,
-          billingDate: new Date(
-            invoiceData.status_transitions.paid_at * 1000,
-          ).toISOString(),
-        }),
-      );
+
+      const externalSubscriptionId = stripeSubscriptionId || payment.stripeSubscriptionId;
+
+      if (!externalSubscriptionId) {
+        this.logger.warn(
+          `No subscription ID found for payment ${payment.id}. Skipping payment success event.`,
+        );
+      } else {
+        this.eventEmitter.emit(
+          'payment.success',
+          new PaymentSuccessEvent({
+            userId: payment.userId,
+            externalSubscriptionId: externalSubscriptionId,
+            status: PaymentStatusType.Succeeded,
+            startDate: new Date(invoiceData.period_start * 1000).toISOString(),
+            endDate: new Date(invoiceData.period_end * 1000).toISOString(),
+            planType: payment.planType!,
+            paymentMethod: payment.payType,
+            paymentAmount: invoiceData.amount_paid / 100,
+            externalPaymentId: invoiceData.id,
+            billingDate: new Date(
+              invoiceData.status_transitions.paid_at * 1000,
+            ).toISOString(),
+          }),
+        );
+      }
 
       this.logger.log(`Payment status updated to active: ${payment.id}`);
       return notify.setValue({ success: true, paymentId: payment.id });

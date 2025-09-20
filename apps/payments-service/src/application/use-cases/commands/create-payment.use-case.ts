@@ -34,18 +34,34 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
     const notify = this.notification.create();
 
     try {
-      const customer = await this.stripeService.createCustomer(
-        createPaymentDto.userEmail,
+      const customer = await this.stripeService.createCustomerByUserId(
         createPaymentDto.userId,
       );
 
       const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
       const priceId = planConfig.priceId;
+      const res = (await this.createSubscriptionUseCase.execute(
+        new CreateSubscriptionCommand(createPaymentDto),
+      )) as AppNotification<PaymentViewDto>;
+
+      if (res.hasErrors()) {
+        const errorMessage = res.getErrors()?.[0]?.message || 'Failed to create subscription record for checkout';
+        return notify.setBadRequest(errorMessage);
+      }
+
+      const data = res.getValue();
+
+      if (!data) {
+        this.logger.error('Failed to create subscription record for checkout - data is null');
+        return notify.setBadRequest('Failed to create subscription record for checkout');
+      }
+
       const session = await this.stripeService.createCheckoutSession(
         customer.id,
         priceId,
         'http://localhost:3000/success',
         'http://localhost:3000/cancel',
+        data.id,
       );
 
       if (!session || !session.url) {
@@ -53,18 +69,7 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
         return notify.setBadRequest('Failed to create checkout session');
       }
 
-      const res = (await this.createSubscriptionUseCase.execute(
-        new CreateSubscriptionCommand(createPaymentDto, customer.id, session.id),
-      )) as AppNotification<PaymentViewDto>;
-
-      const data = res.getValue();
-
-      if (!data) {
-        this.logger.error('Failed to create subscription record for checkout');
-        return notify.setBadRequest('Failed to create subscription record for checkout');
-      }
-
-      return notify.setValue(new CreatePaymentResponseDto(session.url, data?.id));
+      return notify.setValue(new CreatePaymentResponseDto(session.url, data.id));
     } catch (error) {
       this.logger.error('Failed to create payment', error);
       return notify.setBadRequest('Failed to create payment');

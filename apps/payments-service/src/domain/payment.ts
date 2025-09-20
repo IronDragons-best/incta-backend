@@ -6,12 +6,6 @@ import { PaymentMethodType, PaymentStatusType, SubscriptionStatusType } from '@c
 
 export type PaymentDocument = Payment & Document;
 
-export enum PaymentStatus {
-  CANCEL = 'CANCEL',
-  PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-}
-
 export enum PlanType {
   MONTHLY = 'monthly',
   THREE_MONTH = '3month',
@@ -35,7 +29,7 @@ export class Payment {
   @IsString()
   @IsOptional()
   @Prop({ type: String, required: false })
-  subscriptionId?: string;
+  stripeCustomerId?: string;
 
   @ApiProperty({ type: String })
   @IsString()
@@ -43,23 +37,11 @@ export class Payment {
   @Prop({ type: String, required: false })
   stripeSubscriptionId?: string;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, description: 'Parent subscription ID for additional payments' })
   @IsString()
   @IsOptional()
   @Prop({ type: String, required: false })
-  stripeCustomerId?: string;
-
-  @ApiProperty({ type: String })
-  @IsString()
-  @IsOptional()
-  @Prop({ type: String, required: false })
-  stripePriceId?: string;
-
-  @ApiProperty({ type: String })
-  @IsString()
-  @IsOptional()
-  @Prop({ type: String, required: false })
-  stripeCheckoutSessionId?: string;
+  parentSubscriptionId?: string;
 
   @ApiProperty({ enum: SubscriptionStatusType })
   @IsEnum(SubscriptionStatusType)
@@ -89,45 +71,12 @@ export class Payment {
   @IsDate()
   @IsOptional()
   @Prop({ type: Date, required: false })
-  canceledAt?: Date;
-
-  @ApiProperty({ type: Boolean })
-  @IsOptional()
-  @Prop({ type: Boolean, required: false, default: false })
-  cancelAtPeriodEnd?: boolean;
-
-  @ApiProperty({ type: Date })
-  @IsDate()
-  @Prop({ type: Date, default: Date.now })
-  createdAt: Date;
-
-  @ApiProperty({ type: Date })
-  @IsDate()
-  @Prop({ type: Date, default: Date.now })
-  updatedAt: Date;
-
-  @ApiProperty({ type: Date, nullable: true })
-  @IsDate()
-  @IsOptional()
-  @Prop({ type: Date, required: false })
-  expiresAt?: Date;
-
-  @ApiProperty({ type: Date, nullable: true })
-  @IsDate()
-  @IsOptional()
-  @Prop({ type: Date, required: false })
   deletedAt?: Date;
 
   @ApiProperty({ enum: PaymentMethodType })
   @IsEnum(PaymentMethodType)
   @Prop({ type: String, enum: PaymentMethodType, required: true })
   payType: PaymentMethodType;
-
-  @ApiProperty({ type: String })
-  @IsString()
-  @IsOptional()
-  @Prop({ type: String, required: false })
-  subType?: string;
 
   @ApiProperty({ enum: PaymentStatusType })
   @IsEnum(PaymentStatusType)

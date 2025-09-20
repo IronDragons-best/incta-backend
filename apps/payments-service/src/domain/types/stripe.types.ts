@@ -26,8 +26,8 @@ export interface StripePaymentIntent {
 // Stripe Invoice типы
 export interface StripeInvoice {
   id: string;
-  customer: string;
-  subscription: string;
+  customer: string | null;
+  subscription: string | null;
   amount_paid: number;
   amount_due: number;
   currency: string;
@@ -38,6 +38,20 @@ export interface StripeInvoice {
     paid_at: number;
     voided_at?: number;
     finalized_at?: number;
+  };
+  parent?: {
+    subscription_details?: {
+      subscription: string;
+    };
+  };
+  lines?: {
+    data: Array<{
+      parent?: {
+        subscription_item_details?: {
+          subscription: string;
+        };
+      };
+    }>;
   };
 }
 
@@ -79,4 +93,8 @@ export interface StripeCheckoutSession {
   url: string | null;
   success_url: string;
   cancel_url: string;
+  metadata?: {
+    paymentId?: string;
+    [key: string]: string | undefined;
+  };
 }

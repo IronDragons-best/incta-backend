@@ -9,30 +9,17 @@ export class PaymentViewDto {
   @ApiProperty({ type: Number })
   userId: number;
 
-  @ApiProperty({ type: String })
-  subscriptionId: string;
-
-  @ApiProperty({ type: Date })
-  createdAt: Date;
-
-  @ApiProperty({ type: Date, nullable: true })
-  expiresAt?: Date | null;
-
   @ApiProperty({ enum: PaymentMethodType })
   payType: PaymentMethodType;
 
   @ApiProperty({ enum: PlanType, nullable: true })
   planType?: PlanType;
 
-  @ApiProperty({ type: String, nullable: true })
-  subType?: string | null;
-
   @ApiProperty({ enum: PaymentStatusType })
   status: PaymentStatusType;
 
   @ApiProperty({ type: Number, description: 'Sum of payment in cents' })
   amount: number;
-
 
   @ApiProperty({
     enum: SubscriptionStatusType,
@@ -47,8 +34,8 @@ export class PaymentViewDto {
   @ApiProperty({ type: Date, nullable: true, description: 'Current period end date' })
   currentPeriodEnd?: Date | null;
 
-  @ApiProperty({ type: Date, nullable: true, description: 'Cancellation date' })
-  canceledAt?: Date | null;
+  @ApiProperty({ type: String, nullable: true, description: 'Parent subscription ID for additional payments' })
+  parentSubscriptionId?: string | null;
 
   @ApiProperty({ type: Boolean, description: 'Is subscription currently active' })
   isActive: boolean;
@@ -59,19 +46,15 @@ export class PaymentViewDto {
   constructor(payment: Payment) {
     this.id = payment.id;
     this.userId = payment.userId;
-    this.subscriptionId = payment.subscriptionId || '';
-    this.createdAt = payment.createdAt;
-    this.expiresAt = payment.expiresAt || null;
     this.payType = payment.payType;
     this.planType = payment.planType;
-    this.subType = payment.subType || null;
     this.status = payment.status;
     this.amount = payment.amount;
 
     this.subscriptionStatus = payment.subscriptionStatus;
     this.currentPeriodStart = payment.currentPeriodStart || null;
     this.currentPeriodEnd = payment.currentPeriodEnd || null;
-    this.canceledAt = payment.canceledAt || null;
+    this.parentSubscriptionId = payment.parentSubscriptionId || null;
 
     this.isActive = this.calculateIsActive(payment);
     this.isExpired = this.calculateIsExpired(payment);

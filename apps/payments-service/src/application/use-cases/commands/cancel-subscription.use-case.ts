@@ -4,6 +4,7 @@ import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
 import { NotificationService, SubscriptionStatusType } from '@common';
+import { isUUID } from 'class-validator';
 
 export class CancelSubscriptionCommand {
   constructor(public readonly id: string) {}
@@ -26,6 +27,13 @@ export class CancelSubscriptionUseCase
     const { id } = command;
     const notify = this.notification.create();
 
+    if (!id || !isUUID(id)) {
+      this.logger.error(`Invalid subscription ID format: ${id}`);
+      return notify.setBadRequest(
+        'Invalid subscription ID format. Must be a valid UUID.',
+      );
+    }
+
     const subscription = await this.paymentRepository.findById(id);
 
     if (!subscription) {
@@ -33,38 +41,51 @@ export class CancelSubscriptionUseCase
       return notify.setNotFound('Subscription not found');
     }
 
+    if (subscription.currentPeriodEnd) {
+      this.logger.warn(`Subscription ${id} is already canceled`);
+      return notify.setBadRequest('Subscription is already canceled');
+    }
+
+    if (
+      subscription.subscriptionStatus !== SubscriptionStatusType.ACTIVE &&
+      subscription.subscriptionStatus !== SubscriptionStatusType.INCOMPLETE &&
+      subscription.subscriptionStatus !== SubscriptionStatusType.TRIALING
+    ) {
+      this.logger.warn(
+        `Cannot cancel subscription ${id} with status: ${subscription.subscriptionStatus}`,
+      );
+      return notify.setBadRequest(
+        `Cannot cancel subscription with status: ${subscription.subscriptionStatus}`,
+      );
+    }
+
     try {
-      if (subscription.subscriptionStatus === SubscriptionStatusType.INCOMPLETE) {
-        if (subscription.stripeCheckoutSessionId) {
-          try {
-            await this.stripeService.expireCheckoutSession(
-              subscription.stripeCheckoutSessionId,
-            );
-            this.logger.log(
-              `Expired checkout session: ${subscription.stripeCheckoutSessionId}`,
-            );
-          } catch (stripeError: any) {
-            this.logger.warn(`Could not expire checkout session: ${stripeError.message}`);
-          }
-        }
-      } else if (subscription.stripeSubscriptionId) {
-        const canceledStripeSubscription = await this.stripeService.cancelSubscription(subscription.stripeSubscriptionId);
+      if (
+        subscription.subscriptionStatus !== SubscriptionStatusType.INCOMPLETE &&
+        subscription.stripeSubscriptionId
+      ) {
+        const canceledStripeSubscription = await this.stripeService.cancelSubscription(
+          subscription.stripeSubscriptionId,
+        );
         this.logger.log(
           `Disabled auto-renewal for Stripe subscription: ${subscription.stripeSubscriptionId}`,
         );
 
-        const updateData: any = {
-          canceledAt: canceledStripeSubscription.canceled_at
-            ? new Date(canceledStripeSubscription.canceled_at * 1000)
-            : new Date(),
-        };
+        const updateData: any = {};
 
         if (canceledStripeSubscription.start_date) {
-          updateData.currentPeriodStart = new Date(canceledStripeSubscription.start_date * 1000);
+          updateData.currentPeriodStart = new Date(
+            canceledStripeSubscription.start_date * 1000,
+          );
         }
 
-        if (canceledStripeSubscription.cancel_at && canceledStripeSubscription.cancel_at_period_end) {
-          updateData.currentPeriodEnd = new Date(canceledStripeSubscription.cancel_at * 1000);
+        if (
+          canceledStripeSubscription.cancel_at &&
+          canceledStripeSubscription.cancel_at_period_end
+        ) {
+          updateData.currentPeriodEnd = new Date(
+            canceledStripeSubscription.cancel_at * 1000,
+          );
         }
 
         const updatedSubscription = await this.paymentRepository.update(id, updateData);
@@ -74,7 +95,7 @@ export class CancelSubscriptionUseCase
       }
 
       const updatedSubscription = await this.paymentRepository.update(id, {
-        canceledAt: new Date(),
+        subscriptionStatus: SubscriptionStatusType.CANCELED,
       });
 
       this.logger.log(`Successfully disabled auto-renewal for subscription: ${id}`);

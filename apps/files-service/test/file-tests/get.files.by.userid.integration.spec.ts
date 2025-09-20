@@ -33,7 +33,10 @@ describe('Get Files by User ID', () => {
         { provide: QueryBus, useValue: mockQueryBus },
         { provide: CommandBus, useValue: mockCommandBus },
         NotificationService,
-        { provide: FilesConfigService, useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' } },
+        {
+          provide: FilesConfigService,
+          useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' },
+        },
       ],
     }).compile();
 

@@ -58,17 +58,10 @@ export class HandlePaymentFailedUseCase
       }
 
       if (!payment) {
-        const payments =
-          await this.paymentRepository.findByStripeCustomerId(stripeCustomerId);
-        payment = payments.find(
-          (p) =>
-            p.status === PaymentStatusType.Processing ||
-            p.status === PaymentStatusType.Succeeded,
+        this.logger.warn(
+          `No payment found with subscription ID for failed payment: ${paymentIntentData.id}`,
         );
-
-        if (payment) {
-          this.logger.log(`Found payment by customer ID: ${payment.id}`);
-        }
+        return notify.setBadRequest('No payment found for this failed payment');
       }
 
       if (!payment) {
@@ -79,7 +72,6 @@ export class HandlePaymentFailedUseCase
       const updatedPayment = await this.paymentRepository.update(payment.id, {
         status: PaymentStatusType.Failed,
         subscriptionStatus: SubscriptionStatusType.CANCELED,
-        canceledAt: new Date(),
       });
 
       if (!updatedPayment) {

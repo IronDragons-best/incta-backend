@@ -65,18 +65,41 @@ export class WebhookService {
               event.data.object as unknown as StripeSubscription,
             ),
           );
-
+          break;
+        case 'customer.created':
+          this.logger.log(`Customer created: ${(event.data.object as any).id}`);
+          break;
+        case 'customer.updated':
+          this.logger.log(`Customer updated: ${(event.data.object as any).id}`);
+          break;
+        case 'payment_intent.created':
+          this.logger.log(`Payment intent created: ${(event.data.object as any).id}`);
+          break;
+        case 'payment_intent.succeeded':
+          this.logger.log(`Payment intent succeeded: ${(event.data.object as any).id}`);
           break;
         case 'payment_intent.payment_failed':
           await this.handlePaymentFailedUseCase.execute(
             new HandlePaymentFailedCommand(event.data.object as StripePaymentIntent),
           );
           break;
+        case 'invoice.created':
+          this.logger.log(`Invoice created: ${(event.data.object as any).id}`);
+          break;
+        case 'invoice.finalized':
+          this.logger.log(`Invoice finalized: ${(event.data.object as any).id}`);
+          break;
         case 'invoice.paid':
+        case 'invoice.payment_succeeded':
           await this.updatePaymentFromWebhookUseCase.execute(
             new UpdatePaymentFromWebhookCommand(
               event.data.object as unknown as StripeInvoice,
             ),
+          );
+          break;
+        case 'invoice_payment.paid':
+          this.logger.log(
+            `Invoice payment event: ${event.type} - ${(event.data.object as any).id}`,
           );
           break;
         default:
@@ -92,28 +115,30 @@ export class WebhookService {
 
   private async handleCheckoutSessionCompleted(session: StripeCheckoutSession) {
     try {
-      const customerId = session.customer;
-      const sessionId = session.id;
       const subscriptionId = session.subscription;
+      const paymentId = session.metadata?.paymentId;
 
       this.logger.log(
-        `Checkout session completed for customer ${customerId}, session ${sessionId}, subscription ${subscriptionId}`,
+        `Checkout session completed with subscription ${subscriptionId}, payment ${paymentId}`,
       );
 
-      if (subscriptionId) {
-        const payment =
-          await this.paymentRepository.findByStripeCheckoutSessionId(sessionId);
+      if (subscriptionId && paymentId) {
+        const payment = await this.paymentRepository.findById(paymentId);
 
         if (payment) {
-          await this.paymentRepository.updateByCheckoutSessionId(sessionId, {
+          await this.paymentRepository.update(payment.id, {
             stripeSubscriptionId: subscriptionId,
           });
           this.logger.log(
             `Updated payment ${payment.id} with Stripe subscription ID: ${subscriptionId}`,
           );
         } else {
-          this.logger.warn(`Payment not found for checkout session: ${sessionId}`);
+          this.logger.warn(`Payment not found by ID: ${paymentId}`);
         }
+      } else {
+        this.logger.warn(
+          `Missing subscription ID (${subscriptionId}) or payment ID (${paymentId}) in checkout session`,
+        );
       }
     } catch (error) {
       this.logger.error('Failed to handle checkout.session.completed', error);
