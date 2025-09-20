@@ -73,6 +73,8 @@ export class WebhookService {
           );
           break;
         case 'invoice.paid':
+        case 'invoice.payment_succeeded':
+        case 'invoice_payment.paid':
           await this.updatePaymentFromWebhookUseCase.execute(
             new UpdatePaymentFromWebhookCommand(
               event.data.object as unknown as StripeInvoice,
@@ -92,28 +94,30 @@ export class WebhookService {
 
   private async handleCheckoutSessionCompleted(session: StripeCheckoutSession) {
     try {
-      const customerId = session.customer;
-      const sessionId = session.id;
       const subscriptionId = session.subscription;
+      const paymentId = session.metadata?.paymentId;
 
       this.logger.log(
-        `Checkout session completed for customer ${customerId}, session ${sessionId}, subscription ${subscriptionId}`,
+        `Checkout session completed with subscription ${subscriptionId}, payment ${paymentId}`,
       );
 
-      if (subscriptionId) {
-        const payment =
-          await this.paymentRepository.findByStripeCheckoutSessionId(sessionId);
+      if (subscriptionId && paymentId) {
+        const payment = await this.paymentRepository.findById(paymentId);
 
         if (payment) {
-          await this.paymentRepository.updateByCheckoutSessionId(sessionId, {
+          await this.paymentRepository.update(payment.id, {
             stripeSubscriptionId: subscriptionId,
           });
           this.logger.log(
             `Updated payment ${payment.id} with Stripe subscription ID: ${subscriptionId}`,
           );
         } else {
-          this.logger.warn(`Payment not found for checkout session: ${sessionId}`);
+          this.logger.warn(`Payment not found by ID: ${paymentId}`);
         }
+      } else {
+        this.logger.warn(
+          `Missing subscription ID (${subscriptionId}) or payment ID (${paymentId}) in checkout session`,
+        );
       }
     } catch (error) {
       this.logger.error('Failed to handle checkout.session.completed', error);

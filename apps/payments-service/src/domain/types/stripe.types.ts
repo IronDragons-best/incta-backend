@@ -27,7 +27,7 @@ export interface StripePaymentIntent {
 export interface StripeInvoice {
   id: string;
   customer: string;
-  subscription: string;
+  subscription: string | null;
   amount_paid: number;
   amount_due: number;
   currency: string;
@@ -79,4 +79,8 @@ export interface StripeCheckoutSession {
   url: string | null;
   success_url: string;
   cancel_url: string;
+  metadata?: {
+    paymentId?: string;
+    [key: string]: string | undefined;
+  };
 }

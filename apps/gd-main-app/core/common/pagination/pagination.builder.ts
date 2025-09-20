@@ -7,7 +7,12 @@ export class PaginationSettings {
   readonly sortBy: string;
   readonly sortDirection: SortOrder;
 
-  constructor(pageNumber: number, pageSize: number, sortBy: string, sortDirection: SortOrder) {
+  constructor(
+    pageNumber: number,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: SortOrder,
+  ) {
     this.pageNumber = pageNumber;
     this.pageSize = pageSize;
     this.sortBy = sortBy;
@@ -20,7 +25,11 @@ export class PaginationSettings {
 }
 
 export class PaginationBuilder {
-  static build(dto: PaginationQueryDto, allowedFields: string[], defaultField = 'createdAt'): PaginationSettings {
+  static build(
+    dto: PaginationQueryDto,
+    allowedFields: string[],
+    defaultField = 'createdAt',
+  ): PaginationSettings {
     const pageNumber = toSafeNumber(dto.pageNumber, 1);
     const pageSize = toSafeNumber(dto.pageSize, 10);
     const sortBy = pickSortField(dto.sortBy, allowedFields, defaultField);

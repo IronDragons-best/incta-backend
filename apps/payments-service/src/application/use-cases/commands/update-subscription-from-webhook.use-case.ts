@@ -44,30 +44,14 @@ export class UpdateSubscriptionFromWebhookUseCase
     const { stripeSubscription } = command;
     const notify = this.notification.create();
 
-    let subscription = await this.paymentRepository.findByStripeSubscriptionId(
+    const subscription = await this.paymentRepository.findByStripeSubscriptionId(
       stripeSubscription.id,
     );
 
-    if (!subscription && stripeSubscription.customer) {
-      const customerSubscriptions = await this.paymentRepository.findByStripeCustomerId(
-        stripeSubscription.customer,
+    if (!subscription) {
+      this.logger.warn(
+        `No subscription found for Stripe subscription ID: ${stripeSubscription.id}`,
       );
-
-      subscription =
-        customerSubscriptions.find(
-          (sub) =>
-            !sub.stripeSubscriptionId ||
-            sub.subscriptionStatus !== SubscriptionStatusType.CANCELED,
-        ) || null;
-
-      if (subscription) {
-        subscription = await this.paymentRepository.update(subscription.id, {
-          stripeSubscriptionId: stripeSubscription.id,
-        });
-        this.logger.log(
-          `Updated subscription ${subscription?.id} with Stripe subscription ID: ${stripeSubscription.id}`,
-        );
-      }
     }
 
     if (!subscription) {

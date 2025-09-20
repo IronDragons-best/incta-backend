@@ -87,7 +87,10 @@ export class PaymentsConfigService extends ConfigService {
     return priceId;
   }
 
-  getPlanConfig(planType: 'monthly' | '3month' | '6month' | 'yearly'): { productId: string; priceId: string } {
+  getPlanConfig(planType: 'monthly' | '3month' | '6month' | 'yearly'): {
+    productId: string;
+    priceId: string;
+  } {
     switch (planType) {
       case 'monthly':
         return {

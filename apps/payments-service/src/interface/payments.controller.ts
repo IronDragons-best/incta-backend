@@ -19,6 +19,7 @@ import { WebhookService } from '../application/webhook.service';
 import {
   CancelPaymentSwagger,
   CreatePaymentSwagger,
+  CreateAdditionalSubscriptionSwagger,
   GetPaymentsBySubscriptionSwagger,
   GetPaymentsSwagger,
   GetPaymentSwagger,
@@ -27,7 +28,9 @@ import {
   StripeWebhookSwagger,
 } from '../../core/decorators/swagger';
 import { CreatePaymentInputDto } from './dto/input/payment.create.input.dto';
+import { CreateAdditionalSubscriptionInputDto } from './dto/input/additional-subscription.input.dto';
 import { CreatePaymentCommand } from '../application/use-cases/commands/create-payment.use-case';
+import { CreateAdditionalSubscriptionCommand } from '../application/use-cases/commands/create-additional-subscription.use-case';
 import { GetPaymentQueryCommand } from '../application/use-cases/queries/get-payment.query';
 import { PaymentQueryDto } from './dto/input/payment.query.dto';
 import { PaginationQueryDto } from './dto/input/pagination.query.dto';
@@ -61,6 +64,12 @@ export class PaymentsController {
     return this.commandBus.execute(new CreatePaymentCommand(createPaymentDto));
   }
 
+  @Post('payments/additional')
+  @CreateAdditionalSubscriptionSwagger()
+  async createAdditionalSubscription(@Body() createAdditionalSubscriptionDto: CreateAdditionalSubscriptionInputDto) {
+    return this.commandBus.execute(new CreateAdditionalSubscriptionCommand(createAdditionalSubscriptionDto));
+  }
+
   @Get('payments/:id')
   @GetPaymentSwagger()
   async getPayment(@Param('id') id: string) {
@@ -77,10 +86,10 @@ export class PaymentsController {
   @GetUserPaymentsSwagger()
   async getUserPayments(
     @Param('userId') userId: string,
-    @Query() query: PaginationQueryDto
+    @Query() query: PaginationQueryDto,
   ) {
     return this.queryBus.execute(
-      new GetUserPaymentsQueryCommand(parseInt(userId), query.page, query.limit)
+      new GetUserPaymentsQueryCommand(parseInt(userId), query.page, query.limit),
     );
   }
 
@@ -88,10 +97,9 @@ export class PaymentsController {
   @GetPaymentsBySubscriptionSwagger()
   async getPaymentsBySubscription(
     @Param('subscriptionId') subscriptionId: string,
-    @Query() query: PaginationQueryDto
   ) {
     return this.queryBus.execute(
-      new GetPaymentsBySubscriptionQueryCommand(subscriptionId, query.page, query.limit),
+      new GetPaymentsBySubscriptionQueryCommand(subscriptionId),
     );
   }
 

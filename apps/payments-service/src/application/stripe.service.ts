@@ -13,12 +13,12 @@ export class StripeService {
     });
   }
 
-  async createCustomer(email: string, userId: number): Promise<Stripe.Customer> {
+  async createCustomerByUserId(userId: number): Promise<Stripe.Customer> {
     return this.stripe.customers.create({
-      email,
       metadata: { userId },
     });
   }
+
 
   async createSubscription(
     customerId: string,
@@ -67,8 +67,9 @@ export class StripeService {
     priceId: string,
     successUrl: string,
     cancelUrl: string,
+    paymentId?: string,
   ): Promise<Stripe.Checkout.Session> {
-    return this.stripe.checkout.sessions.create({
+    const sessionData: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [
@@ -80,7 +81,13 @@ export class StripeService {
       mode: 'subscription',
       success_url: successUrl,
       cancel_url: cancelUrl,
-    });
+    };
+
+    if (paymentId) {
+      sessionData.metadata = { paymentId };
+    }
+
+    return this.stripe.checkout.sessions.create(sessionData);
   }
 
   async retrieveCustomer(

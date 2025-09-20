@@ -45,7 +45,12 @@ describe('Get Posts Integration Test', () => {
         NotificationInterceptor,
         {
           provide: CustomLogger,
-          useValue: { setContext: jest.fn(), warn: jest.fn(), error: jest.fn(), log: jest.fn() },
+          useValue: {
+            setContext: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            log: jest.fn(),
+          },
         },
         {
           provide: PostsQueryRepository,
@@ -110,32 +115,33 @@ describe('Get Posts Integration Test', () => {
 
       queryBus.execute.mockResolvedValue(AppNotification.success(mockPosts));
 
-      const response = await request(app.getHttpServer())
-        .get('/posts')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/posts').expect(200);
 
       expect(queryBus.execute).toHaveBeenCalledWith(
-        new GetPostsQuery(expect.objectContaining({
-          pageNumber: '1',
-          pageSize: '10',
-          sortBy: 'createdAt',
-          sortDirection: 'DESC'
-        }))
+        new GetPostsQuery(
+          expect.objectContaining({
+            pageNumber: '1',
+            pageSize: '10',
+            sortBy: 'createdAt',
+            sortDirection: 'DESC',
+          }),
+        ),
       );
 
-      expect(response.body).toEqual(expect.objectContaining({
-        items: expect.arrayContaining([
-          expect.objectContaining({
-            id: 1,
-            createdAt: expect.any(String),
-          }),
-        ]),
-        totalCount: 2,
-        pagesCount: 1,
-        page: 1,
-        pageSize: 10,
-      }));
-
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              id: 1,
+              createdAt: expect.any(String),
+            }),
+          ]),
+          totalCount: 2,
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+        }),
+      );
     });
 
     it('200 - should successfully get posts with pagination parameters', async () => {
@@ -170,26 +176,30 @@ describe('Get Posts Integration Test', () => {
         .expect(200);
 
       expect(queryBus.execute).toHaveBeenCalledWith(
-        new GetPostsQuery(expect.objectContaining({
-          pageNumber: '2',
-          pageSize: '5',
-          sortBy: 'createdAt',
-          sortDirection: 'DESC',
-        }))
+        new GetPostsQuery(
+          expect.objectContaining({
+            pageNumber: '2',
+            pageSize: '5',
+            sortBy: 'createdAt',
+            sortDirection: 'DESC',
+          }),
+        ),
       );
 
-      expect(response.body).toEqual(expect.objectContaining({
-        items: expect.arrayContaining([
-          expect.objectContaining({
-            id: 3,
-            createdAt: expect.any(String),
-          }),
-        ]),
-        totalCount: 10,
-        pagesCount: 2,
-        page: 2,
-        pageSize: 5,
-      }));
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              id: 3,
+              createdAt: expect.any(String),
+            }),
+          ]),
+          totalCount: 10,
+          pagesCount: 2,
+          page: 2,
+          pageSize: 5,
+        }),
+      );
     });
 
     it('200 - should successfully get posts filtered by userId', async () => {
@@ -218,9 +228,11 @@ describe('Get Posts Integration Test', () => {
         .expect(200);
 
       expect(queryBus.execute).toHaveBeenCalledWith(
-        new GetPostsQuery(expect.objectContaining({
-          userId: userId,
-        }))
+        new GetPostsQuery(
+          expect.objectContaining({
+            userId: userId,
+          }),
+        ),
       );
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -236,7 +248,6 @@ describe('Get Posts Integration Test', () => {
           pageSize: 10,
         }),
       );
-
     });
 
     it('200 - should return empty list when no posts found', async () => {
@@ -250,9 +261,7 @@ describe('Get Posts Integration Test', () => {
 
       queryBus.execute.mockResolvedValue(AppNotification.success(emptyResult));
 
-      const response = await request(app.getHttpServer())
-        .get('/posts')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/posts').expect(200);
 
       expect(response.body).toEqual(emptyResult);
     });
@@ -264,10 +273,7 @@ describe('Get Posts Integration Test', () => {
         sortDirection: 'INVALID',
       };
 
-      await request(app.getHttpServer())
-        .get('/posts')
-        .query(invalidParams)
-        .expect(400);
+      await request(app.getHttpServer()).get('/posts').query(invalidParams).expect(400);
 
       expect(queryBus.execute).not.toHaveBeenCalled();
     });

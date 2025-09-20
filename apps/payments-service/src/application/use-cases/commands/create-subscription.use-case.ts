@@ -14,11 +14,7 @@ import { CustomLogger } from '@monitoring';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 
 export class CreateSubscriptionCommand {
-  constructor(
-    public readonly createPaymentDto: CreatePaymentInputDto,
-    public readonly stripeCustomerId: string,
-    public readonly checkoutSessionId: string,
-  ) {}
+  constructor(public readonly createPaymentDto: CreatePaymentInputDto) {}
 }
 
 @CommandHandler(CreateSubscriptionCommand)
@@ -36,7 +32,7 @@ export class CreateSubscriptionUseCase
   }
 
   async execute(command: CreateSubscriptionCommand) {
-    const { createPaymentDto, stripeCustomerId, checkoutSessionId } = command;
+    const { createPaymentDto } = command;
     const notify = this.notification.create();
 
     try {
@@ -51,18 +47,12 @@ export class CreateSubscriptionUseCase
       const subscription = await this.paymentRepository.create({
         id: paymentId,
         userId: createPaymentDto.userId,
-        subscriptionId: paymentId,
-        stripeCustomerId: stripeCustomerId,
-        stripePriceId: priceId,
-        stripeCheckoutSessionId: checkoutSessionId,
         subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
         planType: createPaymentDto.planType,
         amount: amount,
         currency: currency,
         payType: PaymentMethodType.Stripe,
         status: PaymentStatusType.Processing,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       return notify.setValue(new PaymentViewDto(subscription));

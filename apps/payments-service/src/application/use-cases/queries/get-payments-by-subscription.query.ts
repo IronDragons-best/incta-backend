@@ -1,15 +1,11 @@
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
-import { PaymentListResponseDto } from '../../../interface/dto/output/payment.view.dto';
+import { PaymentViewDto } from '../../../interface/dto/output/payment.view.dto';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
 import { NotificationService } from '@common';
 
 export class GetPaymentsBySubscriptionQueryCommand {
-  constructor(
-    public readonly subscriptionId: string,
-    public readonly page: number = 1,
-    public readonly limit: number = 50
-  ) {}
+  constructor(public readonly subscriptionId: string) {}
 }
 
 @QueryHandler(GetPaymentsBySubscriptionQueryCommand)
@@ -25,22 +21,22 @@ export class GetPaymentsBySubscriptionQuery
   }
 
   async execute(command: GetPaymentsBySubscriptionQueryCommand): Promise<any> {
-    const { subscriptionId, page, limit } = command;
+    const { subscriptionId } = command;
     const notify = this.notification.create();
 
     try {
-      const offset = (page - 1) * limit;
+      const payment = await this.paymentRepository.findById(subscriptionId);
 
-      const [payments, total] = await Promise.all([
-        this.paymentRepository.findBySubscriptionId(subscriptionId, offset, limit),
-        this.paymentRepository.countBySubscriptionId(subscriptionId),
-      ]);
+      if (!payment) {
+        this.logger.warn(`Payment not found for subscription: ${subscriptionId}`);
+        return notify.setNotFound('Payment not found for this subscription');
+      }
 
-      const result = new PaymentListResponseDto(payments, total, page, limit);
+      const result = new PaymentViewDto(payment);
       return notify.setValue(result);
     } catch (error) {
-      this.logger.error('Failed to get payments by subscription', error);
-      return notify.setBadRequest('Failed to get payments by subscription');
+      this.logger.error('Failed to get payment by subscription', error);
+      return notify.setBadRequest('Failed to get payment by subscription');
     }
   }
 }

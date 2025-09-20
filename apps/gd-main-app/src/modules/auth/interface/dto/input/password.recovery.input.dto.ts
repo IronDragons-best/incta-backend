@@ -5,7 +5,7 @@ import { IsCaptchaRequired } from '../../../../../../core/decorators/validation/
 export class PasswordRecoveryInputDto {
   @ApiProperty({
     description: 'Email address of the user requesting password recovery',
-    example: 'example@gmail.com'
+    example: 'example@gmail.com',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -13,7 +13,7 @@ export class PasswordRecoveryInputDto {
 
   @ApiProperty({
     description: 'Captcha token to verify the request',
-    example: 'captcha-token-12345'
+    example: 'captcha-token-12345',
   })
   @IsCaptchaRequired()
   captchaToken: string;
