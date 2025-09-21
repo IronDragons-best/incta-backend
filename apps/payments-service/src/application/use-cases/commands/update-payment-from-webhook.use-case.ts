@@ -1,14 +1,22 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { CustomLogger } from '@monitoring';
-import { NotificationService, PaymentStatusType, SubscriptionStatusType } from '@common';
+import {
+  NotificationService,
+  PaymentStatusType,
+  StripeLineItem,
+  SubscriptionStatusType,
+} from '@common';
 import { Payment } from '../../../domain/payment';
 import { StripeInvoice } from '../../../domain/types/stripe.types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentSuccessEvent } from '../../../../core/events/payment-success.event';
 
 export class UpdatePaymentFromWebhookCommand {
-  constructor(public readonly invoiceData: StripeInvoice) {}
+  constructor(
+    public readonly invoiceData: StripeInvoice,
+    public readonly eventType: string,
+  ) {}
 }
 
 @CommandHandler(UpdatePaymentFromWebhookCommand)
@@ -40,8 +48,7 @@ export class UpdatePaymentFromWebhookUseCase
           this.logger.log(
             `Found subscription ID in parent.subscription_details: ${stripeSubscriptionId}`,
           );
-        }
-        else if (
+        } else if (
           invoiceData.lines?.data?.[0]?.parent?.subscription_item_details?.subscription
         ) {
           stripeSubscriptionId =
@@ -112,23 +119,33 @@ export class UpdatePaymentFromWebhookUseCase
           `No subscription ID found for payment ${payment.id}. Skipping payment success event.`,
         );
       } else {
-        this.eventEmitter.emit(
-          'payment.success',
-          new PaymentSuccessEvent({
-            userId: payment.userId,
-            externalSubscriptionId: externalSubscriptionId,
-            status: PaymentStatusType.Succeeded,
-            startDate: new Date(invoiceData.period_start * 1000).toISOString(),
-            endDate: new Date(invoiceData.period_end * 1000).toISOString(),
-            planType: payment.planType!,
-            paymentMethod: payment.payType,
-            paymentAmount: invoiceData.amount_paid / 100,
-            externalPaymentId: invoiceData.id,
-            billingDate: new Date(
-              invoiceData.status_transitions.paid_at * 1000,
-            ).toISOString(),
-          }),
-        );
+        if (command.eventType === 'invoice.payment_succeeded') {
+          const lineItems = invoiceData.lines!.data as StripeLineItem[];
+
+          if (lineItems.length === 0) {
+            throw new Error('Invoice has no line items');
+          }
+
+          const period = lineItems[0].period;
+          console.log('123432423423423423423423423423423424');
+          this.eventEmitter.emit(
+            'payment.success',
+            new PaymentSuccessEvent({
+              userId: payment.userId,
+              externalSubscriptionId: payment.id,
+              status: PaymentStatusType.Succeeded,
+              startDate: new Date(period.start * 1000).toISOString(),
+              endDate: new Date(period.end * 1000).toISOString(),
+              planType: payment.planType!,
+              paymentMethod: payment.payType,
+              paymentAmount: invoiceData.amount_paid / 100,
+              externalPaymentId: invoiceData.id,
+              billingDate: new Date(
+                invoiceData.status_transitions.paid_at * 1000,
+              ).toISOString(),
+            }),
+          );
+        }
       }
 
       this.logger.log(`Payment status updated to active: ${payment.id}`);

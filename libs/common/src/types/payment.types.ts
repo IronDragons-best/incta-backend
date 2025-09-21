@@ -109,3 +109,16 @@ export interface SubscriptionAutoPaymentCancelledPayload {
   reason?: string; // например, 'user_request' или 'payment_failed'
   currentPeriodEnd: string; // дата конца текущего оплаченного периода
 }
+
+export interface StripeLineItemPeriod {
+  start: number;
+  end: number;
+}
+
+export interface StripeLineItem {
+  id: string;
+  amount: number;
+  currency: string;
+  description: string;
+  period: StripeLineItemPeriod;
+}

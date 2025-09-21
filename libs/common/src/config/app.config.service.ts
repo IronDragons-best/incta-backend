@@ -1,11 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PlanType } from '@common/types/payment.types';
 
 @Injectable()
 export class AppConfigService extends ConfigService {
+  readonly prices = {
+    monthly: this.get<number>('BUSINESS_MONTHLY_PRICE') || 0,
+    threeMonth: this.get<number>('BUSINESS_THREE_MONTH_PRICE') || 0,
+    sixMonth: this.get<number>('BUSINESS_SIX_MONTH_PRICE') || 0,
+    yearly: this.get<number>('BUSINESS_YEARLY_PRICE') || 0,
+  };
   constructor(configService: ConfigService) {
     super(configService['internalConfig']);
+
+    if (!this.prices.monthly) {
+      throw new Error('Business monthly price is required');
+    }
+    if (!this.prices.threeMonth) {
+      throw new Error('Business three month price is required');
+    }
+    if (!this.prices.sixMonth) {
+      throw new Error('Business six month price is required');
+    }
+    if (!this.prices.yearly) {
+      throw new Error('Business yearly price is required');
+    }
   }
+
   // Геттеры для общих настроек
   get port(): number {
     const port = this.get<string>('PORT');
@@ -268,5 +289,36 @@ export class AppConfigService extends ConfigService {
     }
 
     return paymentServiceHost;
+  }
+
+  get paymentsAdminLogin(): string {
+    const login = this.get<string>('PAYMENTS_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Payments admin login is required');
+    }
+    return login;
+  }
+
+  get paymentsAdminPassword(): string {
+    const password = this.get<string>('PAYMENTS_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Payments admin password is required');
+    }
+    return password;
+  }
+
+  getBusinessPrice(planType: PlanType): number {
+    switch (planType) {
+      case PlanType.MONTHLY:
+        return this.prices.monthly;
+      case PlanType.THREE_MONTH:
+        return this.prices.threeMonth;
+      case PlanType.SIX_MONTH:
+        return this.prices.sixMonth;
+      case PlanType.YEARLY:
+        return this.prices.yearly;
+      default:
+        throw new Error(`Unknown plan type}`);
+    }
   }
 }

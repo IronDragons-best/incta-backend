@@ -1,13 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SubscriptionPlan } from '@common';
+import { PlanType, SubscriptionPlan } from '@common';
 
 export class SubscriptionPlanViewDto {
-  constructor(plan: SubscriptionPlan, price: number) {
+  constructor(plan: SubscriptionPlan, planType: PlanType, price: number) {
     this.plan = plan;
+    this.planType = planType;
     this.price = price;
   }
+
   @ApiProperty({ default: SubscriptionPlan.Business })
   plan: SubscriptionPlan;
+
+  @ApiProperty({ enum: PlanType, default: PlanType.MONTHLY })
+  planType: PlanType;
 
   @ApiProperty({ default: 2.49 })
   price: number;
@@ -25,15 +30,8 @@ export class PagedSubscriptionPlansViewDto {
 
   static mapToView(plans: SubscriptionPlanViewDto[], currentPlan: SubscriptionPlan) {
     const viewDto = new PagedSubscriptionPlansViewDto();
-
-    viewDto.plans = plans.map((p) => {
-      return {
-        plan: p.plan,
-        price: p.price,
-      };
-    });
+    viewDto.plans = plans;
     viewDto.currentPlan = currentPlan;
-
     return viewDto;
   }
 }

@@ -34,7 +34,11 @@ export class PaymentViewDto {
   @ApiProperty({ type: Date, nullable: true, description: 'Current period end date' })
   currentPeriodEnd?: Date | null;
 
-  @ApiProperty({ type: String, nullable: true, description: 'Parent subscription ID for additional payments' })
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'Parent subscription ID for additional payments',
+  })
   parentSubscriptionId?: string | null;
 
   @ApiProperty({ type: Boolean, description: 'Is subscription currently active' })

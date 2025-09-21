@@ -53,6 +53,8 @@ export class WebhookService {
           break;
         case 'customer.subscription.created':
         case 'customer.subscription.updated':
+          console.log('sub_updated:', event.data.object);
+
           await this.updateSubscriptionFromWebhookUseCase.execute(
             new UpdateSubscriptionFromWebhookCommand(
               event.data.object as unknown as StripeSubscription,
@@ -76,6 +78,8 @@ export class WebhookService {
           this.logger.log(`Payment intent created: ${(event.data.object as any).id}`);
           break;
         case 'payment_intent.succeeded':
+          console.log('intent: ', event.data.object);
+
           this.logger.log(`Payment intent succeeded: ${(event.data.object as any).id}`);
           break;
         case 'payment_intent.payment_failed':
@@ -94,6 +98,7 @@ export class WebhookService {
           await this.updatePaymentFromWebhookUseCase.execute(
             new UpdatePaymentFromWebhookCommand(
               event.data.object as unknown as StripeInvoice,
+              event.type,
             ),
           );
           break;

@@ -24,6 +24,7 @@ export class PaymentEventsController {
   private readonly MAX_RETRY_ATTEMPTS = 3;
   private readonly RETRY_HEADER = 'x-retry-count';
   private readonly RETRY_DELAY_MS = 3000;
+  private counter = 0;
 
   constructor(
     private readonly commandBus: CommandBus,
@@ -37,7 +38,8 @@ export class PaymentEventsController {
     @Payload() data: PaymentSuccessPayload,
     @Ctx() context: RmqContext,
   ) {
-    console.log('somedata ', data);
+    console.log('somedata ', data, 'counter: ', this.counter);
+    this.counter++;
     const userId = data.userId;
     this.logger.log(`Processing payment success for user ${userId}`);
     console.log('payment success');

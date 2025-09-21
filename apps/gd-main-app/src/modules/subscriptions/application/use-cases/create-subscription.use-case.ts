@@ -5,6 +5,7 @@ import {
   NotificationService,
   PaymentMethodType,
   PlanType,
+  WithoutFieldErrorResponseDto,
 } from '@common';
 import { UsersRepository } from '../../../users/infrastructure/users.repository';
 import { User } from '../../../users/domain/user.entity';
@@ -13,7 +14,8 @@ import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import { HttpService } from '@nestjs/axios';
 import { CreatePaymentResponseDto } from '../../../../../../payments-service/src/interface/dto/output/payment.view.dto';
 import { firstValueFrom, timeout } from 'rxjs';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, HttpException } from '@nestjs/common';
+import { AxiosError } from 'axios';
 
 export class CreateSubscriptionCommand {
   constructor(
@@ -57,6 +59,33 @@ export class CreateSubscriptionUseCase
       return notify.setNotFound('User not found');
     }
 
+    if (user.hasActiveSubscription) {
+      const currentSubscription = await this.subscriptionRepository.findOneByUserId(
+        user.id,
+      );
+      if (currentSubscription) {
+        const result = await this.createAdditional({
+          userId: command.userId,
+          planType: command.planType,
+          payType: command.paymentMethod,
+          existingSubscriptionId: currentSubscription.subscriptionId,
+        });
+
+        console.log('add payment: ', result);
+        const userSubscription: UserSubscriptionEntity = user.createSubscriptionForUser(
+          command.planType,
+          command.paymentMethod,
+          result.subscriptionId,
+        );
+        const sub = await this.subscriptionRepository.save(userSubscription);
+
+        return notify.setValue({
+          subscriptionId: sub.id,
+          checkoutUrl: result.url,
+        });
+      }
+    }
+
     const result = await this.createPayment({
       userId: user.id,
       userEmail: user.email,
@@ -84,22 +113,84 @@ export class CreateSubscriptionUseCase
   }): Promise<CreatePaymentResponseDto> {
     const url = `${this.paymentUrl}/payments`;
 
-    // TODO: заменить на configService значения, добавить в headers
-    const paymentAdminLogin = 'admin';
-    const paymentAdminPassword = 'admin';
+    const paymentAdminLogin = this.configService.paymentsAdminLogin;
+    const paymentAdminPassword = this.configService.paymentsAdminPassword;
 
     try {
       const response = await firstValueFrom(
         this.httpService
-          .post<CreatePaymentResponseDto>(url, payload)
+          .post<CreatePaymentResponseDto>(url, payload, {
+            headers: {
+              Authorization: `Basic ${Buffer.from(`${paymentAdminLogin}:${paymentAdminPassword}`).toString('base64')}`,
+            },
+          })
           .pipe(timeout(10000)),
       );
 
       console.log(response.data);
       return response.data;
     } catch (error: unknown) {
-      this.logger.error('Error creating payment', error as any);
-      throw new Error('Payment service is unavailable. Please try again later.');
+      if (error instanceof AxiosError) {
+        if (error.response?.data) {
+          const status = error.response.status;
+          const data = error.response.data as WithoutFieldErrorResponseDto;
+
+          if (status === 400) {
+            throw new BadRequestException(data);
+          }
+          throw new HttpException(data, status);
+        } else {
+          this.logger.error(`Unexpected error: ${error.message}`, error.stack);
+          throw new HttpException('Something went wrong', 500);
+        }
+      }
+
+      this.logger.error(`Unknown error: ${String(error)}`);
+      throw new HttpException({}, 500);
+    }
+  }
+
+  private async createAdditional(payload: {
+    userId: number;
+    planType: PlanType;
+    payType: PaymentMethodType;
+    existingSubscriptionId: string;
+  }) {
+    const url = `${this.paymentUrl}/payments/additional`;
+
+    const paymentAdminLogin = this.configService.paymentsAdminLogin;
+    const paymentAdminPassword = this.configService.paymentsAdminPassword;
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService
+          .post<CreatePaymentResponseDto>(url, payload, {
+            headers: {
+              Authorization: `Basic ${Buffer.from(`${paymentAdminLogin}:${paymentAdminPassword}`).toString('base64')}`,
+            },
+          })
+          .pipe(timeout(10000)),
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.data) {
+          const status = error.response.status;
+          const data = error.response.data as WithoutFieldErrorResponseDto;
+
+          if (status === 400) {
+            throw new BadRequestException(data);
+          }
+          throw new HttpException(data, status);
+        } else {
+          this.logger.error(`Unexpected error: ${error.message}`, error.stack);
+          throw new HttpException('Something went wrong', 500);
+        }
+      }
+
+      this.logger.error(`Unknown error: ${String(error)}`);
+      throw new HttpException({}, 500);
     }
   }
 }

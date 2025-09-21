@@ -40,6 +40,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     this.handleNotificationErrors(result);
 
     const user = result.getValue();
+
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSubscriptionEntity } from '../domain/user-subscription.entity';
+import { SubscriptionStatusType } from '@common';
 
 @Injectable()
 export class SubscriptionRepository {
@@ -9,6 +10,22 @@ export class SubscriptionRepository {
     @InjectRepository(UserSubscriptionEntity)
     private readonly subscriptionRepository: Repository<UserSubscriptionEntity>,
   ) {}
+
+  async findOneByUserId(userId: number, manager?: EntityManager) {
+    const subscriptionRepository = manager
+      ? manager.getRepository(UserSubscriptionEntity)
+      : this.subscriptionRepository;
+    const sub = await subscriptionRepository.findOne({
+      where: {
+        userId,
+        status: SubscriptionStatusType.ACTIVE,
+      },
+    });
+    if (!sub) {
+      return null;
+    }
+    return sub;
+  }
 
   async findOne(subscriptionId: string, manager?: EntityManager) {
     const subscriptionRepository = manager

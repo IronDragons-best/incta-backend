@@ -30,6 +30,7 @@ import { CancelRenewalCommand } from '../application/use-cases/cancel-renewal.us
 import { CancelRenewalSwagger } from '../../../../core/decorators/swagger-settings/subscriptions/cancel-renewal.swagger.decorator';
 import { PaginationQueryDto } from '../../../../core/common/pagination/pagination.query.dto';
 import { GetPaymentsQuery } from '../application/query-handlers/get-payments.query-handler';
+import { GetPaymentsSwaggerDecorator } from '../../../../core/decorators/swagger-settings/subscriptions/get-payments.swagger-decorator';
 
 @Controller('subscriptions')
 export class SubscriptionController {
@@ -83,6 +84,7 @@ export class SubscriptionController {
   @HttpCode(HttpStatus.OK)
   @Get('payments')
   @UseGuards(JwtAuthGuard)
+  @GetPaymentsSwaggerDecorator()
   getPayments(
     @ExtractUserFromRequest() user: UserContextDto,
     @Query() query: PaginationQueryDto,

@@ -227,6 +227,26 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: PAYMENTS_SERVICE_HOST
+             - name: BUSINESS_MONTHLY_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_MONTHLY_PRICE
+             - name: BUSINESS_THREE_MONTH_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_THREE_MONTH_PRICE
+             - name: BUSINESS_SIX_MONTH_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_SIX_MONTH_PRICE
+             - name: BUSINESS_SIX_MONTH_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_SIX_MONTH_PRICE
              - name: PORT
                valueFrom:
                  secretKeyRef:

@@ -52,6 +52,11 @@ export const validationSchema = Joi.object({
   PAYMENT_WEBHOOK_URL: Joi.string(),
   PAYMENTS_SERVICE_PORT: Joi.number().port(),
   PAYMENTS_SERVICE_HOST: Joi.string(),
+
+  BUSINESS_MONTHLY_PRICE: Joi.number().required(),
+  BUSINESS_THREE_MONTH_PRICE: Joi.number().required(),
+  BUSINESS_SIX_MONTH_PRICE: Joi.number().required(),
+  BUSINESS_YEARLY_PRICE: Joi.number().required(),
 });
 
 export const loggerValidationSchema = Joi.object({
