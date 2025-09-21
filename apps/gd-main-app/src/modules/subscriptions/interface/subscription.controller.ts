@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ExtractUserFromRequest } from '../../../../core/decorators/guard-decorators/extract.user.from.request.decorator';
@@ -27,6 +28,8 @@ import {
 import { SubscriptionRepository } from '../infrastructure/subscription.repository';
 import { CancelRenewalCommand } from '../application/use-cases/cancel-renewal.use-case';
 import { CancelRenewalSwagger } from '../../../../core/decorators/swagger-settings/subscriptions/cancel-renewal.swagger.decorator';
+import { PaginationQueryDto } from '../../../../core/common/pagination/pagination.query.dto';
+import { GetPaymentsQuery } from '../application/query-handlers/get-payments.query-handler';
 
 @Controller('subscriptions')
 export class SubscriptionController {
@@ -75,5 +78,15 @@ export class SubscriptionController {
   @Get('tariffs')
   getTariffs(@ExtractUserFromRequest() user: UserContextDto) {
     return this.queryBus.execute(new SubscriptionPlansQuery(user.id));
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('payments')
+  @UseGuards(JwtAuthGuard)
+  getPayments(
+    @ExtractUserFromRequest() user: UserContextDto,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.queryBus.execute(new GetPaymentsQuery(user.id, query));
   }
 }
