@@ -1,35 +1,29 @@
-# Check out https://hub.docker.com/_/node to select a new base image
 FROM node:20.11-alpine
 ARG port
 ARG service
 ENV SERVICE=$service
 ENV PORT=$port
-# Set to a non-root built-in user `node`
 
+# Устанавливаем pnpm глобально КАК ROOT
+RUN npm install -g pnpm
+
+# Переключаемся на пользователя node
 USER node
-
-# Create app directory (with user `node`)
 RUN mkdir -p /home/node/dist/${SERVICE}
-
 WORKDIR /home/node/dist/${SERVICE}
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-
-
-
+# Копируем package.json и pnpm-lock.yaml
 COPY --chown=node package*.json ./
+COPY --chown=node pnpm-lock.yaml ./
 
-RUN npm install
+# Устанавливаем зависимости
+RUN pnpm install --frozen-lockfile
 
-# Bundle app source code
+# Копируем весь код
 COPY --chown=node . .
 
+# Собираем приложение
 RUN npm run build:${SERVICE}
 
-# Bind to all network interfaces so that it can be mapped to the host OS
-
 EXPOSE ${PORT}
-
 CMD npm run 'start:files-service'
