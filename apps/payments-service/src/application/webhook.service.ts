@@ -93,7 +93,6 @@ export class WebhookService {
         case 'invoice.finalized':
           this.logger.log(`Invoice finalized: ${(event.data.object as any).id}`);
           break;
-        case 'invoice.paid':
         case 'invoice.payment_succeeded':
           await this.updatePaymentFromWebhookUseCase.execute(
             new UpdatePaymentFromWebhookCommand(
@@ -101,6 +100,9 @@ export class WebhookService {
               event.type,
             ),
           );
+          break;
+        case 'invoice.paid':
+          this.logger.log(`Invoice paid: ${(event.data.object as any).id} - ignoring in favor of invoice.payment_succeeded`);
           break;
         case 'invoice_payment.paid':
           this.logger.log(

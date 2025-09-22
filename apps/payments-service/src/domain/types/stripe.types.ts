@@ -46,6 +46,10 @@ export interface StripeInvoice {
   };
   lines?: {
     data: Array<{
+      period: {
+        start: number;
+        end: number;
+      };
       parent?: {
         subscription_item_details?: {
           subscription: string;

@@ -113,4 +113,18 @@ export class StripeService {
   async getCheckoutSession(sessionId: string): Promise<Stripe.Checkout.Session> {
     return this.stripe.checkout.sessions.retrieve(sessionId);
   }
+
+  async getInvoice(invoiceId: string): Promise<Stripe.Invoice> {
+    return this.stripe.invoices.retrieve(invoiceId, {
+      expand: ['lines.data.period'],
+    });
+  }
+
+  async getSubscriptionLatestInvoice(subscriptionId: string): Promise<Stripe.Invoice | null> {
+    const subscription = await this.stripe.subscriptions.retrieve(subscriptionId, {
+      expand: ['latest_invoice.lines.data'],
+    });
+
+    return subscription.latest_invoice as Stripe.Invoice | null;
+  }
 }

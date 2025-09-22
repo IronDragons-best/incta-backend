@@ -6,6 +6,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubscriptionCancelledEvent } from '../../../../core/events/subscription-cancelled.event';
 import { SubscriptionPastDueEvent } from '../../../../core/events/subscription-past-due.event';
+import { StripeService } from '../../stripe.service';
 
 export class UpdateSubscriptionFromWebhookCommand {
   constructor(
@@ -36,6 +37,7 @@ export class UpdateSubscriptionFromWebhookUseCase
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly stripeService: StripeService,
   ) {
     this.logger.setContext('UpdateSubscriptionFromWebhookUseCase');
   }
@@ -92,26 +94,27 @@ export class UpdateSubscriptionFromWebhookUseCase
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end || false,
       };
 
-      if (stripeSubscription.current_period_start) {
-        updateData.currentPeriodStart = new Date(
-          stripeSubscription.current_period_start * 1000,
-        );
-      } else if (stripeSubscription.start_date) {
-        updateData.currentPeriodStart = new Date(stripeSubscription.start_date * 1000);
-      }
+      try {
+        const latestInvoice = await this.stripeService.getSubscriptionLatestInvoice(stripeSubscription.id);
+        const period = latestInvoice?.lines?.data?.[0]?.period;
 
-      if (stripeSubscription.current_period_end) {
-        updateData.currentPeriodEnd = new Date(
-          stripeSubscription.current_period_end * 1000,
-        );
-      } else if (
-        stripeSubscription.cancel_at &&
-        stripeSubscription.cancel_at_period_end
-      ) {
-        updateData.currentPeriodEnd = new Date(stripeSubscription.cancel_at * 1000);
+        if (period) {
+          updateData.currentPeriodStart = new Date(period.start * 1000);
+          this.logger.log(`Updated subscription ${stripeSubscription.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`);
+        } else {
+          this.logger.warn(`No period found in invoice for subscription ${stripeSubscription.id}, invoice: ${latestInvoice?.id}`);
+        }
+      } catch (error) {
+        this.logger.error('Failed to get invoice period', error);
       }
       console.log('id: ', stripeSubscription.id);
-      await this.paymentRepository.updateByStripeId(stripeSubscription.id, updateData);
+      const updatedSubscription = await this.paymentRepository.updateByStripeId(stripeSubscription.id, updateData);
+
+      if (updatedSubscription) {
+        this.logger.log(`Successfully updated subscription ${stripeSubscription.id}. Period: ${updatedSubscription.currentPeriodStart?.toISOString()} - ${updatedSubscription.currentPeriodEnd?.toISOString()}`);
+      } else {
+        this.logger.error(`Failed to update subscription ${stripeSubscription.id} - not found`);
+      }
 
       if (subscriptionStatus === SubscriptionStatusType.PAST_DUE) {
         this.eventEmitter.emit(

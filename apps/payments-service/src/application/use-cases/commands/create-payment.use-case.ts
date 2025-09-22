@@ -34,12 +34,6 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
     const notify = this.notification.create();
 
     try {
-      const customer = await this.stripeService.createCustomerByUserId(
-        createPaymentDto.userId,
-      );
-
-      const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
-      const priceId = planConfig.priceId;
       const res = (await this.createSubscriptionUseCase.execute(
         new CreateSubscriptionCommand(createPaymentDto),
       )) as AppNotification<PaymentViewDto>;
@@ -56,11 +50,18 @@ export class CreatePaymentUseCase implements ICommandHandler<CreatePaymentComman
         return notify.setBadRequest('Failed to create subscription record for checkout');
       }
 
+      const customer = await this.stripeService.createCustomerByUserId(
+        createPaymentDto.userId,
+      );
+
+      const planConfig = this.configService.getPlanConfig(createPaymentDto.planType);
+      const priceId = planConfig.priceId;
+
       const session = await this.stripeService.createCheckoutSession(
         customer.id,
         priceId,
-        'http://localhost:3000/success',
-        'http://localhost:3000/cancel',
+        this.configService.redirectSuccessUrl,
+        this.configService.redirectCancelUrl,
         data.id,
       );
 

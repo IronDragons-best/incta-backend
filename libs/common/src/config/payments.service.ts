@@ -184,4 +184,28 @@ export class PaymentsConfigService extends ConfigService {
     }
     return password;
   }
+
+  get redirectSuccessUrl(): string {
+    const url = this.get<string>('REDIRECT_SUCCESS_URL');
+    if (!url) {
+      throw new Error('Redirect success url is required');
+    }
+    return url;
+  }
+
+  get redirectCancelUrl(): string {
+    const url = this.get<string>('REDIRECT_CANCEL_URL');
+    if (!url) {
+       throw new Error('Redirect cancel url is required');
+    }
+    return url;
+  }
+
+  get redirectSuccessExtensionUrl(): string {
+    const url = this.get<string>('REDIRECT_SUCCESS_EXTENSION_URL');
+    if (!url) {
+      throw new Error('Redirect success extension url is required');
+    }
+    return url;
+  }
 }

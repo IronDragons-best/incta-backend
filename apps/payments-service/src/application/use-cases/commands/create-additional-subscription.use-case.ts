@@ -130,8 +130,8 @@ export class CreateAdditionalSubscriptionUseCase
         const session = await this.stripeService.createCheckoutSession(
           customer.id,
           priceId,
-          'http://localhost:3000/success?type=extension',
-          'http://localhost:3000/cancel',
+          this.configService.redirectSuccessExtensionUrl,
+          this.configService.redirectCancelUrl,
           additionalPaymentId,
         );
 
@@ -164,8 +164,8 @@ export class CreateAdditionalSubscriptionUseCase
         const session = await this.stripeService.createCheckoutSession(
           customer.id,
           priceId,
-          'http://localhost:3000/success',
-          'http://localhost:3000/cancel',
+          this.configService.redirectSuccessUrl,
+          this.configService.redirectCancelUrl,
           newSubscriptionId,
         );
 

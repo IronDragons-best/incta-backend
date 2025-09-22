@@ -96,6 +96,7 @@ export class UpdatePaymentFromWebhookUseCase
       const updateData: {
         status: PaymentStatusType;
         subscriptionStatus?: SubscriptionStatusType;
+        currentPeriodStart?: Date;
       } = {
         status: PaymentStatusType.Succeeded,
       };
@@ -103,6 +104,21 @@ export class UpdatePaymentFromWebhookUseCase
       if (payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE) {
         updateData.subscriptionStatus = SubscriptionStatusType.ACTIVE;
         this.logger.log(`Activating subscription for payment: ${payment.id}`);
+      }
+
+      const lineItems = invoiceData.lines!.data as StripeLineItem[];
+      if (lineItems.length > 0 && lineItems[0].period) {
+        const period = lineItems[0].period;
+        updateData.currentPeriodStart = new Date(period.start * 1000);
+        this.logger.log(`Updating payment ${payment.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`);
+      } else {
+        const paidAt = invoiceData.status_transitions.paid_at;
+        if (paidAt) {
+          updateData.currentPeriodStart = new Date(paidAt * 1000);
+          this.logger.warn(`No period in line items for payment ${payment.id}, using paid_at as fallback: ${updateData.currentPeriodStart.toISOString()}`);
+        } else {
+          this.logger.error(`No period and no paid_at for payment ${payment.id}`);
+        }
       }
 
       const updatedPayment = await this.paymentRepository.update(payment.id, updateData);
