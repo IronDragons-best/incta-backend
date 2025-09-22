@@ -26,6 +26,14 @@ COPY --chown=node newrelic.js ./
 
 RUN npm install
 
+RUN npm install prisma@6.12.0 --save-dev
+
+COPY --chown=node apps/files-service/prisma ./apps/files-service/prisma
+
+RUN npx prisma generate --schema=apps/files-service/prisma/schema.prisma
+
+RUN npm remove prisma
+
 # Bundle app source code
 COPY --chown=node . .
 
