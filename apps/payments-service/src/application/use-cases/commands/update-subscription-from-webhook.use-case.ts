@@ -7,6 +7,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubscriptionCancelledEvent } from '../../../../core/events/subscription-cancelled.event';
 import { SubscriptionPastDueEvent } from '../../../../core/events/subscription-past-due.event';
 import { StripeService } from '../../stripe.service';
+import { AutoPaymentCancelledEvent } from '../../../../core/events/auto-payment-cancelled.event';
 
 export class UpdateSubscriptionFromWebhookCommand {
   constructor(
@@ -25,6 +26,7 @@ export class UpdateSubscriptionFromWebhookCommand {
         comment?: string;
       } | null;
     },
+    public readonly eventType: string,
   ) {}
 }
 
@@ -95,27 +97,42 @@ export class UpdateSubscriptionFromWebhookUseCase
       };
 
       try {
-        const latestInvoice = await this.stripeService.getSubscriptionLatestInvoice(stripeSubscription.id);
+        const latestInvoice = await this.stripeService.getSubscriptionLatestInvoice(
+          stripeSubscription.id,
+        );
         const period = latestInvoice?.lines?.data?.[0]?.period;
 
         if (period) {
           updateData.currentPeriodStart = new Date(period.start * 1000);
-          this.logger.log(`Updated subscription ${stripeSubscription.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`);
+          this.logger.log(
+            `Updated subscription ${stripeSubscription.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`,
+          );
         } else {
-          this.logger.warn(`No period found in invoice for subscription ${stripeSubscription.id}, invoice: ${latestInvoice?.id}`);
+          this.logger.warn(
+            `No period found in invoice for subscription ${stripeSubscription.id}, invoice: ${latestInvoice?.id}`,
+          );
         }
       } catch (error) {
         this.logger.error('Failed to get invoice period', error);
       }
       console.log('id: ', stripeSubscription.id);
-      const updatedSubscription = await this.paymentRepository.updateByStripeId(stripeSubscription.id, updateData);
+      const updatedSubscription = await this.paymentRepository.updateByStripeId(
+        stripeSubscription.id,
+        updateData,
+      );
 
       if (updatedSubscription) {
-        this.logger.log(`Successfully updated subscription ${stripeSubscription.id}. Period: ${updatedSubscription.currentPeriodStart?.toISOString()} - ${updatedSubscription.currentPeriodEnd?.toISOString()}`);
+        this.logger.log(
+          `Successfully updated subscription ${stripeSubscription.id}. Period: ${updatedSubscription.currentPeriodStart?.toISOString()} - ${updatedSubscription.currentPeriodEnd?.toISOString()}`,
+        );
       } else {
-        this.logger.error(`Failed to update subscription ${stripeSubscription.id} - not found`);
+        this.logger.error(
+          `Failed to update subscription ${stripeSubscription.id} - not found`,
+        );
       }
 
+      console.log('subStatus: ', subscriptionStatus);
+      console.log('eventType: ', command.eventType);
       if (subscriptionStatus === SubscriptionStatusType.PAST_DUE) {
         this.eventEmitter.emit(
           'subscription.past_due',
@@ -139,22 +156,6 @@ export class UpdateSubscriptionFromWebhookUseCase
             cancelledAt: new Date().toISOString(),
             status: subscriptionStatus,
             reason: stripeSubscription.cancellation_details?.cancellation_reason,
-          }),
-        );
-      } else if (
-        subscriptionStatus === SubscriptionStatusType.ACTIVE &&
-        stripeSubscription.cancel_at_period_end
-      ) {
-        this.eventEmitter.emit(
-          'subscription.cancelled',
-          new SubscriptionCancelledEvent({
-            userId: subscription.userId,
-            externalSubscriptionId: subscription.id,
-            cancelledAt: stripeSubscription.canceled_at
-              ? new Date(stripeSubscription.canceled_at * 1000).toISOString()
-              : new Date().toISOString(),
-            status: SubscriptionStatusType.CANCELED,
-            reason: 'user_request',
           }),
         );
       }

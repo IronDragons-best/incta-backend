@@ -37,7 +37,6 @@ import { GetAllPaymentsQueryCommand } from '../application/use-cases/queries/get
 import { GetUserPaymentsQueryCommand } from '../application/use-cases/queries/get-user-payments.query';
 import { GetPaymentsBySubscriptionQueryCommand } from '../application/use-cases/queries/get-payments-by-subscription.query';
 import { CancelSubscriptionCommand } from '../application/use-cases/commands/cancel-subscription.use-case';
-import { BasicAuthGuard } from '../../core/guards/basic-auth-guard';
 
 @ApiTags('Payments')
 @Controller()

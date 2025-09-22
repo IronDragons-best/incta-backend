@@ -42,6 +42,7 @@ export class SubscriptionCancelledUseCase
       subscription.update({
         status: SubscriptionStatusType.CANCELED,
         endDate: new Date(),
+        isAutoRenewal: false,
       });
       subscription.user.updateSubscriptionStatus(false);
 

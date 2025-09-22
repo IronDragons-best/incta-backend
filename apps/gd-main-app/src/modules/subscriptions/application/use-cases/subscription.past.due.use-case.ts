@@ -39,6 +39,7 @@ export class SubscriptionPastDueUseCase
       subscription.update({
         status: SubscriptionStatusType.PAST_DUE,
         endDate: new Date(),
+        isAutoRenewal: false,
       });
       subscription.user.updateSubscriptionStatus(false);
 

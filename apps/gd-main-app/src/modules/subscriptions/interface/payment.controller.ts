@@ -4,7 +4,7 @@ import { Ctx, EventPattern, Payload, RmqContext, Transport } from '@nestjs/micro
 import {
   PaymentFailedPayload,
   PaymentSuccessPayload,
-  SubscriptionAutoPaymentCancelledPayload,
+  AutoPaymentCancelledPayload,
   SubscriptionCancelledPayload,
   SubscriptionExpiredPayload,
   SubscriptionPastDuePayload,
@@ -127,10 +127,9 @@ export class PaymentEventsController {
     }
   }
 
-  //DEPRECATED
   @EventPattern('subscription.auto_payment_cancelled', Transport.RMQ)
   async handleSubscriptionAutoPaymentCancelled(
-    @Payload() data: SubscriptionAutoPaymentCancelledPayload,
+    @Payload() data: AutoPaymentCancelledPayload,
     @Ctx() context: RmqContext,
   ) {
     const userId = data.userId;

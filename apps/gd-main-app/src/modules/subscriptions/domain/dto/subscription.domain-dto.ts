@@ -11,4 +11,5 @@ export class UpdateSubscriptionAfterPaymentDto {
   status: SubscriptionStatusType;
   startDate?: Date;
   endDate?: Date;
+  isAutoRenewal?: boolean;
 }

@@ -44,6 +44,24 @@ export class SubscriptionRepository {
     return sub;
   }
 
+  async findActive(subscriptionId: string, manager?: EntityManager) {
+    const subscriptionRepository = manager
+      ? manager.getRepository(UserSubscriptionEntity)
+      : this.subscriptionRepository;
+
+    const sub = await subscriptionRepository.findOne({
+      where: {
+        subscriptionId,
+        status: SubscriptionStatusType.ACTIVE,
+      },
+      relations: ['user'],
+    });
+    if (!sub) {
+      return null;
+    }
+    return sub;
+  }
+
   async save(subscription: UserSubscriptionEntity, manager?: EntityManager) {
     const repository = manager
       ? manager.getRepository(UserSubscriptionEntity)

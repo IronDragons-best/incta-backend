@@ -37,7 +37,10 @@ export class Payment {
   @Prop({ type: String, required: false })
   stripeSubscriptionId?: string;
 
-  @ApiProperty({ type: String, description: 'Parent subscription ID for additional payments' })
+  @ApiProperty({
+    type: String,
+    description: 'Parent subscription ID for additional payments',
+  })
   @IsString()
   @IsOptional()
   @Prop({ type: String, required: false })

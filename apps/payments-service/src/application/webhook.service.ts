@@ -58,6 +58,7 @@ export class WebhookService {
           await this.updateSubscriptionFromWebhookUseCase.execute(
             new UpdateSubscriptionFromWebhookCommand(
               event.data.object as unknown as StripeSubscription,
+              event.type,
             ),
           );
           break;
@@ -65,6 +66,7 @@ export class WebhookService {
           await this.updateSubscriptionFromWebhookUseCase.execute(
             new UpdateSubscriptionFromWebhookCommand(
               event.data.object as unknown as StripeSubscription,
+              event.type,
             ),
           );
           break;

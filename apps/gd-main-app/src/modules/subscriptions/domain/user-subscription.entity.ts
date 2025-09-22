@@ -2,7 +2,6 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm
 import {
   PaymentMethodType,
   PlanType,
-  PaymentStatusType,
   SubscriptionStatusType,
 } from '../../../../../../libs/common/src/types/payment.types';
 import { User } from '../../users/domain/user.entity';
@@ -47,6 +46,9 @@ export class UserSubscriptionEntity extends BasicEntity {
   @OneToMany(() => PaymentInfoEntity, (payment) => payment.subscription)
   payments: PaymentInfoEntity[];
 
+  @Column({ type: 'boolean', default: false })
+  isAutoRenewal: boolean;
+
   static createInstance(dto: CreateSubscriptionDto) {
     const sub = new this();
     sub.userId = dto.userId;
@@ -61,6 +63,7 @@ export class UserSubscriptionEntity extends BasicEntity {
     this.status = dto.status;
     if (dto.startDate) this.startDate = dto.startDate;
     if (dto.endDate) this.endDate = dto.endDate;
+    this.isAutoRenewal = dto.isAutoRenewal !== undefined ? dto.isAutoRenewal : true;
     return this;
   }
 }

@@ -9,6 +9,7 @@ import { SubscriptionCancelledListener } from './payment-listeners/subscription.
 import { SubscriptionPastDueListener } from './payment-listeners/subscription.past-due.listener';
 import { SubscriptionExpiredListener } from './payment-listeners/subscription.expired.listener';
 import { RabbitMQMonitorService } from '../../../gd-main-app/core/common/adapters/rabbit.monitor-service';
+import { AutoRenewalCancelListener } from './payment-listeners/auto-renewal-cancel.listener';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { RabbitMQMonitorService } from '../../../gd-main-app/core/common/adapter
     SubscriptionCancelledListener,
     SubscriptionPastDueListener,
     SubscriptionExpiredListener,
+    AutoRenewalCancelListener,
   ],
 })
 export class RmqListenersModule {}

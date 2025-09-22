@@ -31,6 +31,8 @@ import { CancelRenewalSwagger } from '../../../../core/decorators/swagger-settin
 import { PaginationQueryDto } from '../../../../core/common/pagination/pagination.query.dto';
 import { GetPaymentsQuery } from '../application/query-handlers/get-payments.query-handler';
 import { GetPaymentsSwaggerDecorator } from '../../../../core/decorators/swagger-settings/subscriptions/get-payments.swagger-decorator';
+import { GetCurrentSubscriptionQuery } from '../application/query-handlers/get-current-subscription.query-handler';
+import { GetCurrentPaymentSwaggerDecorator } from '../../../../core/decorators/swagger-settings/subscriptions/get-current-payment.swagger-decorator';
 
 @Controller('subscriptions')
 export class SubscriptionController {
@@ -90,5 +92,14 @@ export class SubscriptionController {
     @Query() query: PaginationQueryDto,
   ) {
     return this.queryBus.execute(new GetPaymentsQuery(user.id, query));
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('current')
+  @UseGuards(JwtAuthGuard)
+  @GetCurrentPaymentSwaggerDecorator()
+  getCurrent(@ExtractUserFromRequest() user: UserContextDto) {
+    console.log(user);
+    return this.queryBus.execute(new GetCurrentSubscriptionQuery(user.id));
   }
 }

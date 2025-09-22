@@ -102,12 +102,11 @@ export interface SubscriptionPastDuePayload {
   // Для обновления status в 'PastDue'
 }
 
-export interface SubscriptionAutoPaymentCancelledPayload {
+export interface AutoPaymentCancelledPayload {
   userId: number;
-  stripeSubscriptionId: string;
-  cancelledAt: string; // когда было отключено авто-продление
-  reason?: string; // например, 'user_request' или 'payment_failed'
+  externalSubscriptionId: string;
   currentPeriodEnd: string; // дата конца текущего оплаченного периода
+  reason?: string; // например, 'user_request' или 'payment_failed'
 }
 
 export interface StripeLineItemPeriod {

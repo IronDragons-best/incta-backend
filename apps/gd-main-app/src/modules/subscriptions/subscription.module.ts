@@ -20,6 +20,7 @@ import { HttpModule } from '@nestjs/axios';
 import { PaymentSuccessUseCase } from './application/use-cases/payment-success.use-case';
 import { GetPaymentsHandler } from './application/query-handlers/get-payments.query-handler';
 import { PaymentQueryRepository } from './infrastructure/payment.query-repository';
+import { GetCurrentSubscriptionHandler } from './application/query-handlers/get-current-subscription.query-handler';
 
 @Module({
   imports: [
@@ -31,6 +32,8 @@ import { PaymentQueryRepository } from './infrastructure/payment.query-repositor
     NotificationService,
     SubscriptionPlansHandler,
     GetNewSubscriptionHandler,
+    GetCurrentSubscriptionHandler,
+    AutoPaymentCancelledUseCase,
     GetPaymentsHandler,
     SubscriptionRepository,
     SubscriptionQueryRepository,

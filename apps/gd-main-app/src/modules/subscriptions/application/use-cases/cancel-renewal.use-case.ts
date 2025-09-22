@@ -3,11 +3,16 @@ import { SubscriptionRepository } from '../../infrastructure/subscription.reposi
 import { CustomLogger } from '@monitoring';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
-import { AppConfigService } from '@common';
+import { HttpException, NotFoundException } from '@nestjs/common';
+import {
+  AppConfigService,
+  SubscriptionStatusType,
+  WithoutFieldErrorResponseDto,
+} from '@common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, timeout } from 'rxjs';
 import { PaymentViewDto } from '../../../../../../payments-service/src/interface/dto/output/payment.view.dto';
+import { AxiosError } from 'axios';
 
 export class CancelRenewalCommand {
   constructor(public subscriptionId: string) {}
@@ -28,7 +33,7 @@ export class CancelRenewalUseCase implements ICommandHandler<CancelRenewalComman
     this.logger.setContext('CancelRenewalUseCase');
   }
   async execute(command: CancelRenewalCommand) {
-    const subscription = await this.subscriptionRepository.findOne(
+    const subscription = await this.subscriptionRepository.findActive(
       command.subscriptionId,
     );
 
@@ -37,6 +42,12 @@ export class CancelRenewalUseCase implements ICommandHandler<CancelRenewalComman
       throw new NotFoundException('Subscription not found');
     }
 
+    subscription.update({
+      status: SubscriptionStatusType.ACTIVE,
+      isAutoRenewal: false,
+    });
+    console.log('jadskjdasjkdsadsa');
+    await this.subscriptionRepository.save(subscription);
     const cancelData = await this.cancelRenewal(command.subscriptionId);
     return cancelData;
   }
@@ -55,8 +66,20 @@ export class CancelRenewalUseCase implements ICommandHandler<CancelRenewalComman
 
       return response.data;
     } catch (error: unknown) {
-      this.logger.error(`Failed to cancel renewal for payment ${id}`, error as any);
-      throw new Error('Payment service unavailable. Could not cancel renewal.');
+      if (error instanceof AxiosError) {
+        if (error.response?.data) {
+          const status = error.response.status;
+          const data = error.response.data as WithoutFieldErrorResponseDto;
+
+          throw new HttpException(data, status);
+        } else {
+          this.logger.error(`Unexpected error: ${error.message}`, error.stack);
+          throw new HttpException('Something went wrong', 500);
+        }
+      }
+
+      this.logger.error(`Unknown error: ${String(error)}`);
+      throw new HttpException({}, 500);
     }
   }
 }

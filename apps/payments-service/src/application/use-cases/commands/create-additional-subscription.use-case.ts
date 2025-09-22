@@ -1,15 +1,11 @@
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { StripeService } from '../../stripe.service';
 import { CreateAdditionalSubscriptionInputDto } from '../../../interface/dto/input/additional-subscription.input.dto';
-import {
-  CreatePaymentResponseDto,
-  PaymentViewDto,
-} from '../../../interface/dto/output/payment.view.dto';
+import { CreatePaymentResponseDto } from '../../../interface/dto/output/payment.view.dto';
 import { PaymentsConfigService } from '@common/config/payments.service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
 import {
-  AppNotification,
   NotificationService,
   PaymentMethodType,
   PaymentStatusType,
@@ -136,7 +132,9 @@ export class CreateAdditionalSubscriptionUseCase
         );
 
         if (!session || !session.url) {
-          this.logger.error('Failed to create checkout session for subscription extension');
+          this.logger.error(
+            'Failed to create checkout session for subscription extension',
+          );
           return notify.setBadRequest('Failed to create checkout session');
         }
 
