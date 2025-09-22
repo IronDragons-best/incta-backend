@@ -1,43 +1,35 @@
-# Check out https://hub.docker.com/_/node to select a new base image
 FROM node:20.11-alpine
 ARG port
 ARG service
 ENV SERVICE=$service
 ENV PORT=$port
 
-# Set to a non-root built-in user `node`
 USER node
-
-# Create app directory (with user `node`)
 RUN mkdir -p /home/node/dist/${SERVICE}
-
 WORKDIR /home/node/dist/${SERVICE}
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
+# Сначала копируем package.json
 COPY --chown=node package*.json ./
+COPY --chown=node yarn.lock ./
 
-# Копируем New Relic конфиг
+# Устанавливаем зависимости
+RUN yarn install --frozen-lockfile
+
+# Устанавливаем конкретную версию Prisma CLI
+RUN yarn add prisma@latest --dev
+
+# Копируем весь код
+COPY --chown=node . .
 COPY --chown=node newrelic.js ./
 
-RUN npm install
+# Генерируем Prisma Client ПОСЛЕ копирования схемы
+RUN yarn prisma generate --schema=apps/files-service/prisma/schema.prisma
 
-RUN npm install prisma@6.12.0 --save-dev
-
-# Bundle app source code
-COPY --chown=node . .
-
-# Generate Prisma client (after copying all code including schema)
-RUN npx prisma generate --schema=apps/files-service/prisma/schema.prisma
-
-# Build the service
+# Собираем приложение
 RUN npm run build:${SERVICE}
 
-# Remove prisma CLI after build to keep image smaller
-RUN npm remove prisma
+# Удаляем Prisma CLI для уменьшения размера образа
+RUN yarn remove prisma
 
-# Bind to all network interfaces so that it can be mapped to the host OS
 EXPOSE ${PORT}
-
 CMD npm run 'start:files-service'
