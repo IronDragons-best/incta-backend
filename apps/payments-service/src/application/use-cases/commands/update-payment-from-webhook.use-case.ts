@@ -110,12 +110,17 @@ export class UpdatePaymentFromWebhookUseCase
       if (lineItems.length > 0 && lineItems[0].period) {
         const period = lineItems[0].period;
         updateData.currentPeriodStart = new Date(period.start * 1000);
-        this.logger.log(`Updating payment ${payment.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`);
+
+        this.logger.log(
+          `Updating payment ${payment.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`,
+        );
       } else {
         const paidAt = invoiceData.status_transitions.paid_at;
         if (paidAt) {
           updateData.currentPeriodStart = new Date(paidAt * 1000);
-          this.logger.warn(`No period in line items for payment ${payment.id}, using paid_at as fallback: ${updateData.currentPeriodStart.toISOString()}`);
+          this.logger.warn(
+            `No period in line items for payment ${payment.id}, using paid_at as fallback: ${updateData.currentPeriodStart.toISOString()}`,
+          );
         } else {
           this.logger.error(`No period and no paid_at for payment ${payment.id}`);
         }
@@ -143,7 +148,6 @@ export class UpdatePaymentFromWebhookUseCase
           }
 
           const period = lineItems[0].period;
-          console.log('123432423423423423423423423423423424');
           this.eventEmitter.emit(
             'payment.success',
             new PaymentSuccessEvent({

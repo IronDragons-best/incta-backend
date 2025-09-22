@@ -100,9 +100,12 @@ export class WebhookService {
               event.type,
             ),
           );
+
           break;
         case 'invoice.paid':
-          this.logger.log(`Invoice paid: ${(event.data.object as any).id} - ignoring in favor of invoice.payment_succeeded`);
+          this.logger.log(
+            `Invoice paid: ${(event.data.object as any).id} - ignoring in favor of invoice.payment_succeeded`,
+          );
           break;
         case 'invoice_payment.paid':
           this.logger.log(
