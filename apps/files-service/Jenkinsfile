@@ -28,7 +28,7 @@ pipeline {
                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                        nvm use --lts
                        yarn install
-                       yarn prisma:files:generate
+                       pnpm prisma generate --schema=apps/files-service/prisma/schema.prisma
                        yarn test
                     '''
                 }
