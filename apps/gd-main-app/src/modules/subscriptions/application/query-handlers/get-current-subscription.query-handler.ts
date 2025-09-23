@@ -1,9 +1,4 @@
-import {
-  CommandHandler,
-  ICommandHandler,
-  IQueryHandler,
-  QueryHandler,
-} from '@nestjs/cqrs';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
 import {
   AppConfigService,
@@ -18,6 +13,7 @@ import { firstValueFrom } from 'rxjs';
 import { AxiosError, AxiosResponse } from 'axios';
 import { PaymentViewDto } from '../../../../../../payments-service/src/interface/dto/output/payment.view.dto';
 import { HttpException } from '@nestjs/common';
+import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 
 export class GetCurrentSubscriptionQuery {
   constructor(public userId: number) {}
@@ -41,7 +37,8 @@ export class GetCurrentSubscriptionHandler
   async execute(query: GetCurrentSubscriptionQuery) {
     console.log('ashdasdasdkjasdljasdjasdljasdlj');
     const notify = this.notification.create();
-    let currentSubscription;
+
+    let currentSubscription: UserSubscriptionEntity | null = null;
     try {
       currentSubscription = await this.subscriptionRepository.findOneByUserId(
         query.userId,
@@ -49,7 +46,7 @@ export class GetCurrentSubscriptionHandler
     } catch (e) {
       console.error(e);
     }
-    console.log('asdasdasd');
+
     if (!currentSubscription) {
       const viewDto = CurrentSubscriptionViewDto.mapToView(
         SubscriptionPlan.Personal,

@@ -44,22 +44,22 @@ export class SubscriptionPlansHandler implements IQueryHandler<SubscriptionPlans
         new SubscriptionPlanViewDto(
           SubscriptionPlan.Business,
           PlanType.MONTHLY,
-          this.configService.getBusinessPrice(PlanType.MONTHLY),
+          this.configService.monthlyPrice,
         ),
         new SubscriptionPlanViewDto(
           SubscriptionPlan.Business,
           PlanType.THREE_MONTH,
-          this.configService.getBusinessPrice(PlanType.THREE_MONTH),
+          this.configService.threeMonthPrice,
         ),
         new SubscriptionPlanViewDto(
           SubscriptionPlan.Business,
           PlanType.SIX_MONTH,
-          this.configService.getBusinessPrice(PlanType.SIX_MONTH),
+          this.configService.sixMonthPrice,
         ),
         new SubscriptionPlanViewDto(
           SubscriptionPlan.Personal,
           PlanType.YEARLY,
-          this.configService.getBusinessPrice(PlanType.YEARLY),
+          this.configService.yearlyPrice,
         ),
       ],
       currentPlan,
