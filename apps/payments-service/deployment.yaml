@@ -117,6 +117,31 @@ spec:
                  secretKeyRef:
                    name: incta-payments-production-config-secret
                    key: REDIRECT_SUCCESS_EXTENSION_URL
+             - name: NEW_RELIC_LICENSE_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_LICENSE_KEY
+             - name: NEW_RELIC_APP_NAME
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_APP_NAME
+             - name: NEW_RELIC_LOG_LEVEL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_LOG_LEVEL
+             - name: NEW_RELIC_ENABLED
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_ENABLED
+             - name: NEW_RELIC_LOG_FORWARDING
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_LOG_FORWARDING
              - name: RABBITMQ_HOST
                valueFrom:
                  secretKeyRef:
