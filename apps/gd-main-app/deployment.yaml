@@ -242,11 +242,11 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: BUSINESS_SIX_MONTH_PRICE
-             - name: BUSINESS_SIX_MONTH_PRICE
+             - name: BUSINESS_YEARLY_PRICE
                valueFrom:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
-                   key: BUSINESS_SIX_MONTH_PRICE
+                   key: BUSINESS_YEARLY_PRICE
              - name: PORT
                valueFrom:
                  secretKeyRef:
