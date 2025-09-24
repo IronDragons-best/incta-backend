@@ -18,7 +18,7 @@ export function GetPostByIdSwaggerDecorator() {
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Post retrieved successfully.',
-      type: PostViewDto
+      type: PostViewDto,
     }),
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
@@ -27,6 +27,6 @@ export function GetPostByIdSwaggerDecorator() {
     ApiResponse({
       status: HttpStatus.BAD_REQUEST,
       description: 'Invalid post ID.',
-    })
-  )
+    }),
+  );
 }

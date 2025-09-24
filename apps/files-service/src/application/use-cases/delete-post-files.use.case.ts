@@ -1,13 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { S3StorageAdapter } from '../../infrastructure/s3.storage.adapter';
-import { FilesRepository } from '../../infrastructure/files.repository';
+import { FilesPostRepository } from '../../infrastructure/files.post.repository';
 import { NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 
 export class DeletePostFilesCommand {
-  constructor(
-    public readonly postId: number
-  ) {}
+  constructor(public readonly postId: number) {}
 }
 
 @CommandHandler(DeletePostFilesCommand)
@@ -16,7 +14,7 @@ export class DeletePostFilesUseCase implements ICommandHandler<DeletePostFilesCo
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
     private readonly fileAdapter: S3StorageAdapter,
-    private readonly filesRepository: FilesRepository,
+    private readonly filesRepository: FilesPostRepository,
   ) {
     this.logger.setContext('DeletePostFilesUseCase');
   }
@@ -31,7 +29,7 @@ export class DeletePostFilesUseCase implements ICommandHandler<DeletePostFilesCo
       return notify.setNotFound(`Files for post with id ${postId} not found.`);
     }
 
-    const keys = files.map(f => f.s3Key);
+    const keys = files.map((f) => f.s3Key);
 
     try {
       await this.fileAdapter.deleteMultipleObjects(keys);

@@ -4,8 +4,9 @@ import { CreateUserCommand } from '../../../users/application/use-cases/create.u
 import { AppNotification, NotificationService } from '@common';
 import { CustomLogger } from '@monitoring';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { UserCreatedEvent } from '../../../../../core/events/user.created.event';
+import { UserCreatedEvent } from '../../../../../core/events/user-events/user.created.event';
 import { RegisteredUserDto } from '../../../users/domain/registered.user.dto';
+import { CreateProfileEvent } from '../../../../../core/events/profile-events/profile.create.event';
 
 export class RegistrationCommand {
   constructor(public userDto: UserInputDto) {}
@@ -25,20 +26,29 @@ export class RegistrationUseCase implements ICommandHandler<RegistrationCommand>
     const notify = this.notification.create();
 
     try {
-      const registrationResult: AppNotification<RegisteredUserDto> =
+      const createUserResult: AppNotification<RegisteredUserDto> =
         await this.commandBus.execute(new CreateUserCommand(command.userDto));
-      if (registrationResult.hasErrors()) {
-        return registrationResult;
+      if (createUserResult.hasErrors()) {
+        return createUserResult;
       }
-      const user: RegisteredUserDto | null = registrationResult.getValue();
+      const user: RegisteredUserDto | null = createUserResult.getValue();
       if (!user) {
         this.logger.error('User value is null after successful registration');
-        registrationResult.addError('User not found. Something went wrong.');
-        return registrationResult;
+        createUserResult.addError('User not found. Something went wrong.');
+        return createUserResult;
       }
-      const event = new UserCreatedEvent(user.login, user.email, user.confirmCode);
-      this.eventEmitter.emit('user.created', event);
-      return registrationResult;
+      const userCreatedEvent = new UserCreatedEvent(
+        user.login,
+        user.email,
+        user.confirmCode,
+      );
+      this.eventEmitter.emit('user.created', userCreatedEvent);
+
+      // Создаем только из айдишки. Другие поля до заполнения остаются пустыми.
+      const createProfileEvent = new CreateProfileEvent(user.id);
+      this.eventEmitter.emit('profile.create', createProfileEvent);
+
+      return createUserResult;
     } catch (e) {
       this.logger.error(e);
       notify.setServerError('Something went wrong.');

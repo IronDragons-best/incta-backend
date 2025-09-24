@@ -8,17 +8,35 @@ import {
   SharedConfigModule,
 } from '@common';
 import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
-import { UploadFilesUseCase } from './application/use-cases/upload-files-use.case';
+import { UploadPostFilesUseCase } from './application/use-cases/upload-post-files-use.case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { S3StorageAdapter } from './infrastructure/s3.storage.adapter';
-import { FilesRepository } from './infrastructure/files.repository';
+import { FilesPostRepository } from './infrastructure/files.post.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { GetFilesByPostIdHandler } from './application/query-handlers/get.files.by.post.id.query.handler';
 import { FilesQueryRepository } from './infrastructure/files.query.repository';
 import { DeletePostFilesUseCase } from './application/use-cases/delete-post-files.use.case';
 import { GetFilesByUserIdHandler } from './application/query-handlers/get.files.by.user.id.query-handler';
+import { FilesUserRepository } from './infrastructure/files.user.repository';
+import { UploadUserAvatarUseCase } from './application/use-cases/upload-user-files-use.case';
+import { FilesUserQueryRepository } from './infrastructure/files.user.query.repository';
+import { GetUserAvatarByUserIdHandler } from './application/query-handlers/get.user.avatar.by.user.id.query.handler';
+import { DeleteAvatarFileUseCase } from './application/use-cases/delete-avatar-file.use.case';
+import { APP_GUARD } from '@nestjs/core';
+import { BasicAuthGuard } from '../core/guards/basic-auth-guard';
 
-const useCases = [DeletePostFilesUseCase, UploadFilesUseCase];
+const useCases = [
+  DeletePostFilesUseCase,
+  UploadPostFilesUseCase,
+  UploadUserAvatarUseCase,
+  DeleteAvatarFileUseCase,
+];
+
+const useCaseHandlers = [
+  GetFilesByUserIdHandler,
+  GetFilesByPostIdHandler,
+  GetUserAvatarByUserIdHandler,
+];
 
 @Module({
   imports: [
@@ -32,15 +50,20 @@ const useCases = [DeletePostFilesUseCase, UploadFilesUseCase];
   ],
   controllers: [FilesServiceController],
   providers: [
-    GetFilesByUserIdHandler,
     FilesServiceService,
     AsyncLocalStorageService,
-    GetFilesByPostIdHandler,
     NotificationService,
     S3StorageAdapter,
-    FilesRepository,
+    FilesPostRepository,
+    FilesUserRepository,
     FilesQueryRepository,
+    FilesUserQueryRepository,
     PrismaService,
+    {
+      provide: APP_GUARD,
+      useClass: BasicAuthGuard,
+    },
+    ...useCaseHandlers,
     ...useCases,
   ],
 })

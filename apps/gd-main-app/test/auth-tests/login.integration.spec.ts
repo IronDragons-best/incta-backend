@@ -148,11 +148,7 @@ describe('AuthController - Login Integration Tests', () => {
         const response = await request(app.getHttpServer())
           .post('/auth/login')
           .send(validLoginData)
-          .expect(200);
-
-        expect(response.body).toEqual({
-          accessToken: mockTokens.accessToken,
-        });
+          .expect(204);
 
         const cookies = response.headers['set-cookie'];
         expect(cookies).toBeDefined();
@@ -256,9 +252,9 @@ describe('AuthController - Login Integration Tests', () => {
           .send(validLoginData)
           .expect(401);
 
-        expect(response.body).toHaveProperty('message');
+        expect(response.body).toHaveProperty('errorsMessages');
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        expect(response.body.message).toBe('Invalid email or password');
+        expect(response.body.errorsMessages[0].message).toBe('Invalid email or password');
       });
 
       it('should return 401 when password is incorrect', async () => {

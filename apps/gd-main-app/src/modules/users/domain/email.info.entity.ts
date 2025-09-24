@@ -16,7 +16,10 @@ export class EmailInfo extends BasicEntity {
   @Column({ type: 'timestamp', nullable: true })
   emailConfirmationCooldown: Date | null;
 
-  @OneToOne(() => User, (u) => u.emailConfirmationInfo, { nullable: false })
-  @JoinColumn({ name: 'userId' })
+  @OneToOne(() => User, (u) => u.emailConfirmationInfo, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 }

@@ -7,8 +7,7 @@ import { User } from '../../users/domain/user.entity';
 import { PostViewDto } from '../interface/dto/output/post.view.dto';
 
 export type PostDomainDtoType = {
-  title: string;
-  shortDescription: string;
+  description: string;
   userId: number;
 };
 
@@ -16,13 +15,9 @@ export type PostDomainDtoType = {
 @Index(['userId', 'createdAt'])
 export class PostEntity extends BasicEntity {
   @Column()
-  @Index()
-  title: string;
+  description: string;
 
-  @Column()
-  shortDescription: string;
-
-  @ManyToOne(() => User, (u) => u.posts)
+  @ManyToOne(() => User, (u) => u.posts, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
@@ -35,8 +30,7 @@ export class PostEntity extends BasicEntity {
 
   static createInstance(data: PostDomainDtoType) {
     const post = new PostEntity();
-    post.title = data.title;
-    post.shortDescription = data.shortDescription;
+    post.description = data.description;
     post.userId = data.userId;
     return post;
   }
@@ -48,14 +42,13 @@ export class PostEntity extends BasicEntity {
         userId: post.user.id,
         username: post.user.username,
       },
-      title: post.title,
-      shortDescription: post.shortDescription,
+      description: post.description,
       previewImages: post.files.map((file) => file.fileUrl),
       createdAt: post.createdAt,
     };
   }
   updateDescription(newDescription: string) {
-    this.shortDescription = newDescription;
+    this.description = newDescription;
     return this;
   }
 }

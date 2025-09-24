@@ -1,8 +1,8 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiBody,
+  ApiCookieAuth,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -15,7 +15,7 @@ import { ErrorResponseDto, WithoutFieldErrorResponseDto } from '@common';
 
 export function UpdatePostSwaggerDecorator() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiCookieAuth('accessToken'),
     ApiOperation({
       summary: 'Update post description',
       description: 'This endpoint allows you to update existing posts description field',

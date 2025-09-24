@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
 import request from 'supertest';
 import { GetFilesByUserIdQuery } from '../../src/application/query-handlers/get.files.by.user.id.query-handler';
-import { NotificationService } from '@common';
+import { NotificationService, FilesConfigService } from '@common';
 
 describe('Get Files by User ID', () => {
   let app: INestApplication;
@@ -33,6 +33,10 @@ describe('Get Files by User ID', () => {
         { provide: QueryBus, useValue: mockQueryBus },
         { provide: CommandBus, useValue: mockCommandBus },
         NotificationService,
+        {
+          provide: FilesConfigService,
+          useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' },
+        },
       ],
     }).compile();
 

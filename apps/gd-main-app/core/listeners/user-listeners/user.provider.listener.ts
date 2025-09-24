@@ -1,13 +1,24 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
-import { UserProviderRegisteredEvent } from '../../events/user.oauth.registered.event';
-import { UserProviderAddedEvent } from '../../events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../events/user-events/user.oauth.registered.event';
+import { UserProviderAddedEvent } from '../../events/user-events/user.provider.added.event';
 import { OauthTemplateType } from '@common';
+import { CustomLogger } from '@monitoring';
+import { BaseRabbitListener } from '../base-rabbit.listener';
+import { RabbitMQMonitorService } from '../../common/adapters/rabbit.monitor-service';
 
 @Injectable()
-export class UserProviderListeners {
-  constructor(@Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy) {}
+export class UserProviderListeners extends BaseRabbitListener {
+  constructor(
+    @Inject('NOTIFICATIONS_SERVICE') client: ClientProxy,
+    rabbitMonitor: RabbitMQMonitorService,
+    logger: CustomLogger,
+  ) {
+    super(client, rabbitMonitor, logger);
+    this.logger.setContext('UserProviderListeners');
+  }
+
   @OnEvent('user.provider.registered')
   handleUserProviderRegistered(event: UserProviderRegisteredEvent) {
     const record = new RmqRecordBuilder({
@@ -18,14 +29,13 @@ export class UserProviderListeners {
     })
       .setOptions({
         deliveryMode: 2,
-        headers: {
-          'x-retry-count': '0',
-        },
+        headers: { 'x-retry-count': '0' },
       })
       .build();
-    console.log('registered');
-    this.client.emit('email.provider', record);
+
+    this.sendMessage('email.provider', record);
   }
+
   @OnEvent('user.provider.added')
   handleUserProviderAdded(event: UserProviderAddedEvent) {
     const record = new RmqRecordBuilder({
@@ -36,11 +46,10 @@ export class UserProviderListeners {
     })
       .setOptions({
         deliveryMode: 2,
-        headers: {
-          'x-retry-count': '0',
-        },
+        headers: { 'x-retry-count': '0' },
       })
       .build();
-    this.client.emit('email.provider', record);
+
+    this.sendMessage('email.provider', record);
   }
 }

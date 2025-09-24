@@ -43,4 +43,10 @@ export class NotificationService {
     notification.setServerError(message);
     return notification;
   }
+
+  toLarge<T>(message: string, field?: string): AppNotification<T> {
+    const notification = new AppNotification<T>();
+    notification.setToLarge(message, field);
+    return notification;
+  }
 }

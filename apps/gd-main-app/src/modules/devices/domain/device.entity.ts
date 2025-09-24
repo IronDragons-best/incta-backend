@@ -18,7 +18,7 @@ export type DeviceDomainDtoType = {
 @Entity('devices')
 @Index(['userId', 'createdAt'])
 export class DeviceEntity extends BasicEntity {
-  @ManyToOne(() => User, (user) => user.devices)
+  @ManyToOne(() => User, (user) => user.devices, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 

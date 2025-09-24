@@ -9,16 +9,32 @@ import { ProfileQueryRepository } from './infrastructure/profile.query.repositor
 import { ProfileRepository } from './infrastructure/profile.repository';
 import { CityEntity } from '../location/domain/city.entity';
 import { CountryEntity } from '../location/domain/country.entity';
+import { CreateProfileListener } from '../../../core/listeners/user-listeners/profile.create.listener';
+import { CqrsModule } from '@nestjs/cqrs';
+import { UpdateProfileUseCase } from './application/use-cases/update.profile.use-case';
+import { UpdateAvatarUseCase } from './application/use-cases/update-avatar.use-case';
+import { HttpModule } from '@nestjs/axios';
+import { DeleteAvatarUseCase } from './application/use-cases/delete-avatar.use-case';
+import { GetProfileHandler } from './application/query-handlers/get-profile.query';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProfileEntity, CityEntity, CountryEntity])],
+  imports: [
+    CqrsModule,
+    HttpModule,
+    TypeOrmModule.forFeature([ProfileEntity, CityEntity, CountryEntity]),
+  ],
   controllers: [ProfileController],
   providers: [
     CreateProfileUseCase,
+    UpdateProfileUseCase,
+    UpdateAvatarUseCase,
+    DeleteAvatarUseCase,
+    GetProfileHandler,
     NotificationService,
     AsyncLocalStorageService,
     ProfileQueryRepository,
     ProfileRepository,
+    CreateProfileListener,
   ],
 })
 export class ProfileModule {}

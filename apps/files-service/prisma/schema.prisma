@@ -27,14 +27,36 @@ model File {
   @@map("file")
 }
 
+model FileUser {
+  id         Int           @id @default(autoincrement())
+  filename   String
+  s3Key      String        @unique
+  s3Bucket   String
+  url        String
+  mimeType   String
+  size       Int
+  type       FileType      @default(PUBLIC)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  userId     Int           @unique
+  uploadedBy Int
+  requests   FileRequest[]
+
+  @@index([uploadedBy])
+  @@map("fileUser")
+}
+
 model FileRequest {
   id          Int               @id @default(autoincrement())
-  fileId      Int
+  fileId      Int?
+  fileUserId  Int?
   status      FileRequestStatus @default(APPROVED)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   requestedBy Int
-  file        File              @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  file     File?     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  fileUser FileUser? @relation(fields: [fileUserId], references: [id], onDelete: Cascade)
 
   @@map("file_request")
 }

@@ -1,8 +1,12 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { FilesQueryRepository } from '../../infrastructure/files.query.repository';
-import { FileFromDatabaseDtoType, NotificationService } from '@common';
+import {
+  FilePostFromDatabaseDtoType,
+  FileUserFromDatabaseDtoType,
+  NotificationService,
+} from '@common';
 import { CustomLogger } from '@monitoring';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto, FileUserViewDto } from '@common/dto/filePostViewDto';
 
 export class GetFilesByUserIdQuery {
   constructor(public userId: number) {}
@@ -17,29 +21,28 @@ export class GetFilesByUserIdHandler implements IQueryHandler<GetFilesByUserIdQu
   ) {
     this.logger.setContext('GetFilesByUserIdHandler');
   }
-  async execute(query: GetFilesByUserIdQuery) {
+
+  async execute({ userId }: GetFilesByUserIdQuery) {
     const notify = this.notification.create();
 
     try {
-      const files: FileFromDatabaseDtoType[] | null =
-        await this.filesQueryRepository.getManyByUserId(query.userId);
+      const [postFiles, userFiles] = await Promise.all([
+        this.filesQueryRepository.getManyPostFilesByUserId(userId),
+        this.filesQueryRepository.getManyUserFilesByUserId(userId),
+      ]);
 
-      if (!files) {
-        const viewResponse = FileViewDto.mapToView([]);
-        return notify.setValue(viewResponse);
-      }
+      const view = [
+        ...FileUserViewDto.mapToView(userFiles),
+        ...FilePostViewDto.mapToView(postFiles),
+      ];
 
-      const viewFiles: FileViewDto[] = FileViewDto.mapToView(files);
-
-      return notify.setValue(viewFiles);
+      return notify.setValue(view.length ? view : []);
     } catch (error) {
-      let message: string;
-      if (error instanceof Error) {
-        message = `Something went wrong while getting files. Error: ${error.message}`;
-      } else {
-        message = `Something went wrong while getting files. Error: ${error}`;
-      }
-      this.logger.error(message);
+      this.logger.error(
+        `Something went wrong while getting files. Error: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
       notify.setServerError('Something went wrong');
     }
   }

@@ -177,6 +177,76 @@ spec:
                  secretKeyRef:
                    name: incta-main-back-production-config-secret
                    key: NEW_RELIC_LOG_FORWARDING
+             - name: REDIS_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_HOST
+             - name: REDIS_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_PORT
+             - name: REDIS_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_PASSWORD
+             - name: REDIS_DB
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: REDIS_DB
+             - name: FILES_ADMIN_LOGIN
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_ADMIN_LOGIN
+             - name: FILES_ADMIN_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: FILES_ADMIN_PASSWORD
+             - name: PAYMENTS_ADMIN_LOGIN
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PAYMENTS_ADMIN_LOGIN
+             - name: PAYMENTS_ADMIN_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PAYMENTS_ADMIN_PASSWORD
+             - name: PAYMENTS_SERVICE_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PAYMENTS_SERVICE_PORT
+             - name: PAYMENTS_SERVICE_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: PAYMENTS_SERVICE_HOST
+             - name: BUSINESS_MONTHLY_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_MONTHLY_PRICE
+             - name: BUSINESS_THREE_MONTH_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_THREE_MONTH_PRICE
+             - name: BUSINESS_SIX_MONTH_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_SIX_MONTH_PRICE
+             - name: BUSINESS_YEARLY_PRICE
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-main-back-production-config-secret
+                   key: BUSINESS_YEARLY_PRICE
              - name: PORT
                valueFrom:
                  secretKeyRef:

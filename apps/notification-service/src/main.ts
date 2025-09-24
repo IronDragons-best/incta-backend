@@ -12,9 +12,8 @@ config();
 async function bootstrap() {
   const app = await NestFactory.create(NotificationServiceModule);
   const configService = app.get<NotificationConfigService>(NotificationConfigService);
-
   const logger = await app.resolve(CustomLogger);
-  logger.setContext('NEST_INIT');
+  logger.setContext('NEST_NOTIFICATION_INIT');
   app.useLogger(logger);
   app.connectMicroservice({
     transport: Transport.RMQ,

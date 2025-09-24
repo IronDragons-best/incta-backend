@@ -1,7 +1,7 @@
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FilesServiceController } from '../../src/interface/files-service.controller';
-import { NotificationService } from '@common';
+import { NotificationService, FilesConfigService } from '@common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { FilesServiceService } from '../../src/application/files-service.service';
 import { FilesByUserIdViewDto } from '../../src/interface/dto/files.by.user.id.view-dto';
@@ -34,6 +34,10 @@ describe('Get Post Files', () => {
         { provide: QueryBus, useValue: mockQueryBus },
         { provide: CommandBus, useValue: mockCommandBus },
         NotificationService,
+        {
+          provide: FilesConfigService,
+          useValue: { filesAdminLogin: 'admin', filesAdminPassword: 'password' },
+        },
       ],
     }).compile();
 

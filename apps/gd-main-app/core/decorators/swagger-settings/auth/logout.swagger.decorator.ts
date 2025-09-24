@@ -1,10 +1,10 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ErrorResponseDto } from '@common';
 
 export function LogoutSwagger() {
   return applyDecorators(
-    ApiBearerAuth(),
+    ApiCookieAuth('accessToken'),
     ApiOperation({ summary: 'User Logout.' }),
     ApiResponse({
       status: HttpStatus.NO_CONTENT,

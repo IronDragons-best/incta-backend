@@ -2,7 +2,7 @@ import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { PostDeletedEvent } from '../../events/post-events/post.deleted.event';
 import { HttpService } from '@nestjs/axios';
 import { CustomLogger } from '@monitoring';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, retry, throwError } from 'rxjs';
 import { AxiosError } from 'axios';
 import { AppConfigService } from '@common';
 
@@ -22,9 +22,7 @@ export class PostDeletedListener implements IEventHandler<PostDeletedEvent> {
 
   async handle(event: PostDeletedEvent) {
     try {
-      console.log('start deleting');
-      await this.deleteFiles(event);
-      console.log('end deleting');
+      await this.deleteFilesWithRetry(event);
     } catch (error) {
       const errorMessage =
         error instanceof AxiosError
@@ -32,38 +30,40 @@ export class PostDeletedListener implements IEventHandler<PostDeletedEvent> {
           : error instanceof Error
             ? error.message
             : 'Unknown error';
-      this.logger.warn(
-        `First attempt failed to delete files for post ${event.postId}. Retrying in 5 seconds... ErrorMessage: ${errorMessage}`,
+      this.logger.error(
+        `All attempts failed to delete files for post ${event.postId}: ${errorMessage}`,
       );
-
-      await this.sleep(10000);
-
-      try {
-        await this.deleteFiles(event);
-      } catch (retryError) {
-        const errorMessage =
-          retryError instanceof AxiosError
-            ? retryError.message
-            : retryError instanceof Error
-              ? retryError.message
-              : 'Unknown error';
-        this.logger.error(
-          `Final attempt failed to delete files for post ${event.postId}: ${errorMessage}`,
-        );
-      }
     }
   }
 
-  private async deleteFiles(event: PostDeletedEvent): Promise<void> {
-    const url = `${this.filesUrl}/api/v1/delete-post-files/${event.postId}`;
+  private async deleteFilesWithRetry(event: PostDeletedEvent) {
+    const maxRetries = 2;
+
     await firstValueFrom(
-      this.httpService.delete(url, {
-        timeout: 10000, // 10 секунд таймаут для повторной попытки
-      }),
+      this.deleteFiles(event).pipe(
+        retry({
+          count: maxRetries,
+          resetOnSuccess: true, // если первый успешен — больше не повторяем
+        }),
+        catchError((error) => throwError(() => error)), // проброс ошибки после всех попыток
+      ),
     );
+
+    this.logger.log(`Files deleted successfully for post ${event.postId}`);
   }
 
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  private deleteFiles(event: PostDeletedEvent) {
+    const url = `${this.filesUrl}/api/v1/delete-post-files/${event.postId}`;
+    const filesAdminLogin = this.configService.filesAdminLogin;
+    const filesAdminPassword = this.configService.filesAdminPassword;
+
+    return this.httpService.delete(url, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(
+          `${filesAdminLogin}:${filesAdminPassword}`,
+        ).toString('base64')}`,
+      },
+      timeout: 10000, // стандартный таймаут на один запрос
+    });
   }
 }

@@ -69,7 +69,7 @@ export class FilesConfigService extends ConfigService {
     return s3Region;
   }
   get postPhotosBucketName(): string {
-    const bucketName = this.get<string>('POST_FILES_BUCKET_NAME');
+    const bucketName = this.get<string>('FILES_BUCKET_NAME');
     if (!bucketName) {
       throw new Error('POST_FILES_BUCKET_NAME is required');
     }
@@ -86,5 +86,21 @@ export class FilesConfigService extends ConfigService {
 
   get isTest(): boolean {
     return this.nodeEnv === 'test';
+  }
+
+  get filesAdminLogin(): string {
+    const login = this.get<string>('FILES_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Files admin login is required');
+    }
+    return login;
+  }
+
+  get filesAdminPassword(): string {
+    const password = this.get<string>('FILES_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Files admin password is required');
+    }
+    return password;
   }
 }

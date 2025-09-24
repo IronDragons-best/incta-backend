@@ -11,6 +11,12 @@ import {
 } from '../../auth/domain/user.oauth2.provider.entity';
 import { PostEntity } from '../../posts/domain/post.entity';
 import { ProfileEntity } from '../../profiles/domain/profile.entity';
+import { UserSubscriptionEntity } from '../../subscriptions/domain/user-subscription.entity';
+import {
+  PaymentMethodType,
+  PlanType,
+  SubscriptionStatusType,
+} from '../../../../../../libs/common/src/types/payment.types';
 
 export type UserDomainDtoType = {
   username: string;
@@ -27,29 +33,45 @@ export class User extends BasicEntity {
   @Column()
   email: string;
 
-  @OneToOne(() => EmailInfo, (e) => e.user, { cascade: true, eager: true })
+  @OneToOne(() => EmailInfo, (e) => e.user, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   emailConfirmationInfo: EmailInfo;
 
-  @OneToOne(() => PasswordInfo, (p) => p.user, { cascade: true, eager: true })
+  @OneToOne(() => PasswordInfo, (p) => p.user, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   passwordInfo: PasswordInfo;
 
-  @OneToMany(() => DeviceEntity, (device) => device.user)
+  @OneToMany(() => DeviceEntity, (device) => device.user, { onDelete: 'CASCADE' })
   devices: DeviceEntity[];
 
-  @OneToMany(() => PostEntity, (post) => post.user)
+  @OneToMany(() => PostEntity, (post) => post.user, { onDelete: 'CASCADE' })
   posts: PostEntity[];
 
   @OneToMany(() => UserOauthProviderEntity, (oauthProvider) => oauthProvider.user, {
     cascade: ['insert', 'update'],
     eager: true,
+    onDelete: 'CASCADE',
   })
   oauthProviders: UserOauthProviderEntity[];
 
   @OneToOne(() => ProfileEntity, (profile) => profile.user, {
     cascade: true,
     eager: true,
+    onDelete: 'CASCADE',
   })
   profile: ProfileEntity;
+
+  @Column({ type: 'boolean', default: false })
+  hasActiveSubscription: boolean;
+
+  @OneToMany(() => UserSubscriptionEntity, (subscription) => subscription.user)
+  subscriptions: UserSubscriptionEntity[];
 
   static createOauthInstance(
     email: string,
@@ -305,5 +327,34 @@ export class User extends BasicEntity {
       );
     }
     this.passwordInfo.passwordHash = passwordHash;
+  }
+
+  createSubscriptionForUser(
+    planType: PlanType,
+    paymentMethod: PaymentMethodType,
+    subscriptionId: string,
+  ) {
+    return UserSubscriptionEntity.createInstance({
+      userId: this.id,
+      planType,
+      paymentMethod,
+      subscriptionId,
+    });
+  }
+
+  updateSubscriptionStatus(status: boolean) {
+    this.hasActiveSubscription = status;
+  }
+
+  get currentSubscription(): UserSubscriptionEntity | null {
+    return (
+      this.subscriptions?.find(
+        (sub) => sub.status === SubscriptionStatusType.ACTIVE && sub.endDate > new Date(),
+      ) || null
+    );
+  }
+
+  get accountType(): 'personal' | 'business' {
+    return this.currentSubscription ? 'business' : 'personal';
   }
 }

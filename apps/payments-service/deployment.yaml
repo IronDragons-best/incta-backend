@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: DEPLOYMENT_NAME
+  namespace: NAMESPACE
+  labels:
+    app: PROJECT
+spec:
+  selector:
+    matchLabels:
+      project: PROJECT
+  template:
+    metadata:
+      namespace: NAMESPACE
+      labels:
+        project: PROJECT
+    spec:
+      containers:
+         - name: PROJECT
+           image: REGISTRY_HOSTNAME/PROJECT:TAG_VERSION
+           ports:
+             - containerPort: PORT_CONTAINER
+
+           env:
+             - name: PAYMENTS_MONGO_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENTS_MONGO_URL
+             - name: PAYMENT_MONTHLY_PRODUCT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_MONTHLY_PRODUCT_ID
+             - name: PAYMENT_MONTHLY_PRICE_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_MONTHLY_PRICE_ID
+             - name: PAYMENT_3MONTH_PRODUCT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_3MONTH_PRODUCT_ID
+             - name: PAYMENT_3MONTH_PRICE_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_3MONTH_PRICE_ID
+             - name: PAYMENT_6MONTH_PRODUCT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_6MONTH_PRODUCT_ID
+             - name: PAYMENT_6MONTH_PRICE_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_6MONTH_PRICE_ID
+             - name: PAYMENT_YEAR_PRODUCT_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_YEAR_PRODUCT_ID
+             - name: PAYMENT_YEAR_PRICE_ID
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_YEAR_PRICE_ID
+             - name: PAYMENT_SECRET_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_SECRET_KEY
+             - name: PAYMENT_WEBHOOK_SIGN_SECRET
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENT_WEBHOOK_SIGN_SECRET
+             - name: PAYMENTS_SERVICE_PORT
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENTS_SERVICE_PORT
+             - name: PAYMENTS_SERVICE_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENTS_SERVICE_HOST
+             - name: NODE_ENV
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NODE_ENV
+             - name: PAYMENTS_ADMIN_LOGIN
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENTS_ADMIN_LOGIN
+             - name: PAYMENTS_ADMIN_PASSWORD
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: PAYMENTS_ADMIN_PASSWORD
+             - name: REDIRECT_SUCCESS_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: REDIRECT_SUCCESS_URL
+             - name: REDIRECT_CANCEL_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: REDIRECT_CANCEL_URL
+             - name: REDIRECT_SUCCESS_EXTENSION_URL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: REDIRECT_SUCCESS_EXTENSION_URL
+             - name: NEW_RELIC_LICENSE_KEY
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_LICENSE_KEY
+             - name: NEW_RELIC_APP_NAME
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_APP_NAME
+             - name: NEW_RELIC_LOG_LEVEL
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_LOG_LEVEL
+             - name: NEW_RELIC_ENABLED
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_ENABLED
+             - name: NEW_RELIC_LOG_FORWARDING
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: NEW_RELIC_LOG_FORWARDING
+             - name: RABBITMQ_HOST
+               valueFrom:
+                 secretKeyRef:
+                   name: incta-payments-production-config-secret
+                   key: RABBITMQ_HOST

@@ -18,17 +18,25 @@ export class AuthService {
     const notify = this.notification.create<{ id: number } | null>();
     const user: User | null =
       await this.usersRepository.findByUsernameOrEmail(usernameOrEmail);
+
     if (!user) {
       notify.setValue(null);
-      return notify;
+      return notify.setUnauthorized('Invalid email or password');
     }
     if (!user.isEmailConfirmed()) {
       notify.setForbidden('Email is not confirmed');
       return notify;
     }
+
+    if (!user.passwordInfo.passwordHash) {
+      notify.setUnauthorized(
+        'Password not set. Please use the password recovery process to set your password.',
+      );
+      return notify;
+    }
     const passwordIsMatch = await this.cryptoService.comparePassword(
       password,
-      user.passwordInfo.passwordHash!,
+      user.passwordInfo.passwordHash,
     );
     if (!passwordIsMatch) {
       notify.setUnauthorized('Invalid email or password.');

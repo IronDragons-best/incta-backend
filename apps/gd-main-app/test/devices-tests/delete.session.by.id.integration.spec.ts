@@ -9,7 +9,10 @@ import request from 'supertest';
 import { AppConfigService, NotificationInterceptor, NotificationService } from '@common';
 import { AsyncLocalStorageService, CustomLogger } from '@monitoring';
 
-import { MockDevicesQueryRepository, MockDevicesRepository } from '../mocks/devices.flow.mocks';
+import {
+  MockDevicesQueryRepository,
+  MockDevicesRepository,
+} from '../mocks/devices.flow.mocks';
 
 import { DeviceController } from '../../src/modules/devices/interface/device.controller';
 
@@ -24,9 +27,7 @@ import { RefreshGuard } from '../../core/guards/refresh/jwt.refresh.auth.guard';
 
 import { MockAppConfigService } from '../mocks/common.mocks';
 
-import {
-  DeleteDeviceBySessionIdUseCase
-} from '../../src/modules/devices/application/delete.device.by.session.id.use.case';
+import { DeleteDeviceBySessionIdUseCase } from '../../src/modules/devices/application/delete.device.by.session.id.use.case';
 
 describe('DeviceController - Delete Session By ID Integration Tests', () => {
   let app: INestApplication;
@@ -143,7 +144,7 @@ describe('DeviceController - Delete Session By ID Integration Tests', () => {
 
       expect(devicesRepository.findSessionBySessionIdAndUserId).toHaveBeenCalledWith(
         sessionIdToDelete,
-        userId
+        userId,
       );
       expect(devicesRepository.deleteDevice).toHaveBeenCalledWith(mockDevice);
       expect(response.body).toEqual({});
@@ -176,7 +177,7 @@ describe('DeviceController - Delete Session By ID Integration Tests', () => {
 
       expect(devicesRepository.findSessionBySessionIdAndUserId).toHaveBeenCalledWith(
         nonExistentSessionId,
-        userId
+        userId,
       );
       expect(devicesRepository.deleteDevice).not.toHaveBeenCalled();
     });
@@ -252,7 +253,7 @@ describe('DeviceController - Delete Session By ID Integration Tests', () => {
       expect(devicesRepository.deleteDevice).not.toHaveBeenCalled();
     });
 
-    it('404 - should return not found when trying to delete another user\'s session', async () => {
+    it("404 - should return not found when trying to delete another user's session", async () => {
       const userId = 1;
       const currentSessionId = 'current-session-123';
       const anotherUserSessionId = 'another-user-session';
@@ -279,9 +280,9 @@ describe('DeviceController - Delete Session By ID Integration Tests', () => {
 
       expect(devicesRepository.findSessionBySessionIdAndUserId).toHaveBeenCalledWith(
         anotherUserSessionId,
-        userId
+        userId,
       );
       expect(devicesRepository.deleteDevice).not.toHaveBeenCalled();
     });
   });
-})
+});

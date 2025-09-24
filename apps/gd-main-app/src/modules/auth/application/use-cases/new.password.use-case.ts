@@ -1,4 +1,3 @@
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CommandHandler } from '@nestjs/cqrs';
@@ -62,13 +61,13 @@ export class NewPasswordUseCase {
 
       const newHash = await this.cryptoService.createHash(newPassword);
 
-      existingUser.setPasswordHash(newHash)
-      existingUser.setPasswordRecoveryCodeNullable()
+      existingUser.setPasswordHash(newHash);
+      existingUser.setPasswordRecoveryCodeNullable();
 
-      await this.usersRepository.saveWithTransaction(existingUser, queryRunner)
+      await this.usersRepository.saveWithTransaction(existingUser, queryRunner);
       await queryRunner.commitTransaction();
 
-      return notify.setNoContent()
+      return notify.setNoContent();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(

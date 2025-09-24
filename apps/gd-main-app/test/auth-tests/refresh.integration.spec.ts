@@ -129,11 +129,7 @@ describe('AuthController - Refresh Token Integration Tests', () => {
       const response = await request(app.getHttpServer())
         .post('/auth/refresh-token')
         .set('Cookie', refreshCookie)
-        .expect(200);
-
-      expect(response.body).toEqual({
-        accessToken: 'new-access-token',
-      });
+        .expect(204);
 
       expect(response.headers['set-cookie']).toBeDefined();
       expect(response.headers['set-cookie'][0]).toContain(

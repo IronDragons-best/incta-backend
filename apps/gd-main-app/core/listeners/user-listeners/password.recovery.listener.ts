@@ -1,11 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EmailResendEvent } from '../../events/email.resend.event';
+import { EmailResendEvent } from '../../events/user-events/email.resend.event';
+import { CustomLogger } from '@monitoring';
+import { BaseRabbitListener } from '../base-rabbit.listener';
+import { RabbitMQMonitorService } from '../../common/adapters/rabbit.monitor-service';
 
 @Injectable()
-export class PasswordRecoveryListener {
-  constructor(@Inject('NOTIFICATIONS_SERVICE') private readonly client: ClientProxy) {}
+export class PasswordRecoveryListener extends BaseRabbitListener {
+  constructor(
+    @Inject('NOTIFICATIONS_SERVICE') client: ClientProxy,
+    rabbitMonitor: RabbitMQMonitorService,
+    logger: CustomLogger,
+  ) {
+    super(client, rabbitMonitor, logger);
+    this.logger.setContext('PasswordRecoveryListener');
+  }
 
   @OnEvent('email.password_recovery')
   handleEmailResend(event: EmailResendEvent) {
@@ -22,6 +32,7 @@ export class PasswordRecoveryListener {
         },
       })
       .build();
-    this.client.emit('email.password_recovery', record);
+
+    this.sendMessage('email.password_recovery', record);
   }
 }

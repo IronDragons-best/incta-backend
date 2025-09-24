@@ -10,8 +10,9 @@ import { DataSource } from 'typeorm';
 import { Tokens } from './token.service';
 import { User } from '../../../users/domain/user.entity';
 import { LoginCommand } from './login.use-case';
-import { UserProviderAddedEvent } from '../../../../../core/events/user.provider.added.event';
-import { UserProviderRegisteredEvent } from '../../../../../core/events/user.oauth.registered.event';
+import { UserProviderAddedEvent } from '../../../../../core/events/user-events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../../../../core/events/user-events/user.oauth.registered.event';
+import { CreateProfileEvent } from '../../../../../core/events/profile-events/profile.create.event';
 
 export class GithubOauthCommand {
   constructor(
@@ -104,6 +105,10 @@ export class GithubOauthUseCase implements ICommandHandler<GithubOauthCommand> {
             AuthProvider.GITHUB,
           );
           this.eventEmitter.emit('user.provider.registered', providerRegisteredEvent);
+
+          // Создаем только из айдишки. Другие поля до заполнения остаются пустыми.
+          const createProfileEvent = new CreateProfileEvent(user.id);
+          this.eventEmitter.emit('profile.create', createProfileEvent);
         }
       }
       await queryRunner.commitTransaction();

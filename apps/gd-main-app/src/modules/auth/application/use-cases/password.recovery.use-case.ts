@@ -13,7 +13,7 @@ import { UsersRepository } from '../../../users/infrastructure/users.repository'
 
 import { User } from '../../../users/domain/user.entity';
 
-import { PasswordRecoveryEvent } from '../../../../../core/events/password.recovery.event';
+import { PasswordRecoveryEvent } from '../../../../../core/events/user-events/password.recovery.event';
 
 import { RecaptchaResponse } from '@common/exceptions/recaptcha.type';
 
@@ -53,7 +53,9 @@ export class PasswordRecoveryUseCase {
     }
 
     if (!recaptchaResponse.success) {
-      this.logger.warn(`reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`);
+      this.logger.warn(
+        `reCAPTCHA response invalid: ${JSON.stringify(recaptchaResponse)}`,
+      );
       return notify.setBadRequest('Recaptcha verification failed');
     }
 
@@ -62,7 +64,8 @@ export class PasswordRecoveryUseCase {
     await queryRunner.startTransaction();
 
     try {
-      const existingUser: User | null = await this.usersRepository.findByEmailWithTransaction(email, queryRunner);
+      const existingUser: User | null =
+        await this.usersRepository.findByEmailWithTransaction(email, queryRunner);
 
       if (!existingUser) {
         this.logger.warn('User Not Found');
@@ -90,7 +93,9 @@ export class PasswordRecoveryUseCase {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.logger.error(`Error during password recovery: ${error.message}`, error.stack);
-      return notify.setServerError('Internal server error occurred while password recovery');
+      return notify.setServerError(
+        'Internal server error occurred while password recovery',
+      );
     } finally {
       await queryRunner.release();
     }

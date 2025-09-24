@@ -2,7 +2,7 @@ import { CommandHandler } from '@nestjs/cqrs';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, QueryRunner } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 import { CustomLogger } from '@monitoring';
 import { NotificationService, AppConfigService } from '@common';
@@ -19,7 +19,7 @@ import { PostsRepository } from '../../infrastructure/posts.repository';
 
 import { PostEntity } from '../../domain/post.entity';
 import { PostFileEntity } from '../../domain/post.file.entity';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 
 export class CreatePostCommand {
   constructor(
@@ -31,6 +31,7 @@ export class CreatePostCommand {
 
 @CommandHandler(CreatePostCommand)
 export class CreatePostUseCase {
+  private static requestCounter = 0;
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
@@ -50,10 +51,22 @@ export class CreatePostUseCase {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    const requestId = `create_post_${++CreatePostUseCase.requestCounter}_${Date.now()}`;
+
+    this.logger.warn(`[${requestId}] Starting post creation for user ${userId}`, {
+      userId,
+      filesCount: files?.length || 0,
+      description: data.description?.substring(0, 50) + '...',
+      requestId,
+    });
+
     try {
+      this.logger.log(`[UseCase] >>> createPost instance`);
       const post = await this.createPost(queryRunner, data, userId);
+      this.logger.log(`[UseCase] <<< createPost instance`);
 
       if (files?.length) {
+        this.logger.warn(`[${requestId}] Starting file upload for ${files.length} files`);
         const uploadedFiles = await this.uploadFilesToService(files, post.id, userId);
         await this.savePostFiles(queryRunner, uploadedFiles, post.id);
       }
@@ -62,7 +75,8 @@ export class CreatePostUseCase {
       return notify.setValue(post);
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      this.logger.error('Error creating post', error);
+      this.logger.error(`Error creating post: ${requestId}`, error);
+
       return notify.setServerError('Failed to create post');
     } finally {
       await queryRunner.release();
@@ -75,8 +89,7 @@ export class CreatePostUseCase {
     userId: number,
   ) {
     const post = PostEntity.createInstance({
-      title: data.title,
-      shortDescription: data.shortDescription,
+      description: data.description,
       userId,
     });
     this.logger.log('Creating post instance');
@@ -100,15 +113,23 @@ export class CreatePostUseCase {
       }),
     );
 
-    const filesServiceUrl = `${this.configService.filesUrl}/api/v1/upload`;
+    const filesServiceUrl = `${this.configService.filesUrl}/api/v1/upload-post-files`;
     this.logger.log(`Uploading files to ${filesServiceUrl}`);
 
+    const filesAdminLogin = this.configService.filesAdminLogin;
+    const filesAdminPassword = this.configService.filesAdminPassword;
+
     const { data } = await firstValueFrom(
-      this.httpService.post(filesServiceUrl, formData, {
-        headers: formData.getHeaders(),
-        maxBodyLength: Infinity,
-        maxContentLength: Infinity,
-      }),
+      this.httpService
+        .post(filesServiceUrl, formData, {
+          headers: {
+            ...formData.getHeaders(),
+            Authorization: `Basic ${Buffer.from(`${filesAdminLogin}:${filesAdminPassword}`).toString('base64')}`,
+          },
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        })
+        .pipe(timeout(10000)),
     );
 
     if (!data?.uploadResults || data.errors?.length) {
@@ -122,7 +143,7 @@ export class CreatePostUseCase {
 
   private async savePostFiles(
     queryRunner: QueryRunner,
-    uploadResults: FileViewDto[],
+    uploadResults: FilePostViewDto[],
     postId: PostEntity['id'],
   ) {
     for (const file of uploadResults) {

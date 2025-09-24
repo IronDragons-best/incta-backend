@@ -5,6 +5,8 @@ import { Upload } from '@aws-sdk/lib-storage';
 import { CustomLogger } from '@monitoring';
 import { sanitizeFileName } from '../../core/utils/sanitize.file.name';
 
+export type UploadType = 'post' | 'avatar';
+
 @Injectable()
 export class S3StorageAdapter {
   private s3Client: S3Client;
@@ -24,13 +26,20 @@ export class S3StorageAdapter {
       },
     });
   }
+
   async uploadWithBuffer(
     file: ProcessedFileData,
     userId: number,
-    postId: number,
+    uploadType: UploadType,
+    postId?: number,
   ): Promise<{ filename: string; url: string; key: string }> {
-    // Очищаем имя файла от символов и пробелов
-    const { key, filename } = this.generateS3Key(file.originalName, userId, postId);
+    const { key, filename } = this.generateS3Key(
+      file.originalName,
+      userId,
+      uploadType,
+      postId,
+    );
+
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
@@ -39,10 +48,11 @@ export class S3StorageAdapter {
       ContentLength: file.size,
       ACL: 'public-read',
     });
+
     await this.s3Client.send(command);
 
     return {
-      filename: filename,
+      filename,
       url: `http://${this.configService.s3Server}/${this.bucketName}/${key}`,
       key,
     };
@@ -51,9 +61,15 @@ export class S3StorageAdapter {
   async uploadWithStream(
     file: ProcessedFileData,
     userId: number,
-    postId: number,
+    uploadType: UploadType,
+    postId?: number,
   ): Promise<{ filename: string; url: string; key: string }> {
-    const { key, filename } = this.generateS3Key(file.originalName, userId, postId);
+    const { key, filename } = this.generateS3Key(
+      file.originalName,
+      userId,
+      uploadType,
+      postId,
+    );
 
     if (!file.stream) {
       throw new Error('Stream is required for stream upload');
@@ -104,10 +120,28 @@ export class S3StorageAdapter {
     }
   }
 
-  private generateS3Key(fileName: string, userId: number, postId: number) {
+  private generateS3Key(
+    fileName: string,
+    userId: number,
+    uploadType: UploadType,
+    postId?: number,
+  ): { key: string; filename: string } {
     const sanitized = sanitizeFileName(fileName);
-    const filename = `${Date.now()}-${sanitized}-${postId}`;
-    const key = `uploads/users/${userId}/posts/${postId}/${filename}`;
-    return { key, filename };
+    const timestamp = Date.now();
+
+    if (uploadType === 'post') {
+      if (!postId) throw new Error('postId is required for post uploads');
+      const filename = `${timestamp}-${sanitized}-${postId}`;
+      const key = `uploads/users/${userId}/posts/${postId}/${filename}`;
+      return { key, filename };
+    }
+
+    if (uploadType === 'avatar') {
+      const filename = `${timestamp}-${sanitized}`;
+      const key = `uploads/users/${userId}/avatars/${filename}`;
+      return { key, filename };
+    }
+
+    throw new Error('Unknown upload type');
   }
 }

@@ -1,19 +1,13 @@
 abstract class BaseProfileDomainDto {
   firstName?: string;
   lastName?: string;
-  dateOfBirth?: Date;
+  dateOfBirth?: string;
   aboutMe?: string;
   countryId?: number;
   cityId?: number;
 }
 
 type CreateProfileData = {
-  firstName: string;
-  lastName: string;
-  dateOfBirth?: Date;
-  aboutMe?: string;
-  countryId?: number;
-  cityId?: number;
   userId: number;
 };
 

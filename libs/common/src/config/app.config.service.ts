@@ -6,6 +6,7 @@ export class AppConfigService extends ConfigService {
   constructor(configService: ConfigService) {
     super(configService['internalConfig']);
   }
+
   // Геттеры для общих настроек
   get port(): number {
     const port = this.get<string>('PORT');
@@ -235,5 +236,85 @@ export class AppConfigService extends ConfigService {
       throw new Error('Github url is required');
     }
     return url;
+  }
+
+  get filesAdminLogin(): string {
+    const login = this.get<string>('FILES_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Files admin login is required');
+    }
+    return login;
+  }
+
+  get filesAdminPassword(): string {
+    const password = this.get<string>('FILES_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Files admin password is required');
+    }
+    return password;
+  }
+
+  get paymentServicePort(): number {
+    const paymentServicePort = this.get<number>('PAYMENTS_SERVICE_PORT');
+    if (!paymentServicePort) {
+      throw new Error('Payment service port is required');
+    }
+    return paymentServicePort;
+  }
+
+  get paymentServiceHost(): string {
+    const paymentServiceHost = this.get<string>('PAYMENTS_SERVICE_HOST');
+    if (!paymentServiceHost) {
+      throw new Error('Payment service host is required');
+    }
+
+    return paymentServiceHost;
+  }
+
+  get paymentsAdminLogin(): string {
+    const login = this.get<string>('PAYMENTS_ADMIN_LOGIN');
+    if (!login) {
+      throw new Error('Payments admin login is required');
+    }
+    return login;
+  }
+
+  get paymentsAdminPassword(): string {
+    const password = this.get<string>('PAYMENTS_ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error('Payments admin password is required');
+    }
+    return password;
+  }
+  get monthlyPrice(): number {
+    const price = this.get<number>('BUSINESS_MONTHLY_PRICE');
+    if (!price) {
+      throw new Error('Business monthly price is required');
+    }
+    return price;
+  }
+
+  get threeMonthPrice(): number {
+    const price = this.get<number>('BUSINESS_THREE_MONTH_PRICE');
+    if (!price) {
+      throw new Error('Business three month price is required');
+    }
+    return price;
+  }
+
+  get sixMonthPrice(): number {
+    const price = this.get<number>('BUSINESS_SIX_MONTH_PRICE');
+    if (!price) {
+      throw new Error('Business six month price is required');
+    }
+    return price;
+  }
+
+  get yearlyPrice(): number {
+    const price = this.get<number>('BUSINESS_YEARLY_PRICE');
+    if (!price) {
+      throw new Error('Business yearly price is required');
+    }
+    return price;
   }
 }

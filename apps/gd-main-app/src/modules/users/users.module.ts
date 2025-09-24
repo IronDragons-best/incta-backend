@@ -41,6 +41,6 @@ const usersServices = [
     NotificationService,
     AsyncLocalStorageService,
   ],
-  exports: [UsersRepository, CryptoService],
+  exports: [UsersRepository, CryptoService, UsersRepository],
 })
 export class UsersModule {}

@@ -1,18 +1,21 @@
 import {
   Body,
   Controller,
-  HttpCode,
-  HttpStatus,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
+  UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FilesServiceService } from '../application/files-service.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   MAX_FILES_COUNT,
   ProcessedFileData,
@@ -20,18 +23,27 @@ import {
   ValidatedFilesData,
 } from '@common/constants/files.constants';
 import { FileValidationPipe } from '@common/pipes/file.validation.pipe';
-import { UploadFilesCommand } from '../application/use-cases/upload-files-use.case';
+import { UploadPostFilesCommand } from '../application/use-cases/upload-post-files-use.case';
 import { AppNotification } from '@common';
-import { UploadFilesSwagger } from '../../core/decorators/swagger-settings/upload.files.swagger.decorator';
-import { UploadFileInputDto } from './dto/upload.files.input.dto';
+import { UploadPostFileInputDto } from './dto/upload.post.files.input.dto';
 import { DeletePostFilesSwagger } from '../../core/decorators/swagger-settings/delete.post.files.swagger.decorator';
 import { DeletePostFilesCommand } from '../application/use-cases/delete-post-files.use.case';
 import { GetFilesByUserIdQuery } from '../application/query-handlers/get.files.by.user.id.query-handler';
 import { GetUsersFilesSwagger } from '../../core/decorators/swagger-settings/get.users.files.swagger.decorator';
 import { GetFilesByPostIdQuery } from '../application/query-handlers/get.files.by.post.id.query.handler';
-import { FileViewDto } from '@common/dto/file.view.dto';
+import { FilePostViewDto } from '@common/dto/filePostViewDto';
 import { FilesByUserIdViewDto } from './dto/files.by.user.id.view-dto';
 import { GetPostFilesSwagger } from '../../core/decorators/swagger-settings/get.post.files.swagger.decorator';
+import { UploadUserFileInputDto } from './dto/upload.user.files.input.dto';
+import { UploadUserFilesSwagger } from '../../core/decorators/swagger-settings/upload.user.files.swagger.decorator';
+import { UploadUserAvatarCommand } from '../application/use-cases/upload-user-files-use.case';
+import { UploadPostFilesSwagger } from '../../core/decorators/swagger-settings/upload.post.files.swagger.decorator';
+import { DeleteAvatarFileCommand } from '../application/use-cases/delete-avatar-file.use.case';
+import { DeleteUserFilesSwagger } from '../../core/decorators/swagger-settings/delete.user.files.swagger.decorator';
+import { AvatarValidationPipe } from '@common/pipes/avatar-validation-pipe.service';
+import { GetUserAvatarByUserIdQuery } from '../application/query-handlers/get.user.avatar.by.user.id.query.handler';
+import { GetUserAvatarByIdDecorator } from '../../core/decorators/swagger-settings/get.user.avatar.by.id.decorator';
+import { BasicAuthGuard } from '../../core/guards/basic-auth-guard';
 
 @Controller()
 export class FilesServiceController {
@@ -50,7 +62,7 @@ export class FilesServiceController {
   @GetUsersFilesSwagger()
   @HttpCode(HttpStatus.OK)
   async getUsersFiles(@Param('userId') userId: number) {
-    const result: AppNotification<FileViewDto[]> = await this.queryBus.execute(
+    const result: AppNotification<FilePostViewDto[]> = await this.queryBus.execute(
       new GetFilesByUserIdQuery(userId),
     );
     const files = result.getValue();
@@ -64,7 +76,7 @@ export class FilesServiceController {
   @GetPostFilesSwagger()
   @HttpCode(HttpStatus.OK)
   async getPostFiles(@Param('postId') postId: number, @Param('userId') userId: number) {
-    const result: AppNotification<FileViewDto[]> = await this.queryBus.execute(
+    const result: AppNotification<FilePostViewDto[]> = await this.queryBus.execute(
       new GetFilesByPostIdQuery(postId, userId),
     );
     const files = result.getValue();
@@ -74,6 +86,13 @@ export class FilesServiceController {
     return FilesByUserIdViewDto.mapToView(files, userId);
   }
 
+  @Get('user-avatar/:userId')
+  @GetUserAvatarByIdDecorator()
+  async getUserAvatarById(@Param('userId') userId: number) {
+    return await this.queryBus.execute(new GetUserAvatarByUserIdQuery(userId));
+  }
+
+  @UseGuards(BasicAuthGuard)
   @Delete('delete-post-files/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeletePostFilesSwagger()
@@ -81,7 +100,45 @@ export class FilesServiceController {
     return await this.commandBus.execute(new DeletePostFilesCommand(+postId));
   }
 
-  @Post('upload')
+  @UseGuards(BasicAuthGuard)
+  @Delete('delete-avatar-files/:userId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeleteUserFilesSwagger()
+  async deleteAvatarFiles(@Param('userId') userId: string) {
+    return await this.commandBus.execute(new DeleteAvatarFileCommand(+userId));
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Post('upload-user-files')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: {
+        fileSize: SINGLE_FILE_LIMIT,
+      },
+    }),
+  )
+  @UploadUserFilesSwagger()
+  async uploadUserFiles(
+    @UploadedFile(new AvatarValidationPipe()) file: Express.Multer.File,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+    body: UploadUserFileInputDto,
+  ) {
+    const processed: ProcessedFileData = {
+      originalName: file.originalname,
+      size: file.size,
+      mimeType: file.mimetype,
+      buffer: file.buffer,
+    };
+
+    const result = await this.commandBus.execute(
+      new UploadUserAvatarCommand(processed, +body.userId),
+    );
+
+    return result;
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Post('upload-post-files')
   @UseInterceptors(
     FilesInterceptor('files', MAX_FILES_COUNT, {
       limits: {
@@ -90,10 +147,10 @@ export class FilesServiceController {
       },
     }),
   )
-  @UploadFilesSwagger()
+  @UploadPostFilesSwagger()
   async uploadFiles(
     @UploadedFiles(FileValidationPipe) validatedData: ValidatedFilesData,
-    @Body() body: UploadFileInputDto,
+    @Body() body: UploadPostFileInputDto,
   ) {
     const { files, totalSize } = validatedData;
     const processedFiles = files.map((file: Express.Multer.File) => {
@@ -107,7 +164,7 @@ export class FilesServiceController {
 
       return processedFile;
     });
-    const command: UploadFilesCommand = new UploadFilesCommand(
+    const command: UploadPostFilesCommand = new UploadPostFilesCommand(
       processedFiles,
       totalSize,
       +body.userId,

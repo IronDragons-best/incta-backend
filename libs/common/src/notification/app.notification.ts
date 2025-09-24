@@ -63,6 +63,13 @@ export class AppNotification<T = any> {
     return this;
   }
 
+  setToLarge(message: string, field?: string) {
+    this.errors.push({ message, field });
+    this.statusType = StatusType.ToLarge;
+    this.statusCode = 413;
+    return this;
+  }
+
   hasErrors(): boolean {
     return this.errors.length > 0;
   }

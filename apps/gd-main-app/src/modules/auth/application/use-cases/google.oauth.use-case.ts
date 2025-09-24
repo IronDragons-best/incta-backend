@@ -15,8 +15,9 @@ import { User } from '../../../users/domain/user.entity';
 import { Tokens } from './token.service';
 import { LoginCommand } from './login.use-case';
 import { ClientInfoDto } from '../../interface/dto/input/client.info.dto';
-import { UserProviderAddedEvent } from '../../../../../core/events/user.provider.added.event';
-import { UserProviderRegisteredEvent } from '../../../../../core/events/user.oauth.registered.event';
+import { UserProviderAddedEvent } from '../../../../../core/events/user-events/user.provider.added.event';
+import { UserProviderRegisteredEvent } from '../../../../../core/events/user-events/user.oauth.registered.event';
+import { CreateProfileEvent } from '../../../../../core/events/profile-events/profile.create.event';
 
 export class GoogleOauthCommand {
   constructor(
@@ -110,6 +111,10 @@ export class GoogleOauthUseCase implements ICommandHandler<GoogleOauthCommand> {
           );
 
           this.eventEmitter.emit('user.provider.registered', providerRegisteredEvent);
+
+          // Создаем только из айдишки. Другие поля до заполнения остаются пустыми.
+          const createProfileEvent = new CreateProfileEvent(user.id);
+          this.eventEmitter.emit('profile.create', createProfileEvent);
         }
       }
       await queryRunner.commitTransaction();

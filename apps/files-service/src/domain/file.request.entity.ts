@@ -1,7 +1,7 @@
-import { FileEntity } from './file.entity';
+import { FilePostEntity } from './file.post.entity';
 import {
   CreateFileRequestDtoType,
-  FileRequestFromDatabase,
+  FilePostRequestFromDatabase,
   FileRequestStatusType,
 } from '@common';
 
@@ -13,7 +13,7 @@ export class FileRequestEntity {
     public status: FileRequestStatusType,
     public createdAt: Date,
     public updatedAt: Date,
-    public file?: FileEntity,
+    public file?: FilePostEntity,
   ) {}
 
   static createInstance(
@@ -25,7 +25,7 @@ export class FileRequestEntity {
     };
   }
 
-  static fromDatabase(data: FileRequestFromDatabase): FileRequestEntity {
+  static fromDatabase(data: FilePostRequestFromDatabase): FileRequestEntity {
     return new FileRequestEntity(
       data.id,
       data.fileId,
@@ -33,7 +33,7 @@ export class FileRequestEntity {
       data.status,
       data.createdAt,
       data.updatedAt,
-      data.file ? FileEntity.fromDatabase(data.file) : undefined,
+      data.file ? FilePostEntity.fromDatabase(data.file) : undefined,
     );
   }
 }
