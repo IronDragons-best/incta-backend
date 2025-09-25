@@ -11,6 +11,7 @@ import { Payment } from '../../../domain/payment';
 import { StripeInvoice } from '../../../domain/types/stripe.types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentSuccessEvent } from '../../../../core/events/payment-success.event';
+import { StripeService } from '../../stripe.service';
 
 export class UpdatePaymentFromWebhookCommand {
   constructor(
@@ -28,6 +29,7 @@ export class UpdatePaymentFromWebhookUseCase
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly stripeService: StripeService,
   ) {
     this.logger.setContext('Update payment from webhook use case');
   }
@@ -64,8 +66,22 @@ export class UpdatePaymentFromWebhookUseCase
       );
 
       let payment: Payment | null = null;
+      let paymentIdFromMetadata: string | null = null;
 
       if (stripeSubscriptionId) {
+        try {
+          const subscription =
+            await this.stripeService.getSubscription(stripeSubscriptionId);
+          paymentIdFromMetadata = subscription.metadata?.paymentId || null;
+          if (paymentIdFromMetadata) {
+            this.logger.log(
+              `Found paymentId in subscription metadata: ${paymentIdFromMetadata}`,
+            );
+          }
+        } catch (error) {
+          this.logger.warn(`Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+
         payment =
           await this.paymentRepository.findByStripeSubscriptionId(stripeSubscriptionId);
         if (payment) {
@@ -73,6 +89,17 @@ export class UpdatePaymentFromWebhookUseCase
         } else {
           this.logger.warn(
             `No payment found with subscription ID: ${stripeSubscriptionId}`,
+          );
+        }
+      }
+
+      if (!payment && paymentIdFromMetadata) {
+        payment = await this.paymentRepository.findById(paymentIdFromMetadata);
+        if (payment) {
+          this.logger.log(`Found payment by metadata paymentId: ${payment.id}`);
+        } else {
+          this.logger.warn(
+            `No payment found with metadata paymentId: ${paymentIdFromMetadata}`,
           );
         }
       }
