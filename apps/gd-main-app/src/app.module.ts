@@ -44,7 +44,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       autoSchemaFile: true,
       sortSchema: true,
       playground: true,
-      path: 'api/v1/graphql',
+      path: '/api/v1/graphql',
     }),
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',
