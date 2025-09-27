@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { ClientInfoDto } from '../../src/modules/auth/interface/dto/input/client.info.dto';
 import * as UAParserNS from 'ua-parser-js';
 import { RequestWithClient } from '../types/request-with-client.type';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class UserAgentInterceptor implements NestInterceptor {
@@ -45,6 +46,12 @@ export class UserAgentInterceptor implements NestInterceptor {
   ): Observable<any> | Promise<Observable<any>> {
     const request: RequestWithClient = context.switchToHttp().getRequest();
 
+    const gqlCtx = GqlExecutionContext.create(context);
+    const gqlContext = gqlCtx.getContext<{ req: RequestWithClient }>();
+
+    if (gqlContext.req) {
+      return next.handle();
+    }
     const ip = this.getIp(request);
     const userAgentString = request.headers['user-agent'] || '';
     const userAgentInfo = this.parseUserAgent(userAgentString);

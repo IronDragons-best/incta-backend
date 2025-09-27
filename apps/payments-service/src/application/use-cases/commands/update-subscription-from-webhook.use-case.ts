@@ -51,6 +51,29 @@ export class UpdateSubscriptionFromWebhookUseCase
     let subscription = await this.paymentRepository.findByStripeSubscriptionId(
       stripeSubscription.id,
     );
+    let paymentIdFromMetadata: string | null = null;
+
+    if (!subscription) {
+      try {
+        const fullSubscription = await this.stripeService.getSubscription(stripeSubscription.id);
+        paymentIdFromMetadata = fullSubscription.metadata?.paymentId || null;
+        if (paymentIdFromMetadata) {
+          this.logger.log(
+            `Found paymentId in subscription metadata: ${paymentIdFromMetadata}`,
+          );
+          subscription = await this.paymentRepository.findById(paymentIdFromMetadata);
+          if (subscription) {
+            this.logger.log(`Found subscription by metadata paymentId: ${subscription.id}`);
+            await this.paymentRepository.update(subscription.id, {
+              stripeSubscriptionId: stripeSubscription.id,
+            });
+            subscription.stripeSubscriptionId = stripeSubscription.id;
+          }
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
 
     if (!subscription && stripeSubscription.customer) {
       subscription =
