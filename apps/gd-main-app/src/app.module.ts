@@ -29,12 +29,23 @@ import { StatsModule } from './modules/stats/stats.module';
 import { SubscriptionModule } from './modules/subscriptions/subscription.module';
 import { SystemController } from '../system.controller';
 import { WebsocketModule } from './modules/websockets/websocket.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
   imports: [
     OwnershipModule,
     CacheModule,
     WebsocketModule,
+    NotificationsModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      sortSchema: true,
+      playground: true,
+      path: 'api/v1/graphql',
+    }),
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',
       validationSchema: validationSchema,
