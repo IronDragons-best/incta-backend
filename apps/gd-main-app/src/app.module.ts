@@ -15,6 +15,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
 import { HttpModule } from '@nestjs/axios';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { RabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { TcpClientsModule } from '../core/common/shared-modules/client.module';
@@ -55,6 +56,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       wildcard: true,
       delimiter: '.',
     }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
@@ -73,7 +75,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
           password: configService.pgPassword,
           database: configService.mainPostgresDatabaseName,
           autoLoadEntities: true,
-          synchronize: false,
+          synchronize: true,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
         };

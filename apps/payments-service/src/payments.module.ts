@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { PaymentsController } from './interface/payments.controller';
+import { TestController } from './interface/test.controller';
 import { PaymentsService } from './payments.service';
 import { CommonModule, monitoringValidationSchema, SharedConfigModule } from '@common';
 import { MonitoringModule } from '@monitoring';
@@ -24,6 +25,7 @@ import { HandlePaymentFailedUseCase } from './application/use-cases/commands/han
 import { GetUserPaymentsQuery } from './application/use-cases/queries/get-user-payments.query';
 import { GetPaymentsBySubscriptionQuery } from './application/use-cases/queries/get-payments-by-subscription.query';
 import { GetAllPaymentsQuery } from './application/use-cases/queries/get-all-payments.query';
+import { SendSubscriptionRemindersUseCase } from './application/use-cases/commands/send-subscription-reminders.use-case';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RmqListenersModule } from '../core/listeners/rabbit.listeners.module';
 
@@ -50,7 +52,7 @@ import { RmqListenersModule } from '../core/listeners/rabbit.listeners.module';
     MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }]),
     CommonModule,
   ],
-  controllers: [PaymentsController],
+  controllers: [PaymentsController, TestController],
   providers: [
     PaymentsService,
     PaymentsConfigService,
@@ -65,10 +67,11 @@ import { RmqListenersModule } from '../core/listeners/rabbit.listeners.module';
     UpdateSubscriptionFromWebhookUseCase,
     UpdatePaymentFromWebhookUseCase,
     HandlePaymentFailedUseCase,
+    SendSubscriptionRemindersUseCase,
     GetUserPaymentsQuery,
     GetPaymentsBySubscriptionQuery,
     GetAllPaymentsQuery,
   ],
-  exports: [PaymentsConfigService, StripeService],
+  exports: [PaymentsConfigService, StripeService, SendSubscriptionRemindersUseCase],
 })
 export class PaymentsModule {}

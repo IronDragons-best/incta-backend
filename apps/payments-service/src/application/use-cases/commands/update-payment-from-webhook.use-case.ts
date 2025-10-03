@@ -11,6 +11,7 @@ import { Payment } from '../../../domain/payment';
 import { StripeInvoice } from '../../../domain/types/stripe.types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentSuccessEvent } from '../../../../core/events/payment-success.event';
+import { SubscriptionActivatedEvent } from '../../../../core/events/subscription-activated.event';
 import { StripeService } from '../../stripe.service';
 
 export class UpdatePaymentFromWebhookCommand {
@@ -128,7 +129,8 @@ export class UpdatePaymentFromWebhookUseCase
         status: PaymentStatusType.Succeeded,
       };
 
-      if (payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE) {
+      const isSubscriptionActivation = payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE;
+      if (isSubscriptionActivation) {
         updateData.subscriptionStatus = SubscriptionStatusType.ACTIVE;
         this.logger.log(`Activating subscription for payment: ${payment.id}`);
       }
@@ -192,6 +194,18 @@ export class UpdatePaymentFromWebhookUseCase
               ).toISOString(),
             }),
           );
+
+          if (isSubscriptionActivation) {
+            this.eventEmitter.emit(
+              'subscription.activated',
+              new SubscriptionActivatedEvent({
+                userId: payment.userId,
+                planType: payment.planType!,
+                endDate: new Date(period.end * 1000).toISOString(),
+              }),
+            );
+            this.logger.log(`Subscription activated for user: ${payment.userId}`);
+          }
         }
       }
 

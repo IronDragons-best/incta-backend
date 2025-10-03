@@ -194,4 +194,34 @@ export class PaymentRepository {
 
     return this.paymentModel.countDocuments(query).exec();
   }
+
+  async findActiveSubscriptionsWithBillingDate(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Payment[]> {
+    return this.paymentModel
+      .find({
+        deletedAt: { $exists: false },
+        subscriptionStatus: 'ACTIVE',
+        stripeSubscriptionId: { $exists: true },
+        $or: [
+          { nextBillingDate: { $gte: startDate, $lte: endDate } },
+          { endDate: { $gte: startDate, $lte: endDate } }
+        ]
+      })
+      .exec();
+  }
+
+  async findSubscriptionsExpiringBetween(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Payment[]> {
+    return this.paymentModel
+      .find({
+        deletedAt: { $exists: false },
+        subscriptionStatus: 'ACTIVE',
+        endDate: { $gte: startDate, $lte: endDate }
+      })
+      .exec();
+  }
 }
