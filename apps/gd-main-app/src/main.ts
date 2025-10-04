@@ -43,11 +43,7 @@ async function bootstrap() {
   const port = sharedConfig.port;
   await app.startAllMicroservices();
 
-  try {
-    await app.listen(port);
-  } catch (e) {
-    console.error('error', e);
-  }
+  await app.listen(port);
 
   console.log(`🚀 API Gateway running on: http://localhost:${port}/api/v1`);
 }

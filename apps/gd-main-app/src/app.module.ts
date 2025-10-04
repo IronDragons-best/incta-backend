@@ -75,7 +75,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
           password: configService.pgPassword,
           database: configService.mainPostgresDatabaseName,
           autoLoadEntities: true,
-          synchronize: true,
+          synchronize: false,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
         };
