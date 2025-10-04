@@ -8,15 +8,9 @@ import { NotificationSettingsModel } from './domain/notification-settings.entity
 import { NotificationSettingsController } from './interface/notification-settings.controller';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([NotificationModel, NotificationSettingsModel]),
-  ],
+  imports: [TypeOrmModule.forFeature([NotificationModel, NotificationSettingsModel])],
   controllers: [NotificationSettingsController],
-  providers: [
-    TestResolver,
-    NotificationResolver,
-    NotificationService,
-  ],
+  providers: [TestResolver, NotificationResolver, NotificationService],
   exports: [NotificationService],
 })
 export class NotificationsModule {}

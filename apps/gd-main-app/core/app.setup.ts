@@ -25,6 +25,8 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
             'https://127.0.0.1:3000',
             'https://front.nodewebdev.online:3000',
             'http://front.nodewebdev.online:3000',
+            'https://front.nodewebdev.online',
+            'http://front.nodewebdev.online',
           ]
         : sharedConfig.productionUrl,
     credentials: true,
