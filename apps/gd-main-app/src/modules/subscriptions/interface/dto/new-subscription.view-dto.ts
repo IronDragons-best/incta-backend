@@ -6,13 +6,16 @@ export class NewSubscriptionViewDto {
   @ApiProperty({ default: 'example.com/payment/23' })
   paymentUrl: string;
 
-  @ApiProperty({ default: PlanType.MONTHLY })
+  @ApiProperty({ default: PlanType.MONTHLY, enum: PlanType })
   planType: PlanType;
 
-  @ApiProperty({ default: PaymentMethodType.Stripe })
+  @ApiProperty({ default: PaymentMethodType.Stripe, enum: PaymentMethodType })
   paymentMethod: PaymentMethodType;
 
-  @ApiProperty({ default: SubscriptionStatusType.INCOMPLETE })
+  @ApiProperty({
+    default: SubscriptionStatusType.INCOMPLETE,
+    enum: SubscriptionStatusType,
+  })
   status: SubscriptionStatusType;
 
   static mapToView(sub: UserSubscriptionEntity, url: string) {
