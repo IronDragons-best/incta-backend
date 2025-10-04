@@ -3,9 +3,10 @@ import { WebsocketConnectionService } from './application/websocket-connection.s
 import { NotificationGateway } from './application/websocket.gateway';
 import { WebsocketNotificationService } from './application/websocket-notification.service';
 import { JwtModule } from '@nestjs/jwt';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [JwtModule],
+  imports: [JwtModule, NotificationsModule],
   providers: [
     NotificationGateway,
     WebsocketConnectionService,

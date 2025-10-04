@@ -12,6 +12,7 @@ import { swaggerSetup } from './swagger.setup';
 import { RequestContextInterceptor } from '@monitoring/interceptor/request.context.interceptor';
 import { UserAgentInterceptor } from './interceptors/user.agent.interceptor';
 import { WsAdapter } from '../src/modules/websockets/config/ws.adapter';
+import { GraphQLExceptionFilter } from '@common/exceptions/filters/graph.exception.filter';
 
 export async function appSetup(app: INestApplication, sharedConfig: AppConfigService) {
   app.enableCors({
@@ -24,6 +25,8 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
             'https://127.0.0.1:3000',
             'https://front.nodewebdev.online:3000',
             'http://front.nodewebdev.online:3000',
+            'https://front.nodewebdev.online',
+            'http://front.nodewebdev.online',
           ]
         : sharedConfig.productionUrl,
     credentials: true,
@@ -43,7 +46,11 @@ export async function appSetup(app: INestApplication, sharedConfig: AppConfigSer
     new RequestContextInterceptor(app.get(AsyncLocalStorageService)),
   );
 
-  app.useGlobalFilters(new DomainExceptionsFilter(), new AllExceptionsFilter());
+  app.useGlobalFilters(
+    new DomainExceptionsFilter(),
+    new AllExceptionsFilter(),
+    new GraphQLExceptionFilter(),
+  );
   app.use(cookieParser());
   const logger = await app.resolve(CustomLogger);
   logger.setContext('NEST_INIT');

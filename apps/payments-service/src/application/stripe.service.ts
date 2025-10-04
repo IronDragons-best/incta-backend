@@ -84,6 +84,9 @@ export class StripeService {
 
     if (paymentId) {
       sessionData.metadata = { paymentId };
+      sessionData.subscription_data = {
+        metadata: { paymentId },
+      };
     }
 
     return this.stripe.checkout.sessions.create(sessionData);
@@ -120,7 +123,9 @@ export class StripeService {
     });
   }
 
-  async getSubscriptionLatestInvoice(subscriptionId: string): Promise<Stripe.Invoice | null> {
+  async getSubscriptionLatestInvoice(
+    subscriptionId: string,
+  ): Promise<Stripe.Invoice | null> {
     const subscription = await this.stripe.subscriptions.retrieve(subscriptionId, {
       expand: ['latest_invoice.lines.data'],
     });

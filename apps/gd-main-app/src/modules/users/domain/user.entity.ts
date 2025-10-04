@@ -17,6 +17,7 @@ import {
   PlanType,
   SubscriptionStatusType,
 } from '../../../../../../libs/common/src/types/payment.types';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 export type UserDomainDtoType = {
   username: string;
@@ -26,8 +27,10 @@ export type UserDomainDtoType = {
 };
 
 @Entity()
+@ObjectType()
 export class User extends BasicEntity {
   @Column()
+  @Field()
   username: string;
 
   @Column()

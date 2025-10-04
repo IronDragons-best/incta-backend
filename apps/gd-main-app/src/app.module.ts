@@ -15,6 +15,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { AsyncLocalStorageService, MonitoringModule } from '@monitoring';
 import { HttpModule } from '@nestjs/axios';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { RabbitInitService } from '../core/infrastructure/rabbit.infrastructure.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { TcpClientsModule } from '../core/common/shared-modules/client.module';
@@ -29,12 +30,23 @@ import { StatsModule } from './modules/stats/stats.module';
 import { SubscriptionModule } from './modules/subscriptions/subscription.module';
 import { SystemController } from '../system.controller';
 import { WebsocketModule } from './modules/websockets/websocket.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
   imports: [
     OwnershipModule,
     CacheModule,
     WebsocketModule,
+    NotificationsModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+      sortSchema: true,
+      playground: true,
+      path: '/api/v1/graphql',
+    }),
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',
       validationSchema: validationSchema,
@@ -44,6 +56,7 @@ import { WebsocketModule } from './modules/websockets/websocket.module';
       wildcard: true,
       delimiter: '.',
     }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         ttl: 10000,
@@ -62,7 +75,7 @@ import { WebsocketModule } from './modules/websockets/websocket.module';
           password: configService.pgPassword,
           database: configService.mainPostgresDatabaseName,
           autoLoadEntities: true,
-          synchronize: false,
+          synchronize: true,
           logging: ['error'],
           namingStrategy: new SnakeNamingStrategy(),
         };
