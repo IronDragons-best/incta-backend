@@ -7,7 +7,7 @@ import { NewSubscriptionViewDto } from '../../interface/dto/new-subscription.vie
 export class GetNewSubscriptionQuery {
   constructor(
     public subscriptionId: number,
-    public checkoutUrl: string,
+    public checkoutUrl?: string,
   ) {}
 }
 
@@ -31,8 +31,8 @@ export class GetNewSubscriptionHandler implements IQueryHandler<GetNewSubscripti
       this.logger.warn('Subscription not found');
       return notify.setNotFound(`Subscription with id ${query.subscriptionId} not found`);
     }
-
-    const viewDto = NewSubscriptionViewDto.mapToView(subscription, query.checkoutUrl);
+    const url = query.checkoutUrl ? query.checkoutUrl : null;
+    const viewDto = NewSubscriptionViewDto.mapToView(subscription, url);
     return notify.setValue(viewDto);
   }
 }

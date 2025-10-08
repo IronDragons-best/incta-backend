@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, IsNull } from 'typeorm';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { NotificationModel } from '../domain/notifications.entity';
 import { NotificationSettingsModel } from '../domain/notification-settings.entity';
 import { CreateNotificationInputDto } from '../interface/dto/input/create.notification.input.dto';
@@ -30,7 +30,11 @@ export class NotificationService {
     return this.notificationRepository.save(notification);
   }
 
-  async findByUserId(userId: number, limit = 50, offset = 0): Promise<NotificationModel[]> {
+  async findByUserId(
+    userId: number,
+    limit = 50,
+    offset = 0,
+  ): Promise<NotificationModel[]> {
     return this.notificationRepository.find({
       where: { userId },
       relations: ['user'],
@@ -54,10 +58,7 @@ export class NotificationService {
   }
 
   async markAllAsRead(userId: number): Promise<void> {
-    await this.notificationRepository.update(
-      { userId, isRead: false },
-      { isRead: true }
-    );
+    await this.notificationRepository.update({ userId, isRead: false }, { isRead: true });
   }
 
   async getUnreadCount(userId: number): Promise<number> {
@@ -75,7 +76,9 @@ export class NotificationService {
       );
 
       if (!isEnabled) {
-        this.logger.log(`User ${event.userId} has disabled PAYMENT_SUCCESS notifications, skipping save`);
+        this.logger.log(
+          `User ${event.userId} has disabled PAYMENT_SUCCESS notifications, skipping save`,
+        );
         return;
       }
 
@@ -87,7 +90,10 @@ export class NotificationService {
       });
       this.logger.log(`Saved payment success notification for user: ${event.userId}`);
     } catch (error) {
-      this.logger.error(`Failed to save payment success notification for user ${event.userId}:`, error);
+      this.logger.error(
+        `Failed to save payment success notification for user ${event.userId}:`,
+        error,
+      );
     }
   }
 
@@ -100,7 +106,9 @@ export class NotificationService {
       );
 
       if (!isEnabled) {
-        this.logger.log(`User ${event.userId} has disabled SUBSCRIPTION_ACTIVATED notifications, skipping save`);
+        this.logger.log(
+          `User ${event.userId} has disabled SUBSCRIPTION_ACTIVATED notifications, skipping save`,
+        );
         return;
       }
 
@@ -110,14 +118,21 @@ export class NotificationService {
         message: 'Your subscription has been activated successfully!',
         isRead: false,
       });
-      this.logger.log(`Saved subscription activated notification for user: ${event.userId}`);
+      this.logger.log(
+        `Saved subscription activated notification for user: ${event.userId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to save subscription activated notification for user ${event.userId}:`, error);
+      this.logger.error(
+        `Failed to save subscription activated notification for user ${event.userId}:`,
+        error,
+      );
     }
   }
 
   @OnEvent('subscription.charge.warning')
-  async handleSubscriptionChargeWarningNotification(event: SubscriptionChargeWarningEvent) {
+  async handleSubscriptionChargeWarningNotification(
+    event: SubscriptionChargeWarningEvent,
+  ) {
     try {
       const isEnabled = await this.isNotificationTypeEnabled(
         event.userId,
@@ -125,7 +140,9 @@ export class NotificationService {
       );
 
       if (!isEnabled) {
-        this.logger.log(`User ${event.userId} has disabled SUBSCRIPTION_CHARGE_WARNING notifications, skipping save`);
+        this.logger.log(
+          `User ${event.userId} has disabled SUBSCRIPTION_CHARGE_WARNING notifications, skipping save`,
+        );
         return;
       }
 
@@ -135,14 +152,21 @@ export class NotificationService {
         message: `Your subscription will be charged $${event.amount} tomorrow`,
         isRead: false,
       });
-      this.logger.log(`Saved subscription charge warning notification for user: ${event.userId}`);
+      this.logger.log(
+        `Saved subscription charge warning notification for user: ${event.userId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to save subscription charge warning notification for user ${event.userId}:`, error);
+      this.logger.error(
+        `Failed to save subscription charge warning notification for user ${event.userId}:`,
+        error,
+      );
     }
   }
 
   @OnEvent('subscription.expiring.reminder')
-  async handleSubscriptionExpiringReminderNotification(event: SubscriptionExpiringReminderEvent) {
+  async handleSubscriptionExpiringReminderNotification(
+    event: SubscriptionExpiringReminderEvent,
+  ) {
     try {
       const isEnabled = await this.isNotificationTypeEnabled(
         event.userId,
@@ -150,7 +174,9 @@ export class NotificationService {
       );
 
       if (!isEnabled) {
-        this.logger.log(`User ${event.userId} has disabled SUBSCRIPTION_EXPIRING_REMINDER notifications, skipping save`);
+        this.logger.log(
+          `User ${event.userId} has disabled SUBSCRIPTION_EXPIRING_REMINDER notifications, skipping save`,
+        );
         return;
       }
 
@@ -160,9 +186,14 @@ export class NotificationService {
         message: `Your subscription expires in ${event.daysUntilExpiration} days`,
         isRead: false,
       });
-      this.logger.log(`Saved subscription expiring reminder notification for user: ${event.userId}`);
+      this.logger.log(
+        `Saved subscription expiring reminder notification for user: ${event.userId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to save subscription expiring reminder notification for user ${event.userId}:`, error);
+      this.logger.error(
+        `Failed to save subscription expiring reminder notification for user ${event.userId}:`,
+        error,
+      );
     }
   }
 
@@ -186,7 +217,7 @@ export class NotificationService {
         createdAt: LessThan(cutoffDate),
         deletedAt: IsNull(),
       },
-      { deletedAt: new Date() }
+      { deletedAt: new Date() },
     );
 
     return result.affected || 0;
@@ -233,19 +264,22 @@ export class NotificationService {
       });
 
       if ((deletedCount.affected || 0) > 0) {
-        this.logger.log(`Permanently deleted ${deletedCount.affected} archived notifications older than 90 days`);
+        this.logger.log(
+          `Permanently deleted ${deletedCount.affected} archived notifications older than 90 days`,
+        );
       }
-
     } catch (error) {
       this.logger.error('Failed to cleanup old notifications:', error);
     }
   }
 
-  async manualCleanup(options: {
-    archiveDays?: number;
-    deleteDays?: number;
-    dryRun?: boolean;
-  } = {}): Promise<{
+  async manualCleanup(
+    options: {
+      archiveDays?: number;
+      deleteDays?: number;
+      dryRun?: boolean;
+    } = {},
+  ): Promise<{
     archivedCount: number;
     deletedCount: number;
     oldCount: number;
@@ -286,14 +320,16 @@ export class NotificationService {
         deletedCount: deleteResult.affected || 0,
         oldCount,
       };
-
     } catch (error) {
       this.logger.error('Failed to perform manual cleanup:', error);
       throw error;
     }
   }
 
-  async enableNotificationType(userId: number, type: NotificationType): Promise<NotificationSettingsModel> {
+  async enableNotificationType(
+    userId: number,
+    type: NotificationType,
+  ): Promise<NotificationSettingsModel> {
     let settings = await this.settingsRepository.findOne({
       where: { userId, notificationType: type },
     });
@@ -307,7 +343,10 @@ export class NotificationService {
     return this.settingsRepository.save(settings);
   }
 
-  async disableNotificationType(userId: number, type: NotificationType): Promise<NotificationSettingsModel> {
+  async disableNotificationType(
+    userId: number,
+    type: NotificationType,
+  ): Promise<NotificationSettingsModel> {
     let settings = await this.settingsRepository.findOne({
       where: { userId, notificationType: type },
     });
@@ -321,7 +360,10 @@ export class NotificationService {
     return this.settingsRepository.save(settings);
   }
 
-  async isNotificationTypeEnabled(userId: number, type: NotificationType): Promise<boolean> {
+  async isNotificationTypeEnabled(
+    userId: number,
+    type: NotificationType,
+  ): Promise<boolean> {
     const settings = await this.settingsRepository.findOne({
       where: { userId, notificationType: type },
     });
@@ -329,7 +371,9 @@ export class NotificationService {
     return settings ? settings.isEnabled : true;
   }
 
-  async getUserNotificationSettings(userId: number): Promise<NotificationSettingsModel[]> {
+  async getUserNotificationSettings(
+    userId: number,
+  ): Promise<NotificationSettingsModel[]> {
     return this.settingsRepository.find({
       where: { userId },
     });

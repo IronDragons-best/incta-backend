@@ -345,6 +345,28 @@ export class User extends BasicEntity {
     });
   }
 
+  createAdditional(
+    planType: PlanType,
+    paymentMethod: PaymentMethodType,
+    subscriptionId: string,
+    startDate: number,
+  ) {
+    const sub: UserSubscriptionEntity = UserSubscriptionEntity.createInstance({
+      userId: this.id,
+      planType,
+      paymentMethod,
+      subscriptionId,
+    });
+
+    sub.update({
+      status: SubscriptionStatusType.ACTIVE,
+      startDate: new Date(startDate * 1000),
+      endDate: undefined,
+      isAutoRenewal: true,
+    });
+    return sub;
+  }
+
   updateSubscriptionStatus(status: boolean) {
     this.hasActiveSubscription = status;
   }

@@ -9,7 +9,7 @@ export class GraphQLExceptionFilter implements GqlExceptionFilter {
   catch(exception: GraphQLError, host: ArgumentsHost): GraphQLError {
     // Логируем только графовые ошибки
     this.logger.error('GraphQL Exception:', exception);
-
+    console.error(exception);
     // Просто возвращаем как есть
     return exception;
   }

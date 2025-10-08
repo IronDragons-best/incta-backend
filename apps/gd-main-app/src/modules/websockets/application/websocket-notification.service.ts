@@ -78,6 +78,7 @@ export class WebsocketNotificationService {
 
     const socket = this.connectionService.getConnection(userId);
     if (socket) {
+      console.log('sending');
       socket.emit('notification', {
         type: NotificationType.SUBSCRIPTION_ACTIVATED,
         data: notificationData,
@@ -88,6 +89,7 @@ export class WebsocketNotificationService {
 
   @OnEvent('subscription.charge.warning')
   async handleSubscriptionChargeWarning(event: SubscriptionChargeWarningEvent) {
+    console.log('hashkdjasdkasdk');
     const { userId, planType, chargeDate, amount } = event;
 
     const isEnabled = await this.notificationService.isNotificationTypeEnabled(
@@ -96,7 +98,9 @@ export class WebsocketNotificationService {
     );
 
     if (!isEnabled) {
-      this.logger.log(`User ${userId} has disabled SUBSCRIPTION_CHARGE_WARNING notifications`);
+      this.logger.log(
+        `User ${userId} has disabled SUBSCRIPTION_CHARGE_WARNING notifications`,
+      );
       return;
     }
 
@@ -112,7 +116,12 @@ export class WebsocketNotificationService {
     };
 
     const socket = this.connectionService.getConnection(userId);
+
+    console.log('sending3');
+
     if (socket) {
+      console.log('sending2');
+
       socket.emit('notification', {
         type: NotificationType.SUBSCRIPTION_CHARGE_WARNING,
         data: notificationData,
@@ -131,7 +140,9 @@ export class WebsocketNotificationService {
     );
 
     if (!isEnabled) {
-      this.logger.log(`User ${userId} has disabled SUBSCRIPTION_EXPIRING_REMINDER notifications`);
+      this.logger.log(
+        `User ${userId} has disabled SUBSCRIPTION_EXPIRING_REMINDER notifications`,
+      );
       return;
     }
 
@@ -147,7 +158,11 @@ export class WebsocketNotificationService {
     };
 
     const socket = this.connectionService.getConnection(userId);
+    console.log('sending5');
+
     if (socket) {
+      console.log('sending4');
+
       socket.emit('notification', {
         type: NotificationType.SUBSCRIPTION_EXPIRING_REMINDER,
         data: notificationData,

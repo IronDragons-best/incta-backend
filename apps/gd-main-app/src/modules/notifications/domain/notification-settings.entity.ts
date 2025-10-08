@@ -32,7 +32,11 @@ export class NotificationSettingsModel extends BasicEntity {
   @Field(() => Number)
   id: number;
 
-  static createInstance(userId: number, notificationType: NotificationType, isEnabled = true) {
+  static createInstance(
+    userId: number,
+    notificationType: NotificationType,
+    isEnabled = true,
+  ) {
     const settings = new NotificationSettingsModel();
     settings.userId = userId;
     settings.notificationType = notificationType;

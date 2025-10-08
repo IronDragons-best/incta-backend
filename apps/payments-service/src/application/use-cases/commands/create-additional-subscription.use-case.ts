@@ -1,7 +1,10 @@
 import { PaymentRepository } from '../../../infrastructure/payment.repository';
 import { StripeService } from '../../stripe.service';
 import { CreateAdditionalSubscriptionInputDto } from '../../../interface/dto/input/additional-subscription.input.dto';
-import { CreatePaymentResponseDto } from '../../../interface/dto/output/payment.view.dto';
+import {
+  CreateAdditionalPaymentResponseDto,
+  CreatePaymentResponseDto,
+} from '../../../interface/dto/output/payment.view.dto';
 import { PaymentsConfigService } from '@common/config/payments.service';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CustomLogger } from '@monitoring';
@@ -12,6 +15,7 @@ import {
   SubscriptionStatusType,
 } from '@common';
 import { v4 as uuidv4 } from 'uuid';
+import { Payment } from '../../../domain/payment';
 
 export class CreateAdditionalSubscriptionCommand {
   constructor(
@@ -65,7 +69,9 @@ export class CreateAdditionalSubscriptionUseCase
         );
       }
 
-      let existingSubscription;
+      let existingSubscription: Payment | null;
+      let billingCycleAnchor: number | undefined;
+
       if (createAdditionalSubscriptionDto.existingSubscriptionId) {
         existingSubscription = await this.paymentRepository.findById(
           createAdditionalSubscriptionDto.existingSubscriptionId,
@@ -93,6 +99,32 @@ export class CreateAdditionalSubscriptionUseCase
           );
           return notify.setBadRequest('Cannot extend inactive subscription');
         }
+
+        if (existingSubscription.stripeSubscriptionId) {
+          try {
+            const stripeSubscription = await this.stripeService.getSubscription(
+              existingSubscription.stripeSubscriptionId,
+            );
+
+            const maxPeriodEnd = stripeSubscription.items?.data
+              ?.map((item) => item.current_period_end)
+              .filter(Boolean)
+              .reduce((max, cur) => Math.max(max, cur), 0);
+
+            if (maxPeriodEnd) {
+              billingCycleAnchor = maxPeriodEnd;
+              this.logger.log(
+                `Found current period end: ${new Date(maxPeriodEnd * 1000).toISOString()}`,
+              );
+            } else {
+              this.logger.warn(
+                `Could not determine current_period_end for subscription ${existingSubscription.stripeSubscriptionId}`,
+              );
+            }
+          } catch (err) {
+            this.logger.error(`Failed to fetch Stripe subscription: ${err.message}`);
+          }
+        }
       }
 
       const customer = await this.stripeService.createCustomerByUserId(
@@ -108,7 +140,7 @@ export class CreateAdditionalSubscriptionUseCase
       const amount = typeof price.unit_amount === 'number' ? price.unit_amount : 0;
       const currency = price.currency || 'usd';
 
-      if (createAdditionalSubscriptionDto.existingSubscriptionId) {
+      if (createAdditionalSubscriptionDto.existingSubscriptionId && billingCycleAnchor) {
         const additionalPaymentId = uuidv4();
         const additionalPayment = await this.paymentRepository.create({
           id: additionalPaymentId,
@@ -122,28 +154,29 @@ export class CreateAdditionalSubscriptionUseCase
           status: PaymentStatusType.Processing,
           parentSubscriptionId: createAdditionalSubscriptionDto.existingSubscriptionId,
         });
-
-        const session = await this.stripeService.createCheckoutSession(
+        const schedule = await this.stripeService.createSubscriptionSchedule(
           customer.id,
           priceId,
-          this.configService.redirectSuccessExtensionUrl,
-          this.configService.redirectCancelUrl,
+          billingCycleAnchor,
           additionalPaymentId,
         );
+        console.log(schedule);
 
-        if (!session || !session.url) {
-          this.logger.error(
-            'Failed to create checkout session for subscription extension',
-          );
+        if (!schedule) {
+          this.logger.error('Failed to create schedule subscription');
           return notify.setBadRequest('Failed to create checkout session');
         }
 
-        this.logger.log(
-          `Created additional payment record for extending subscription ${createAdditionalSubscriptionDto.existingSubscriptionId}: ${additionalPaymentId}`,
+        console.log(
+          schedule.phases?.[0]?.start_date,
+          typeof schedule.phases?.[0]?.start_date,
         );
-
         return notify.setValue(
-          new CreatePaymentResponseDto(session.url, additionalPaymentId),
+          new CreateAdditionalPaymentResponseDto(
+            additionalPaymentId,
+            schedule.id,
+            schedule.phases?.[0]?.start_date,
+          ),
         );
       } else {
         const newSubscriptionId = uuidv4();
