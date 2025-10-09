@@ -13,7 +13,7 @@ export class TestController {
   @ApiOperation({ summary: 'Manually trigger subscription reminders' })
   @ApiResponse({ status: 200, description: 'Reminders sent successfully' })
   async triggerReminders() {
-    await this.sendReminders.sendDailyReminders();
+    await this.sendReminders.sendDailyRemindersTest();
     return { success: true };
   }
 }

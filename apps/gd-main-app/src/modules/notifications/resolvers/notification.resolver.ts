@@ -5,6 +5,7 @@ import { NotificationSettingsModel } from '../domain/notification-settings.entit
 import { NotificationService } from '../application/notification.service';
 import { NotificationType } from '../../websockets/types/websocket.types';
 import { UpdateNotificationSettingsInputDto } from '../interface/dto/input/update-notification-settings.input.dto';
+import { GqlAuthGuard } from '../../../../core/guards/local/gql-auth.guard';
 
 @ObjectType()
 export class CleanupResult {
@@ -19,6 +20,7 @@ export class CleanupResult {
 }
 
 @Resolver(() => NotificationModel)
+@UseGuards(GqlAuthGuard)
 export class NotificationResolver {
   constructor(private readonly notificationService: NotificationService) {}
 

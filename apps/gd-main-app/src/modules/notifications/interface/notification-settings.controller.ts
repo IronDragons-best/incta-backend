@@ -8,9 +8,11 @@ import { GetUserSettingsSwagger } from '../../../../core/decorators/swagger-sett
 import { EnableNotificationTypeSwagger } from '../../../../core/decorators/swagger-settings/notifications/enable-notification-type.swagger.decorator';
 import { DisableNotificationTypeSwagger } from '../../../../core/decorators/swagger-settings/notifications/disable-notification-type.swagger.decorator';
 import { InitializeSettingsSwagger } from '../../../../core/decorators/swagger-settings/notifications/initialize-settings.swagger.decorator';
+import { JwtAuthGuard } from '../../../../core/guards/local/jwt-auth-guard';
 
 @ApiTags('Notification Settings')
 @Controller('notification-settings')
+@UseGuards(JwtAuthGuard)
 export class NotificationSettingsController {
   constructor(private readonly notificationService: NotificationService) {}
 

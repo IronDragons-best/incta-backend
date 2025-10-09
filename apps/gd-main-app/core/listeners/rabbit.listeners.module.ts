@@ -6,9 +6,11 @@ import { UserProviderListeners } from './user-listeners/user.provider.listener';
 import { PasswordRecoveryListener } from './user-listeners/password.recovery.listener';
 import { AmqpClientsModule } from '../common/shared-modules/client.module';
 import { RabbitMQMonitorService } from '../common/adapters/rabbit.monitor-service';
+import { PaymentEventsController } from './payment-listeners/payment-events.controller';
 
 @Module({
   imports: [AmqpClientsModule],
+  controllers: [PaymentEventsController],
   providers: [
     RabbitMQMonitorService,
     UserCreatedListener,

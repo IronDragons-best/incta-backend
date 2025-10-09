@@ -40,12 +40,17 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     CacheModule,
     WebsocketModule,
     NotificationsModule,
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: true,
-      sortSchema: true,
-      playground: true,
-      path: '/api/v1/graphql',
+      imports: [SharedConfigModule],
+      inject: [AppConfigService],
+      useFactory: (configService: AppConfigService) => ({
+        autoSchemaFile: true,
+        sortSchema: true,
+        playground: true,
+        path: '/api/v1/graphql',
+        context: ({ req, res }) => ({ req, res }),
+      }),
     }),
     SharedConfigModule.forRoot({
       appName: 'gd-main-app',

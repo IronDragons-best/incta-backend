@@ -27,6 +27,14 @@ export class SendSubscriptionRemindersUseCase {
     ]);
   }
 
+  async sendDailyRemindersTest() {
+    this.logger.log('Starting daily subscription reminders check');
+    await Promise.all([
+      this.sendChargeWarnings(),
+      this.sendExpiringReminders(),
+    ]);
+  }
+
   private async sendChargeWarnings() {
     try {
       const tomorrow = new Date();
