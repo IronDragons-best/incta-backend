@@ -7,7 +7,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubscriptionCancelledEvent } from '../../../../core/events/subscription-cancelled.event';
 import { SubscriptionPastDueEvent } from '../../../../core/events/subscription-past-due.event';
 import { StripeService } from '../../stripe.service';
-import { AutoPaymentCancelledEvent } from '../../../../core/events/auto-payment-cancelled.event';
 
 export class UpdateSubscriptionFromWebhookCommand {
   constructor(
@@ -55,7 +54,9 @@ export class UpdateSubscriptionFromWebhookUseCase
 
     if (!subscription) {
       try {
-        const fullSubscription = await this.stripeService.getSubscription(stripeSubscription.id);
+        const fullSubscription = await this.stripeService.getSubscription(
+          stripeSubscription.id,
+        );
         paymentIdFromMetadata = fullSubscription.metadata?.paymentId || null;
         if (paymentIdFromMetadata) {
           this.logger.log(
@@ -63,7 +64,9 @@ export class UpdateSubscriptionFromWebhookUseCase
           );
           subscription = await this.paymentRepository.findById(paymentIdFromMetadata);
           if (subscription) {
-            this.logger.log(`Found subscription by metadata paymentId: ${subscription.id}`);
+            this.logger.log(
+              `Found subscription by metadata paymentId: ${subscription.id}`,
+            );
             await this.paymentRepository.update(subscription.id, {
               stripeSubscriptionId: stripeSubscription.id,
             });
@@ -71,7 +74,9 @@ export class UpdateSubscriptionFromWebhookUseCase
           }
         }
       } catch (error) {
-        this.logger.warn(`Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        this.logger.warn(
+          `Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
       }
     }
 
@@ -138,7 +143,6 @@ export class UpdateSubscriptionFromWebhookUseCase
       } catch (error) {
         this.logger.error('Failed to get invoice period', error);
       }
-      console.log('id: ', stripeSubscription.id);
       const updatedSubscription = await this.paymentRepository.updateByStripeId(
         stripeSubscription.id,
         updateData,
@@ -214,6 +218,7 @@ export class UpdateSubscriptionFromWebhookUseCase
       [SubscriptionStatusType.INCOMPLETE_EXPIRED]: PaymentStatusType.Failed,
       [SubscriptionStatusType.PAST_DUE]: PaymentStatusType.Failed,
       [SubscriptionStatusType.UNPAID]: PaymentStatusType.Failed,
+      [SubscriptionStatusType.SCHEDULED]: PaymentStatusType.Scheduled,
     };
 
     return statusMap[subscriptionStatus] || PaymentStatusType.Processing;

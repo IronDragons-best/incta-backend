@@ -30,65 +30,65 @@ export class GetPaymentsHandler implements IQueryHandler<GetPaymentsQuery> {
   ) {}
 
   async execute(query: GetPaymentsQuery) {
-    console.log('hello');
     const [paymentInfo, totalCount, pagination]: [
       PaymentInfoEntity[],
       number,
       PaginationSettings,
     ] = await this.paymentsRepository.findManyByUserId(query.userId, query.query);
+    try {
+      let viewDto: MainPaymentsViewDto[];
+      console.log(paymentInfo);
+      if (paymentInfo.length === 0) {
+        const paymentInfoFromService = await this.getFromService(
+          query.userId,
+          Number(query.query.pageNumber),
+          Number(query.query.pageSize),
+        );
+        if (paymentInfoFromService.items.length !== 0) {
+          viewDto = paymentInfoFromService.items.map((paymentInfo) =>
+            MainPaymentsViewDto.mapToView(
+              paymentInfo.currentPeriodStart!,
+              paymentInfo.currentPeriodEnd!,
+              paymentInfo.amount,
+              paymentInfo.planType!,
+              paymentInfo.payType,
+            ),
+          );
+        } else {
+          viewDto = [];
+        }
 
-    console.log('asd');
-    let viewDto: MainPaymentsViewDto[];
-    console.log(paymentInfo);
-    if (paymentInfo.length === 0) {
-      const paymentInfoFromService = await this.getFromService(
-        query.userId,
-        Number(query.query.pageNumber),
-        Number(query.query.pageSize),
-      );
-      if (paymentInfoFromService.items.length !== 0) {
-        viewDto = paymentInfoFromService.items.map((paymentInfo) =>
+        return new PagedResponse(
+          viewDto,
+          paymentInfoFromService.total,
+          paymentInfoFromService.page,
+          paymentInfoFromService.limit,
+        );
+      }
+
+      if (paymentInfo.length > 0) {
+        viewDto = paymentInfo.map((paymentInfo) =>
           MainPaymentsViewDto.mapToView(
-            paymentInfo.currentPeriodStart!,
-            paymentInfo.currentPeriodEnd!,
+            paymentInfo.billingDate,
+            paymentInfo.subscription.endDate,
             paymentInfo.amount,
-            paymentInfo.planType!,
-            paymentInfo.payType,
+            paymentInfo.planType,
+            paymentInfo.paymentMethod,
           ),
         );
       } else {
-        console.log('here');
         viewDto = [];
       }
 
       return new PagedResponse(
         viewDto,
-        paymentInfoFromService.total,
-        paymentInfoFromService.page,
-        paymentInfoFromService.limit,
+        totalCount,
+        pagination.pageNumber,
+        pagination.pageSize,
       );
+    } catch (e) {
+      console.log(e);
     }
-
-    if (paymentInfo.length > 0) {
-      viewDto = paymentInfo.map((paymentInfo) =>
-        MainPaymentsViewDto.mapToView(
-          paymentInfo.billingDate,
-          paymentInfo.subscription.endDate,
-          paymentInfo.amount,
-          paymentInfo.planType,
-          paymentInfo.paymentMethod,
-        ),
-      );
-    } else {
-      viewDto = [];
-    }
-
-    return new PagedResponse(
-      viewDto,
-      totalCount,
-      pagination.pageNumber,
-      pagination.pageSize,
-    );
   }
 
   async getFromService(userId: number, page: number = 1, limit: number = 10) {

@@ -72,7 +72,6 @@ export class SubscriptionController {
   @CheckOwnership({ repository: SubscriptionRepository, paramName: 'subscriptionId' })
   @CancelRenewalSwagger()
   async cancelAutoRenewal(@Param('subscriptionId') subscriptionId: string) {
-    console.log(subscriptionId);
     await this.commandBus.execute(new CancelRenewalCommand(subscriptionId));
   }
 
@@ -99,7 +98,6 @@ export class SubscriptionController {
   @UseGuards(JwtAuthGuard)
   @GetCurrentPaymentSwaggerDecorator()
   getCurrent(@ExtractUserFromRequest() user: UserContextDto) {
-    console.log(user);
     return this.queryBus.execute(new GetCurrentSubscriptionQuery(user.id));
   }
 }

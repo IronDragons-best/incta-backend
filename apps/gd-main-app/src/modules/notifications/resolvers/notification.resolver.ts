@@ -1,4 +1,13 @@
-import { Resolver, Query, Mutation, Args, Int, Context, ObjectType, Field } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  Context,
+  ObjectType,
+  Field,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { NotificationModel } from '../domain/notifications.entity';
 import { NotificationSettingsModel } from '../domain/notification-settings.entity';
@@ -26,7 +35,7 @@ export class NotificationResolver {
 
   @Query(() => [NotificationModel], {
     name: 'getNotifications',
-    description: 'Get user notifications'
+    description: 'Get user notifications',
   })
   async getNotifications(
     @Context() context: any,
@@ -39,7 +48,7 @@ export class NotificationResolver {
 
   @Query(() => Int, {
     name: 'getUnreadNotificationsCount',
-    description: 'Get count of unread notifications'
+    description: 'Get count of unread notifications',
   })
   async getUnreadNotificationsCount(@Context() context: any): Promise<number> {
     const userId = context.req.user.id;
@@ -49,7 +58,7 @@ export class NotificationResolver {
   @Mutation(() => NotificationModel, {
     name: 'markNotificationAsRead',
     description: 'Mark notification as read',
-    nullable: true
+    nullable: true,
   })
   async markNotificationAsRead(
     @Context() context: any,
@@ -61,7 +70,7 @@ export class NotificationResolver {
 
   @Mutation(() => Boolean, {
     name: 'markAllNotificationsAsRead',
-    description: 'Mark all notifications as read'
+    description: 'Mark all notifications as read',
   })
   async markAllNotificationsAsRead(@Context() context: any): Promise<boolean> {
     const userId = context.req.user.id;
@@ -71,7 +80,7 @@ export class NotificationResolver {
 
   @Query(() => Int, {
     name: 'getOldNotificationsCount',
-    description: 'Get count of notifications older than specified days (admin only)'
+    description: 'Get count of notifications older than specified days (admin only)',
   })
   async getOldNotificationsCount(
     @Args('days', { type: () => Int, defaultValue: 30 }) days: number,
@@ -81,12 +90,15 @@ export class NotificationResolver {
 
   @Mutation(() => CleanupResult, {
     name: 'cleanupOldNotifications',
-    description: 'Cleanup old notifications (admin only)'
+    description: 'Cleanup old notifications (admin only)',
   })
   async cleanupOldNotifications(
-    @Args('archiveDays', { type: () => Int, defaultValue: 30, nullable: true }) archiveDays?: number,
-    @Args('deleteDays', { type: () => Int, defaultValue: 90, nullable: true }) deleteDays?: number,
-    @Args('dryRun', { type: () => Boolean, defaultValue: true, nullable: true }) dryRun?: boolean,
+    @Args('archiveDays', { type: () => Int, defaultValue: 30, nullable: true })
+    archiveDays?: number,
+    @Args('deleteDays', { type: () => Int, defaultValue: 90, nullable: true })
+    deleteDays?: number,
+    @Args('dryRun', { type: () => Boolean, defaultValue: true, nullable: true })
+    dryRun?: boolean,
   ): Promise<CleanupResult> {
     return this.notificationService.manualCleanup({
       archiveDays,
@@ -95,11 +107,9 @@ export class NotificationResolver {
     });
   }
 
-
-
   @Mutation(() => NotificationSettingsModel, {
     name: 'enableNotificationType',
-    description: 'Enable notification type for user'
+    description: 'Enable notification type for user',
   })
   async enableNotificationType(
     @Context() context: any,
@@ -111,7 +121,7 @@ export class NotificationResolver {
 
   @Mutation(() => NotificationSettingsModel, {
     name: 'disableNotificationType',
-    description: 'Disable notification type for user'
+    description: 'Disable notification type for user',
   })
   async disableNotificationType(
     @Context() context: any,
@@ -123,16 +133,18 @@ export class NotificationResolver {
 
   @Query(() => [NotificationSettingsModel], {
     name: 'getNotificationSettings',
-    description: 'Get user notification settings'
+    description: 'Get user notification settings',
   })
-  async getNotificationSettings(@Context() context: any): Promise<NotificationSettingsModel[]> {
+  async getNotificationSettings(
+    @Context() context: any,
+  ): Promise<NotificationSettingsModel[]> {
     const userId = context.req.user.id;
     return this.notificationService.getUserNotificationSettings(userId);
   }
 
   @Mutation(() => Boolean, {
     name: 'initializeNotificationSettings',
-    description: 'Initialize default notification settings for user'
+    description: 'Initialize default notification settings for user',
   })
   async initializeNotificationSettings(@Context() context: any): Promise<boolean> {
     const userId = context.req.user.id;

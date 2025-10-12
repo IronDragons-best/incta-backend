@@ -43,7 +43,6 @@ export class UpdateProfileUseCase implements ICommandHandler<UpdateProfileComman
         return notify.setNotFound('Profile for user does not exist');
       }
       const profileDomainDto = UpdateProfileDomainDto.from(command.profileDto);
-
       // Проверяем не затираем ли имя. Проверка существует ли имя.
       profile.isFirstNameAndLastNameExists(profileDomainDto, profile);
 
@@ -55,6 +54,7 @@ export class UpdateProfileUseCase implements ICommandHandler<UpdateProfileComman
       await queryRunner.commitTransaction();
       return notify.setNoContent();
     } catch (error) {
+      console.log(error);
       let errorMessage: string;
 
       if (error instanceof BadRequestDomainException) {

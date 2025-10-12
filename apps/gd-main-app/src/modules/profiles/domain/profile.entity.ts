@@ -121,8 +121,7 @@ class ProfileEntity extends BasicEntity {
       if (dateOfBirth.length === 0) {
         this.dateOfBirth = null;
       } else {
-        const [day, month, year] = dateOfBirth.split('.').map(Number);
-        this.dateOfBirth = new Date(year, month - 1, day);
+        this.dateOfBirth = new Date(dateOfBirth);
       }
     }
 

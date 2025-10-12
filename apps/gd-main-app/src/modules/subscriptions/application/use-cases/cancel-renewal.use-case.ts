@@ -46,7 +46,6 @@ export class CancelRenewalUseCase implements ICommandHandler<CancelRenewalComman
       status: SubscriptionStatusType.ACTIVE,
       isAutoRenewal: false,
     });
-    console.log('jadskjdasjkdsadsa');
     await this.subscriptionRepository.save(subscription);
     const cancelData = await this.cancelRenewal(command.subscriptionId);
     return cancelData;

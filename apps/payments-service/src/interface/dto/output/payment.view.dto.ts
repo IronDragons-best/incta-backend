@@ -127,3 +127,22 @@ export class CreatePaymentResponseDto {
     this.subscriptionId = id;
   }
 }
+
+export class CreateAdditionalPaymentResponseDto {
+  subscriptionId: string;
+  amount: number;
+  scheduleId?: string; // если создан subscription_schedule
+  startDate?: number; // timestamp начала отложенной подписки
+
+  constructor(
+    paymentId: string,
+    amount: number,
+    scheduleId?: string,
+    startDate?: number,
+  ) {
+    this.subscriptionId = paymentId;
+    this.scheduleId = scheduleId;
+    this.startDate = startDate;
+    this.amount = amount;
+  }
+}

@@ -4,6 +4,7 @@ import {
   AppConfigService,
   NotificationService,
   PaymentMethodType,
+  PaymentStatusType,
   PlanType,
   WithoutFieldErrorResponseDto,
 } from '@common';
@@ -12,10 +13,15 @@ import { User } from '../../../users/domain/user.entity';
 import { SubscriptionRepository } from '../../infrastructure/subscription.repository';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 import { HttpService } from '@nestjs/axios';
-import { CreatePaymentResponseDto } from '../../../../../../payments-service/src/interface/dto/output/payment.view.dto';
+import {
+  CreateAdditionalPaymentResponseDto,
+  CreatePaymentResponseDto,
+} from '../../../../../../payments-service/src/interface/dto/output/payment.view.dto';
 import { firstValueFrom, timeout } from 'rxjs';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
+import { PaymentInfoEntity } from '../../domain/payment-info.entity';
+import { PaymentRepository } from '../../infrastructure/payment.repository';
 
 export class CreateSubscriptionCommand {
   constructor(
@@ -37,16 +43,20 @@ export class CreateSubscriptionUseCase
     private readonly notification: NotificationService,
     private readonly usersRepository: UsersRepository,
     private readonly subscriptionRepository: SubscriptionRepository,
+    private readonly paymentRepository: PaymentRepository,
     private readonly configService: AppConfigService,
     private readonly httpService: HttpService,
   ) {
     this.logger.setContext('CreateSubscriptionUseCase');
   }
   async execute(command: CreateSubscriptionCommand) {
-    const notify = this.notification.create<{
-      subscriptionId: number;
-      checkoutUrl: string;
-    }>();
+    const notify = this.notification.create<
+      | {
+          subscriptionId: number;
+          checkoutUrl: string;
+        }
+      | { subscriptionId: number }
+    >();
 
     if (!Object.values(PlanType).includes(command.planType)) {
       return notify.setBadRequest('PlanType is invalid', 'duration');
@@ -71,17 +81,35 @@ export class CreateSubscriptionUseCase
           existingSubscriptionId: currentSubscription.subscriptionId,
         });
 
-        console.log('add payment: ', result);
-        const userSubscription: UserSubscriptionEntity = user.createSubscriptionForUser(
+        const userSubscription: UserSubscriptionEntity = user.createAdditional(
           command.planType,
           command.paymentMethod,
           result.subscriptionId,
+          result.startDate!,
         );
         const sub = await this.subscriptionRepository.save(userSubscription);
+        console.log(sub);
+
+        const additionalPayment = PaymentInfoEntity.createInstance({
+          userId: command.userId,
+          subscriptionId: sub.id,
+          planType: sub.planType,
+          paymentMethod: sub.paymentMethod,
+          amount: result.amount,
+          billingDate: sub.startDate,
+          status: PaymentStatusType.Scheduled,
+        });
+
+        currentSubscription.update({
+          status: currentSubscription.status,
+          endDate: new Date(result.startDate! * 1000),
+          isAutoRenewal: false,
+        });
+        await this.subscriptionRepository.save(currentSubscription);
+        await this.paymentRepository.save(additionalPayment);
 
         return notify.setValue({
           subscriptionId: sub.id,
-          checkoutUrl: result.url,
         });
       }
     }
@@ -92,7 +120,6 @@ export class CreateSubscriptionUseCase
       planType: command.planType,
       payType: command.paymentMethod,
     });
-    console.log('Payment result:', result);
     const userSubscription: UserSubscriptionEntity = user.createSubscriptionForUser(
       command.planType,
       command.paymentMethod,
@@ -164,7 +191,7 @@ export class CreateSubscriptionUseCase
     try {
       const response = await firstValueFrom(
         this.httpService
-          .post<CreatePaymentResponseDto>(url, payload, {
+          .post<CreateAdditionalPaymentResponseDto>(url, payload, {
             headers: {
               Authorization: `Basic ${Buffer.from(`${paymentAdminLogin}:${paymentAdminPassword}`).toString('base64')}`,
             },

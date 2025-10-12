@@ -34,6 +34,10 @@ export class StripeService {
     return this.stripe.subscriptions.retrieve(subscriptionId);
   }
 
+  async getScheduledSubscription(subscriptionId: string) {
+    return this.stripe.subscriptionSchedules.retrieve(subscriptionId);
+  }
+
   async updateSubscription(
     subscriptionId: string,
     params: Stripe.SubscriptionUpdateParams,
@@ -45,6 +49,10 @@ export class StripeService {
     return this.stripe.subscriptions.update(subscriptionId, {
       cancel_at_period_end: true,
     });
+  }
+
+  async cancelScheduledSubscription(scheduleId: string) {
+    return this.stripe.subscriptionSchedules.cancel(scheduleId, { invoice_now: false });
   }
 
   constructWebhookEvent(payload: string | Buffer, signature: string): Stripe.Event {
@@ -131,5 +139,31 @@ export class StripeService {
     });
 
     return subscription.latest_invoice as Stripe.Invoice | null;
+  }
+
+  async createSubscriptionSchedule(
+    customerId: string,
+    priceId: string,
+    startDate: number,
+    paymentId?: string,
+  ): Promise<Stripe.SubscriptionSchedule> {
+    return this.stripe.subscriptionSchedules.create({
+      customer: customerId,
+      start_date: startDate,
+      end_behavior: 'release',
+      phases: [
+        {
+          items: [{ price: priceId, quantity: 1 }],
+          iterations: 1,
+        },
+      ],
+      metadata: paymentId ? { paymentId } : {},
+    });
+  }
+
+  async getSubscriptionSchedule(
+    scheduleId: string,
+  ): Promise<Stripe.SubscriptionSchedule> {
+    return this.stripe.subscriptionSchedules.retrieve(scheduleId);
   }
 }

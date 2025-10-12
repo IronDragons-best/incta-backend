@@ -4,7 +4,7 @@ import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
 
 export class NewSubscriptionViewDto {
   @ApiProperty({ default: 'example.com/payment/23' })
-  paymentUrl: string;
+  paymentUrl: string | null;
 
   @ApiProperty({ default: PlanType.MONTHLY, enum: PlanType })
   planType: PlanType;
@@ -18,7 +18,7 @@ export class NewSubscriptionViewDto {
   })
   status: SubscriptionStatusType;
 
-  static mapToView(sub: UserSubscriptionEntity, url: string) {
+  static mapToView(sub: UserSubscriptionEntity, url: string | null) {
     const dto = new this();
     dto.status = sub.status;
     dto.paymentMethod = sub.paymentMethod;

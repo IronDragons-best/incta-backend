@@ -10,7 +10,6 @@ import {
   HttpStatus,
   Req,
   Logger,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';

@@ -21,10 +21,7 @@ export class SendSubscriptionRemindersUseCase {
   async sendDailyReminders() {
     this.logger.log('Starting daily subscription reminders check');
 
-    await Promise.all([
-      this.sendChargeWarnings(),
-      this.sendExpiringReminders(),
-    ]);
+    await Promise.all([this.sendChargeWarnings(), this.sendExpiringReminders()]);
   }
 
   async sendDailyRemindersTest() {
@@ -44,10 +41,11 @@ export class SendSubscriptionRemindersUseCase {
       const tomorrowEnd = new Date(tomorrow);
       tomorrowEnd.setHours(23, 59, 59, 999);
 
-      const payments = await this.paymentRepository.findActiveSubscriptionsWithBillingDate(
-        tomorrow,
-        tomorrowEnd
-      );
+      const payments =
+        await this.paymentRepository.findActiveSubscriptionsWithBillingDate(
+          tomorrow,
+          tomorrowEnd,
+        );
 
       this.logger.log(`Found ${payments.length} subscriptions to be charged tomorrow`);
 
@@ -65,7 +63,10 @@ export class SendSubscriptionRemindersUseCase {
 
           this.logger.log(`Sent charge warning for user: ${payment.userId}`);
         } catch (error) {
-          this.logger.error(`Failed to send charge warning for user ${payment.userId}:`, error);
+          this.logger.error(
+            `Failed to send charge warning for user ${payment.userId}:`,
+            error,
+          );
         }
       }
     } catch (error) {
@@ -84,7 +85,7 @@ export class SendSubscriptionRemindersUseCase {
 
       const payments = await this.paymentRepository.findSubscriptionsExpiringBetween(
         threeDaysFromNow,
-        threeDaysEnd
+        threeDaysEnd,
       );
 
       this.logger.log(`Found ${payments.length} subscriptions expiring in 3 days`);
@@ -103,7 +104,10 @@ export class SendSubscriptionRemindersUseCase {
 
           this.logger.log(`Sent expiring reminder for user: ${payment.userId}`);
         } catch (error) {
-          this.logger.error(`Failed to send expiring reminder for user ${payment.userId}:`, error);
+          this.logger.error(
+            `Failed to send expiring reminder for user ${payment.userId}:`,
+            error,
+          );
         }
       }
     } catch (error) {
