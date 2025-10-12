@@ -16,10 +16,11 @@ export class SubscriptionRepository {
       ? manager.getRepository(UserSubscriptionEntity)
       : this.subscriptionRepository;
     const sub = await subscriptionRepository.findOne({
-      where: {
-        userId,
-        status: SubscriptionStatusType.ACTIVE,
-      },
+      where: [
+        { userId, status: SubscriptionStatusType.ACTIVE },
+        { userId, status: SubscriptionStatusType.SCHEDULED },
+      ],
+      order: { startDate: 'DESC' },
     });
     if (!sub) {
       return null;

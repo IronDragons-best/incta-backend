@@ -68,6 +68,7 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
         amount: dto.paymentAmount,
         planType: dto.planType,
         paymentMethod: dto.paymentMethod,
+        billingDate: new Date(),
         status: PaymentStatusType.Succeeded,
       });
 

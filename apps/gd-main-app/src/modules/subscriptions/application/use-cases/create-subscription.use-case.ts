@@ -4,6 +4,7 @@ import {
   AppConfigService,
   NotificationService,
   PaymentMethodType,
+  PaymentStatusType,
   PlanType,
   WithoutFieldErrorResponseDto,
 } from '@common';
@@ -19,6 +20,8 @@ import {
 import { firstValueFrom, timeout } from 'rxjs';
 import { BadRequestException, HttpException } from '@nestjs/common';
 import { AxiosError } from 'axios';
+import { PaymentInfoEntity } from '../../domain/payment-info.entity';
+import { PaymentRepository } from '../../infrastructure/payment.repository';
 
 export class CreateSubscriptionCommand {
   constructor(
@@ -40,6 +43,7 @@ export class CreateSubscriptionUseCase
     private readonly notification: NotificationService,
     private readonly usersRepository: UsersRepository,
     private readonly subscriptionRepository: SubscriptionRepository,
+    private readonly paymentRepository: PaymentRepository,
     private readonly configService: AppConfigService,
     private readonly httpService: HttpService,
   ) {
@@ -77,7 +81,6 @@ export class CreateSubscriptionUseCase
           existingSubscriptionId: currentSubscription.subscriptionId,
         });
 
-        console.log('add payment: ', result);
         const userSubscription: UserSubscriptionEntity = user.createAdditional(
           command.planType,
           command.paymentMethod,
@@ -85,6 +88,25 @@ export class CreateSubscriptionUseCase
           result.startDate!,
         );
         const sub = await this.subscriptionRepository.save(userSubscription);
+        console.log(sub);
+
+        const additionalPayment = PaymentInfoEntity.createInstance({
+          userId: command.userId,
+          subscriptionId: sub.id,
+          planType: sub.planType,
+          paymentMethod: sub.paymentMethod,
+          amount: result.amount,
+          billingDate: sub.startDate,
+          status: PaymentStatusType.Scheduled,
+        });
+
+        currentSubscription.update({
+          status: currentSubscription.status,
+          endDate: new Date(result.startDate! * 1000),
+          isAutoRenewal: false,
+        });
+        await this.subscriptionRepository.save(currentSubscription);
+        await this.paymentRepository.save(additionalPayment);
 
         return notify.setValue({
           subscriptionId: sub.id,

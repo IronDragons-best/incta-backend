@@ -56,11 +56,14 @@ export class CreateAdditionalSubscriptionUseCase
         10,
       );
 
-      const activeSubscription = existingActiveSubscriptions.find(
+      const activeOrScheduledSubscription = existingActiveSubscriptions.find(
         (sub) => sub.subscriptionStatus === SubscriptionStatusType.ACTIVE,
       );
 
-      if (activeSubscription && !createAdditionalSubscriptionDto.existingSubscriptionId) {
+      if (
+        activeOrScheduledSubscription &&
+        !createAdditionalSubscriptionDto.existingSubscriptionId
+      ) {
         this.logger.warn(
           `User ${createAdditionalSubscriptionDto.userId} already has an active subscription but no existing subscription ID provided`,
         );
@@ -93,24 +96,40 @@ export class CreateAdditionalSubscriptionUseCase
           );
         }
 
-        if (existingSubscription.subscriptionStatus !== SubscriptionStatusType.ACTIVE) {
+        if (
+          existingSubscription.subscriptionStatus !== SubscriptionStatusType.ACTIVE &&
+          existingSubscription.subscriptionStatus !== SubscriptionStatusType.SCHEDULED
+        ) {
           this.logger.error(
             `Subscription ${createAdditionalSubscriptionDto.existingSubscriptionId} is not active. Status: ${existingSubscription.subscriptionStatus}`,
           );
           return notify.setBadRequest('Cannot extend inactive subscription');
         }
-
         if (existingSubscription.stripeSubscriptionId) {
           try {
-            const stripeSubscription = await this.stripeService.getSubscription(
+            const stripeSubscription = await this.getAnySubscription(
               existingSubscription.stripeSubscriptionId,
             );
+            console.log('findone ', stripeSubscription);
 
-            const maxPeriodEnd = stripeSubscription.items?.data
-              ?.map((item) => item.current_period_end)
-              .filter(Boolean)
-              .reduce((max, cur) => Math.max(max, cur), 0);
+            let maxPeriodEnd: number | undefined;
 
+            if ('items' in stripeSubscription && stripeSubscription.items?.data?.length) {
+              maxPeriodEnd = stripeSubscription.items.data
+                .map((item) => (item as any).current_period_end)
+                .filter(Boolean)
+                .reduce((max, cur) => Math.max(max, cur), 0);
+            } else if (
+              'phases' in stripeSubscription &&
+              stripeSubscription.phases?.length
+            ) {
+              // Это отложенная подписка (Schedule)
+              const lastPhase =
+                stripeSubscription.phases[stripeSubscription.phases.length - 1];
+              if (lastPhase.end_date) {
+                maxPeriodEnd = lastPhase.end_date;
+              }
+            }
             if (maxPeriodEnd) {
               billingCycleAnchor = maxPeriodEnd;
               this.logger.log(
@@ -122,6 +141,7 @@ export class CreateAdditionalSubscriptionUseCase
               );
             }
           } catch (err) {
+            console.log(err);
             this.logger.error(`Failed to fetch Stripe subscription: ${err.message}`);
           }
         }
@@ -139,28 +159,52 @@ export class CreateAdditionalSubscriptionUseCase
 
       const amount = typeof price.unit_amount === 'number' ? price.unit_amount : 0;
       const currency = price.currency || 'usd';
-
+      console.log(
+        createAdditionalSubscriptionDto.existingSubscriptionId,
+        billingCycleAnchor,
+      );
       if (createAdditionalSubscriptionDto.existingSubscriptionId && billingCycleAnchor) {
+        const endDate = new Date(billingCycleAnchor * 1000);
+        const existingSubscription: Payment | null =
+          await this.paymentRepository.findById(
+            createAdditionalSubscriptionDto.existingSubscriptionId,
+          );
+
+        if (existingSubscription) {
+          if (existingSubscription.stripeSubscriptionId) {
+            await this.cancelStripeSubscription(
+              existingSubscription.stripeSubscriptionId,
+            );
+          }
+          existingSubscription.currentPeriodEnd = endDate;
+          await this.paymentRepository.update(existingSubscription.id, {
+            currentPeriodEnd: endDate,
+          });
+          this.logger.log(
+            `Updated existing subscription ${existingSubscription.id} endDate to ${new Date(billingCycleAnchor * 1000).toISOString()}`,
+          );
+        }
+
         const additionalPaymentId = uuidv4();
-        const additionalPayment = await this.paymentRepository.create({
-          id: additionalPaymentId,
-          userId: createAdditionalSubscriptionDto.userId,
-          stripeCustomerId: customer.id,
-          subscriptionStatus: SubscriptionStatusType.INCOMPLETE,
-          planType: createAdditionalSubscriptionDto.planType,
-          amount: amount,
-          currency: currency,
-          payType: PaymentMethodType.Stripe,
-          status: PaymentStatusType.Processing,
-          parentSubscriptionId: createAdditionalSubscriptionDto.existingSubscriptionId,
-        });
         const schedule = await this.stripeService.createSubscriptionSchedule(
           customer.id,
           priceId,
           billingCycleAnchor,
           additionalPaymentId,
         );
-        console.log(schedule);
+        const additionalPayment = await this.paymentRepository.create({
+          id: additionalPaymentId,
+          userId: createAdditionalSubscriptionDto.userId,
+          stripeCustomerId: customer.id,
+          subscriptionStatus: SubscriptionStatusType.SCHEDULED,
+          planType: createAdditionalSubscriptionDto.planType,
+          amount: amount,
+          currency: currency,
+          payType: PaymentMethodType.Stripe,
+          status: PaymentStatusType.Processing,
+          stripeSubscriptionId: schedule.id,
+          parentSubscriptionId: createAdditionalSubscriptionDto.existingSubscriptionId,
+        });
 
         if (!schedule) {
           this.logger.error('Failed to create schedule subscription');
@@ -174,6 +218,7 @@ export class CreateAdditionalSubscriptionUseCase
         return notify.setValue(
           new CreateAdditionalPaymentResponseDto(
             additionalPaymentId,
+            amount / 100,
             schedule.id,
             schedule.phases?.[0]?.start_date,
           ),
@@ -216,6 +261,31 @@ export class CreateAdditionalSubscriptionUseCase
     } catch (error) {
       this.logger.error('Failed to create additional subscription', error);
       return notify.setBadRequest('Failed to create additional subscription');
+    }
+  }
+
+  async getAnySubscription(id: string) {
+    if (id.startsWith('sub_sched_')) {
+      return this.stripeService.getScheduledSubscription(id);
+    }
+
+    return this.stripeService.getSubscription(id);
+  }
+
+  async cancelStripeSubscription(stripeId: string) {
+    if (!stripeId) return;
+
+    try {
+      if (stripeId.startsWith('sub_sched_')) {
+        await this.stripeService.cancelScheduledSubscription(stripeId);
+        this.logger.log(`Cancelled scheduled subscription ${stripeId}`);
+      } else {
+        // Обычная активная подписка
+        await this.stripeService.cancelSubscription(stripeId);
+        this.logger.log(`Cancelled active subscription ${stripeId}`);
+      }
+    } catch (err) {
+      this.logger.error(`Failed to cancel subscription ${stripeId}: ${err.message}`);
     }
   }
 }

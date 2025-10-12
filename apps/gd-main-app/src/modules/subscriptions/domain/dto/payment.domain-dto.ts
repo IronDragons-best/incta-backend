@@ -7,4 +7,5 @@ export interface CreatePaymentDto {
   planType: PlanType;
   paymentMethod: PaymentMethodType;
   status: PaymentStatusType;
+  billingDate: Date;
 }

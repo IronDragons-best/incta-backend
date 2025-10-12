@@ -359,7 +359,7 @@ export class User extends BasicEntity {
     });
 
     sub.update({
-      status: SubscriptionStatusType.ACTIVE,
+      status: SubscriptionStatusType.SCHEDULED,
       startDate: new Date(startDate * 1000),
       endDate: undefined,
       isAutoRenewal: true,

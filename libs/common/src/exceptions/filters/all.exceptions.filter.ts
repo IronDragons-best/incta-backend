@@ -16,7 +16,6 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
-    console.log('from exc');
     // Обработка HttpException (включая BadRequestException от NotificationInterceptor)
     if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse() as any;

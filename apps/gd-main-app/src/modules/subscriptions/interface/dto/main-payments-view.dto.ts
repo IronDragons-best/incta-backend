@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PaymentMethodType, PlanType } from '@common';
-import { PaymentInfoEntity } from '../../domain/payment-info.entity';
 import { PagedResponse } from '../../../../../core/common/pagination/paged.response';
 
 export class PagedPaymentsViewDto extends PagedResponse<MainPaymentsViewDto> {
@@ -24,11 +23,12 @@ export class MainPaymentsViewDto {
 
   @ApiProperty({
     type: String,
+    nullable: true,
     format: 'date-time',
     example: '2025-12-21T12:00:00.000Z',
     description: 'Subscription end Date (ISO 8601)',
   })
-  endDate: string;
+  endDate: string | null;
 
   @ApiProperty({
     type: Number,
@@ -58,9 +58,10 @@ export class MainPaymentsViewDto {
     planType: PlanType,
     paymentMethod: PaymentMethodType,
   ) {
+    console.log(billingDate, endDate);
     const dto = new this();
     dto.dateOfPayment = billingDate.toISOString();
-    dto.endDate = endDate.toISOString();
+    dto.endDate = endDate ? endDate.toISOString() : null;
     dto.price = amount;
     dto.subscriptionType = planType;
     dto.payType = paymentMethod;
