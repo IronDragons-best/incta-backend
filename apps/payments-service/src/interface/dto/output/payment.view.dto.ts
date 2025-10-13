@@ -34,6 +34,12 @@ export class PaymentViewDto {
   @ApiProperty({ type: Date, nullable: true, description: 'Current period end date' })
   currentPeriodEnd?: Date | null;
 
+  @ApiProperty({ type: Date, nullable: true, description: 'Date when subscription was canceled' })
+  canceledAt?: Date | null;
+
+  @ApiProperty({ type: Boolean, nullable: true, description: 'Will subscription cancel at the end of period' })
+  cancelAtPeriodEnd?: boolean;
+
   @ApiProperty({
     type: String,
     nullable: true,
@@ -58,6 +64,8 @@ export class PaymentViewDto {
     this.subscriptionStatus = payment.subscriptionStatus;
     this.currentPeriodStart = payment.currentPeriodStart || null;
     this.currentPeriodEnd = payment.currentPeriodEnd || null;
+    this.canceledAt = payment.canceledAt || null;
+    this.cancelAtPeriodEnd = payment.cancelAtPeriodEnd || false;
     this.parentSubscriptionId = payment.parentSubscriptionId || null;
 
     this.isActive = this.calculateIsActive(payment);

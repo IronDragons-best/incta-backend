@@ -44,6 +44,8 @@ export class SendSubscriptionRemindersUseCase {
       const tomorrowEnd = new Date(tomorrow);
       tomorrowEnd.setHours(23, 59, 59, 999);
 
+      this.logger.log(`Searching for subscriptions to be charged between ${tomorrow.toISOString()} and ${tomorrowEnd.toISOString()}`);
+
       const payments = await this.paymentRepository.findActiveSubscriptionsWithBillingDate(
         tomorrow,
         tomorrowEnd
@@ -53,13 +55,15 @@ export class SendSubscriptionRemindersUseCase {
 
       for (const payment of payments) {
         try {
+          const amountInDollars = (payment.amount || 0) / 100;
+
           this.eventEmitter.emit(
             'subscription.charge.warning',
             new SubscriptionChargeWarningEvent({
               userId: payment.userId,
               planType: payment.planType!,
               chargeDate: tomorrow.toISOString(),
-              amount: payment.amount || 0,
+              amount: amountInDollars,
             }),
           );
 
@@ -82,12 +86,12 @@ export class SendSubscriptionRemindersUseCase {
       const threeDaysEnd = new Date(threeDaysFromNow);
       threeDaysEnd.setHours(23, 59, 59, 999);
 
+      this.logger.log(`Searching for subscriptions expiring between ${threeDaysFromNow.toISOString()} and ${threeDaysEnd.toISOString()}`);
+
       const payments = await this.paymentRepository.findSubscriptionsExpiringBetween(
         threeDaysFromNow,
         threeDaysEnd
       );
-
-      this.logger.log(`Found ${payments.length} subscriptions expiring in 3 days`);
 
       for (const payment of payments) {
         try {

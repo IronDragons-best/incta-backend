@@ -41,15 +41,15 @@ export class CancelSubscriptionUseCase
       return notify.setNotFound('Subscription not found');
     }
 
-    if (subscription.currentPeriodEnd) {
-      this.logger.warn(`Subscription ${id} is already canceled`);
-      return notify.setBadRequest('Subscription is already canceled');
+    if (subscription.cancelAtPeriodEnd) {
+      this.logger.warn(`Subscription ${id} is already set to cancel at period end`);
+      return notify.setBadRequest('Subscription is already set to cancel at period end');
     }
 
     if (
-      subscription.subscriptionStatus !== SubscriptionStatusType.ACTIVE &&
-      subscription.subscriptionStatus !== SubscriptionStatusType.INCOMPLETE &&
-      subscription.subscriptionStatus !== SubscriptionStatusType.TRIALING
+      subscription.subscriptionStatus === SubscriptionStatusType.CANCELED ||
+      subscription.subscriptionStatus === SubscriptionStatusType.INCOMPLETE_EXPIRED ||
+      subscription.subscriptionStatus === SubscriptionStatusType.UNPAID
     ) {
       this.logger.warn(
         `Cannot cancel subscription ${id} with status: ${subscription.subscriptionStatus}`,
@@ -71,11 +71,19 @@ export class CancelSubscriptionUseCase
           `Disabled auto-renewal for Stripe subscription: ${subscription.stripeSubscriptionId}`,
         );
 
-        const updateData: any = {};
+        const updateData: any = {
+          cancelAtPeriodEnd: canceledStripeSubscription.cancel_at_period_end || false,
+        };
 
         if (canceledStripeSubscription.start_date) {
           updateData.currentPeriodStart = new Date(
             canceledStripeSubscription.start_date * 1000,
+          );
+        }
+
+        if (canceledStripeSubscription.canceled_at) {
+          updateData.canceledAt = new Date(
+            canceledStripeSubscription.canceled_at * 1000,
           );
         }
 

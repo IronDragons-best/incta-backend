@@ -127,8 +127,9 @@ export class UpdateSubscriptionFromWebhookUseCase
 
         if (period) {
           updateData.currentPeriodStart = new Date(period.start * 1000);
+          updateData.currentPeriodEnd = new Date(period.end * 1000);
           this.logger.log(
-            `Updated subscription ${stripeSubscription.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`,
+            `Updated subscription ${stripeSubscription.id} with invoice period: ${updateData.currentPeriodStart.toISOString()} - ${updateData.currentPeriodEnd.toISOString()}`,
           );
         } else {
           this.logger.warn(
