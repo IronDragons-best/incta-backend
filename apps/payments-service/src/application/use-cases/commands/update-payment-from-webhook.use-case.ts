@@ -125,6 +125,7 @@ export class UpdatePaymentFromWebhookUseCase
         status: PaymentStatusType;
         subscriptionStatus?: SubscriptionStatusType;
         currentPeriodStart?: Date;
+        currentPeriodEnd?: Date;
       } = {
         status: PaymentStatusType.Succeeded,
       };
@@ -139,9 +140,10 @@ export class UpdatePaymentFromWebhookUseCase
       if (lineItems.length > 0 && lineItems[0].period) {
         const period = lineItems[0].period;
         updateData.currentPeriodStart = new Date(period.start * 1000);
+        updateData.currentPeriodEnd = new Date(period.end * 1000);
 
         this.logger.log(
-          `Updating payment ${payment.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`,
+          `Updating payment ${payment.id} with invoice period: ${updateData.currentPeriodStart.toISOString()} - ${updateData.currentPeriodEnd.toISOString()}`,
         );
       } else {
         const paidAt = invoiceData.status_transitions.paid_at;

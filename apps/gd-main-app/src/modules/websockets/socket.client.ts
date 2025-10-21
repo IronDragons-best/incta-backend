@@ -4,7 +4,7 @@ import readline from 'readline';
 
 // Твой JWT токен
 const token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzU5NzYyMzQwLCJleHAiOjE3NTk3Njk1NDB9.AieW3AMrjO9r_EGNyAJGNQyc-_GjyZHlo9oEKsoFulE';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzYwMDIyOTE2LCJleHAiOjE3NjAwMjY0NTZ9.uJ9XtbHRzzDG1hyPPr9340Qp_WmEnh6sioZARJY9r9M';
 
 // URL твоего Gateway (namespace)
 const URL = 'http://localhost:3000/notifications';

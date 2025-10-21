@@ -204,9 +204,10 @@ export class PaymentRepository {
         deletedAt: { $exists: false },
         subscriptionStatus: 'ACTIVE',
         stripeSubscriptionId: { $exists: true },
+        currentPeriodEnd: { $gte: startDate, $lte: endDate },
         $or: [
-          { nextBillingDate: { $gte: startDate, $lte: endDate } },
-          { endDate: { $gte: startDate, $lte: endDate } }
+          { cancelAtPeriodEnd: false },
+          { cancelAtPeriodEnd: { $exists: false } }
         ]
       })
       .exec();
@@ -220,7 +221,13 @@ export class PaymentRepository {
       .find({
         deletedAt: { $exists: false },
         subscriptionStatus: 'ACTIVE',
-        endDate: { $gte: startDate, $lte: endDate }
+        currentPeriodEnd: { $gte: startDate, $lte: endDate },
+        $or: [
+          { stripeSubscriptionId: { $exists: false } },
+          { stripeSubscriptionId: null },
+          { stripeSubscriptionId: '' },
+          { cancelAtPeriodEnd: true }
+        ]
       })
       .exec();
   }
