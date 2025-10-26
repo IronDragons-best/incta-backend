@@ -64,7 +64,7 @@ export class CurrentSubscriptionViewDto {
     const dto = new this();
     dto.subscriptionPlan = subPlan;
     dto.subscriptionId = subId ? subId : null;
-    dto.isAutoRenewal = isAutoRenewal ? isAutoRenewal : null;
+    dto.isAutoRenewal = isAutoRenewal !== undefined ? isAutoRenewal : null;
     dto.planType = planType ? planType : null;
     dto.expireAt = expiresAt ? expiresAt.toISOString() : null;
     dto.nextPayment = nextPayment ? nextPayment.toISOString() : null;

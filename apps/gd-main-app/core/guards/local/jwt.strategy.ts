@@ -12,7 +12,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     const jwtAccessSecret = configService.jwtAccessSecret;
     super({
       jwtFromRequest: (req: Request) => {
-        return req?.cookies?.accessToken;
+        if (req?.cookies?.accessToken) {
+          return req.cookies.accessToken;
+        }
+
+        const authHeader = req?.headers?.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          return authHeader.substring(7);
+        }
+
+        return null;
       },
       ignoreExpiration: false,
       secretOrKey: jwtAccessSecret,

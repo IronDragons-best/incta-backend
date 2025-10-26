@@ -196,7 +196,7 @@ export class PaymentsConfigService extends ConfigService {
   get redirectCancelUrl(): string {
     const url = this.get<string>('REDIRECT_CANCEL_URL');
     if (!url) {
-       throw new Error('Redirect cancel url is required');
+      throw new Error('Redirect cancel url is required');
     }
     return url;
   }

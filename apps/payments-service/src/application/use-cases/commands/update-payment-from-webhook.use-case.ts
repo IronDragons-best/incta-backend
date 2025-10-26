@@ -11,6 +11,8 @@ import { Payment } from '../../../domain/payment';
 import { StripeInvoice } from '../../../domain/types/stripe.types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentSuccessEvent } from '../../../../core/events/payment-success.event';
+import { SubscriptionActivatedEvent } from '../../../../core/events/subscription-activated.event';
+import { StripeService } from '../../stripe.service';
 
 export class UpdatePaymentFromWebhookCommand {
   constructor(
@@ -28,6 +30,7 @@ export class UpdatePaymentFromWebhookUseCase
     private readonly logger: CustomLogger,
     private readonly notification: NotificationService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly stripeService: StripeService,
   ) {
     this.logger.setContext('Update payment from webhook use case');
   }
@@ -64,8 +67,24 @@ export class UpdatePaymentFromWebhookUseCase
       );
 
       let payment: Payment | null = null;
+      let paymentIdFromMetadata: string | null = null;
 
       if (stripeSubscriptionId) {
+        try {
+          const subscription =
+            await this.stripeService.getSubscription(stripeSubscriptionId);
+          paymentIdFromMetadata = subscription.metadata?.paymentId || null;
+          if (paymentIdFromMetadata) {
+            this.logger.log(
+              `Found paymentId in subscription metadata: ${paymentIdFromMetadata}`,
+            );
+          }
+        } catch (error) {
+          this.logger.warn(
+            `Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+        }
+
         payment =
           await this.paymentRepository.findByStripeSubscriptionId(stripeSubscriptionId);
         if (payment) {
@@ -73,6 +92,17 @@ export class UpdatePaymentFromWebhookUseCase
         } else {
           this.logger.warn(
             `No payment found with subscription ID: ${stripeSubscriptionId}`,
+          );
+        }
+      }
+
+      if (!payment && paymentIdFromMetadata) {
+        payment = await this.paymentRepository.findById(paymentIdFromMetadata);
+        if (payment) {
+          this.logger.log(`Found payment by metadata paymentId: ${payment.id}`);
+        } else {
+          this.logger.warn(
+            `No payment found with metadata paymentId: ${paymentIdFromMetadata}`,
           );
         }
       }
@@ -97,11 +127,14 @@ export class UpdatePaymentFromWebhookUseCase
         status: PaymentStatusType;
         subscriptionStatus?: SubscriptionStatusType;
         currentPeriodStart?: Date;
+        currentPeriodEnd?: Date;
       } = {
         status: PaymentStatusType.Succeeded,
       };
 
-      if (payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE) {
+      const isSubscriptionActivation =
+        payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE;
+      if (isSubscriptionActivation) {
         updateData.subscriptionStatus = SubscriptionStatusType.ACTIVE;
         this.logger.log(`Activating subscription for payment: ${payment.id}`);
       }
@@ -110,9 +143,10 @@ export class UpdatePaymentFromWebhookUseCase
       if (lineItems.length > 0 && lineItems[0].period) {
         const period = lineItems[0].period;
         updateData.currentPeriodStart = new Date(period.start * 1000);
+        updateData.currentPeriodEnd = new Date(period.end * 1000);
 
         this.logger.log(
-          `Updating payment ${payment.id} with invoice period start: ${updateData.currentPeriodStart.toISOString()}`,
+          `Updating payment ${payment.id} with invoice period: ${updateData.currentPeriodStart.toISOString()} - ${updateData.currentPeriodEnd.toISOString()}`,
         );
       } else {
         const paidAt = invoiceData.status_transitions.paid_at;
@@ -148,23 +182,34 @@ export class UpdatePaymentFromWebhookUseCase
           }
 
           const period = lineItems[0].period;
-          this.eventEmitter.emit(
-            'payment.success',
-            new PaymentSuccessEvent({
-              userId: payment.userId,
-              externalSubscriptionId: payment.id,
-              status: PaymentStatusType.Succeeded,
-              startDate: new Date(period.start * 1000).toISOString(),
-              endDate: new Date(period.end * 1000).toISOString(),
-              planType: payment.planType!,
-              paymentMethod: payment.payType,
-              paymentAmount: invoiceData.amount_paid / 100,
-              externalPaymentId: invoiceData.id,
-              billingDate: new Date(
-                invoiceData.status_transitions.paid_at * 1000,
-              ).toISOString(),
-            }),
-          );
+          const paymentSuccess = new PaymentSuccessEvent({
+            userId: payment.userId,
+            externalSubscriptionId: payment.id,
+            status: PaymentStatusType.Succeeded,
+            startDate: new Date(period.start * 1000).toISOString(),
+            endDate: new Date(period.end * 1000).toISOString(),
+            planType: payment.planType!,
+            paymentMethod: payment.payType,
+            paymentAmount: invoiceData.amount_paid / 100,
+            externalPaymentId: invoiceData.id,
+            billingDate: new Date(
+              invoiceData.status_transitions.paid_at * 1000,
+            ).toISOString(),
+          });
+          this.eventEmitter.emit('payment.success', paymentSuccess);
+          this.eventEmitter.emit('payment.success.notification', paymentSuccess);
+
+          if (isSubscriptionActivation) {
+            this.eventEmitter.emit(
+              'subscription.activated',
+              new SubscriptionActivatedEvent({
+                userId: payment.userId,
+                planType: payment.planType!,
+                endDate: new Date(period.end * 1000).toISOString(),
+              }),
+            );
+            this.logger.log(`Subscription activated for user: ${payment.userId}`);
+          }
         }
       }
 

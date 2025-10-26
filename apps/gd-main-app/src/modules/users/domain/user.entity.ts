@@ -17,6 +17,7 @@ import {
   PlanType,
   SubscriptionStatusType,
 } from '../../../../../../libs/common/src/types/payment.types';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 export type UserDomainDtoType = {
   username: string;
@@ -26,8 +27,10 @@ export type UserDomainDtoType = {
 };
 
 @Entity()
+@ObjectType()
 export class User extends BasicEntity {
   @Column()
+  @Field()
   username: string;
 
   @Column()
@@ -340,6 +343,28 @@ export class User extends BasicEntity {
       paymentMethod,
       subscriptionId,
     });
+  }
+
+  createAdditional(
+    planType: PlanType,
+    paymentMethod: PaymentMethodType,
+    subscriptionId: string,
+    startDate: number,
+  ) {
+    const sub: UserSubscriptionEntity = UserSubscriptionEntity.createInstance({
+      userId: this.id,
+      planType,
+      paymentMethod,
+      subscriptionId,
+    });
+
+    sub.update({
+      status: SubscriptionStatusType.SCHEDULED,
+      startDate: new Date(startDate * 1000),
+      endDate: undefined,
+      isAutoRenewal: true,
+    });
+    return sub;
   }
 
   updateSubscriptionStatus(status: boolean) {

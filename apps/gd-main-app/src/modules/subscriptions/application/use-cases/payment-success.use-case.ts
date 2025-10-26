@@ -36,7 +36,6 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
     await this.dataSource.transaction(async (manager) => {
       const subscription: UserSubscriptionEntity | null =
         await this.subscriptionRepository.findOne(dto.externalSubscriptionId, manager);
-
       if (!subscription) {
         this.logger.warn(
           `Could not find subscription with subId: ${dto.externalSubscriptionId}`,
@@ -45,6 +44,8 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
           'Could not find subscription with subId: ' + dto.externalSubscriptionId,
         );
       }
+
+      this.logger.log(`Updating sub for ${subscription?.id}`);
 
       let newSubscriptionStatus = subscription.status;
 
@@ -58,6 +59,8 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
         endDate: new Date(dto.endDate),
       });
 
+      this.logger.log(subscription);
+
       if (!subscription.user.hasActiveSubscription) {
         subscription.user.updateSubscriptionStatus(true);
       }
@@ -68,6 +71,7 @@ export class PaymentSuccessUseCase implements ICommandHandler<PaymentSuccessComm
         amount: dto.paymentAmount,
         planType: dto.planType,
         paymentMethod: dto.paymentMethod,
+        billingDate: new Date(),
         status: PaymentStatusType.Succeeded,
       });
 

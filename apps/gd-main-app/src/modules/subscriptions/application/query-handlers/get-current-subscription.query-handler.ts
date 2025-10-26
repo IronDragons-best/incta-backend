@@ -7,13 +7,13 @@ import {
   WithoutFieldErrorResponseDto,
 } from '@common';
 import { HttpService } from '@nestjs/axios';
-import { SubscriptionRepository } from '../../infrastructure/subscription.repository';
 import { CurrentSubscriptionViewDto } from '../../interface/dto/current-subscription-view.dto';
 import { firstValueFrom } from 'rxjs';
 import { AxiosError, AxiosResponse } from 'axios';
 import { PaymentViewDto } from '../../../../../../payments-service/src/interface/dto/output/payment.view.dto';
 import { HttpException } from '@nestjs/common';
 import { UserSubscriptionEntity } from '../../domain/user-subscription.entity';
+import { SubscriptionQueryRepository } from '../../infrastructure/subscription.query-repository';
 
 export class GetCurrentSubscriptionQuery {
   constructor(public userId: number) {}
@@ -28,21 +28,17 @@ export class GetCurrentSubscriptionHandler
     private readonly notification: NotificationService,
     private readonly httpService: HttpService,
     private readonly configService: AppConfigService,
-    private readonly subscriptionRepository: SubscriptionRepository,
+    private readonly subscriptionRepository: SubscriptionQueryRepository,
   ) {
-    console.log('constructor');
     this.logger.setContext('GetCurrentSubscriptionHandler');
   }
 
   async execute(query: GetCurrentSubscriptionQuery) {
-    console.log('ashdasdasdkjasdljasdjasdljasdlj');
     const notify = this.notification.create();
 
     let currentSubscription: UserSubscriptionEntity | null = null;
     try {
-      currentSubscription = await this.subscriptionRepository.findOneByUserId(
-        query.userId,
-      );
+      currentSubscription = await this.subscriptionRepository.findByUserId(query.userId);
     } catch (e) {
       console.error(e);
     }
@@ -72,9 +68,10 @@ export class GetCurrentSubscriptionHandler
           headers: { Authorization: authHeader },
         }),
       );
-      const isAutoRenewal = data.currentPeriodEnd === null;
+      const isAutoRenewal = data.cancelAtPeriodEnd === false;
+      console.log(isAutoRenewal);
       const plan = data.isActive ? SubscriptionPlan.Business : SubscriptionPlan.Personal;
-
+      console.log('data ', data);
       const viewDto = CurrentSubscriptionViewDto.mapToView(
         plan,
         data.id,

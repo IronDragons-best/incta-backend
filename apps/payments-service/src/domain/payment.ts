@@ -74,6 +74,17 @@ export class Payment {
   @IsDate()
   @IsOptional()
   @Prop({ type: Date, required: false })
+  canceledAt?: Date;
+
+  @ApiProperty({ type: Boolean })
+  @IsOptional()
+  @Prop({ type: Boolean, required: false, default: false })
+  cancelAtPeriodEnd?: boolean;
+
+  @ApiProperty({ type: Date, nullable: true })
+  @IsDate()
+  @IsOptional()
+  @Prop({ type: Date, required: false })
   deletedAt?: Date;
 
   @ApiProperty({ enum: PaymentMethodType })

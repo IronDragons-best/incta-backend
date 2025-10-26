@@ -44,7 +44,7 @@ export class PaymentInfoEntity extends BasicEntity {
     payment.planType = dto.planType;
     payment.paymentMethod = dto.paymentMethod;
     payment.amount = dto.amount;
-    payment.billingDate = new Date();
+    payment.billingDate = dto.billingDate ? dto.billingDate : new Date();
     payment.status = dto.status;
     return payment;
   }

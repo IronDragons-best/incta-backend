@@ -18,6 +18,7 @@ export enum SubscriptionStatusType {
   INCOMPLETE_EXPIRED = 'INCOMPLETE_EXPIRED',
   TRIALING = 'TRIALING',
   UNPAID = 'UNPAID',
+  SCHEDULED = 'SCHEDULED',
 }
 
 export enum PaymentStatusType {
@@ -26,6 +27,7 @@ export enum PaymentStatusType {
   'Failed' = 'failed', // Платеж не прошел
   'Refunded' = 'refunded', // Возвращен
   'Cancelled' = 'cancelled', // Отменен до завершения
+  'Scheduled' = 'scheduled',
 }
 
 export enum PaymentMethodType {

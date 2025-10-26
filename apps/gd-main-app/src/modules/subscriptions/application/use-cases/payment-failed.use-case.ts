@@ -55,6 +55,7 @@ export class PaymentFailedUseCase implements ICommandHandler<PaymentFailedComman
         amount: payload.attemptedAmount,
         planType: payload.planType,
         paymentMethod: payload.paymentMethod,
+        billingDate: new Date(),
         status: PaymentStatusType.Failed,
       });
 
