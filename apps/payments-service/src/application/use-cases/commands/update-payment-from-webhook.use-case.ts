@@ -80,7 +80,9 @@ export class UpdatePaymentFromWebhookUseCase
             );
           }
         } catch (error) {
-          this.logger.warn(`Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          this.logger.warn(
+            `Failed to fetch subscription metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
         }
 
         payment =
@@ -130,7 +132,8 @@ export class UpdatePaymentFromWebhookUseCase
         status: PaymentStatusType.Succeeded,
       };
 
-      const isSubscriptionActivation = payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE;
+      const isSubscriptionActivation =
+        payment.subscriptionStatus === SubscriptionStatusType.INCOMPLETE;
       if (isSubscriptionActivation) {
         updateData.subscriptionStatus = SubscriptionStatusType.ACTIVE;
         this.logger.log(`Activating subscription for payment: ${payment.id}`);
@@ -179,23 +182,22 @@ export class UpdatePaymentFromWebhookUseCase
           }
 
           const period = lineItems[0].period;
-          this.eventEmitter.emit(
-            'payment.success',
-            new PaymentSuccessEvent({
-              userId: payment.userId,
-              externalSubscriptionId: payment.id,
-              status: PaymentStatusType.Succeeded,
-              startDate: new Date(period.start * 1000).toISOString(),
-              endDate: new Date(period.end * 1000).toISOString(),
-              planType: payment.planType!,
-              paymentMethod: payment.payType,
-              paymentAmount: invoiceData.amount_paid / 100,
-              externalPaymentId: invoiceData.id,
-              billingDate: new Date(
-                invoiceData.status_transitions.paid_at * 1000,
-              ).toISOString(),
-            }),
-          );
+          const paymentSuccess = new PaymentSuccessEvent({
+            userId: payment.userId,
+            externalSubscriptionId: payment.id,
+            status: PaymentStatusType.Succeeded,
+            startDate: new Date(period.start * 1000).toISOString(),
+            endDate: new Date(period.end * 1000).toISOString(),
+            planType: payment.planType!,
+            paymentMethod: payment.payType,
+            paymentAmount: invoiceData.amount_paid / 100,
+            externalPaymentId: invoiceData.id,
+            billingDate: new Date(
+              invoiceData.status_transitions.paid_at * 1000,
+            ).toISOString(),
+          });
+          this.eventEmitter.emit('payment.success', paymentSuccess);
+          this.eventEmitter.emit('payment.success.notification', paymentSuccess);
 
           if (isSubscriptionActivation) {
             this.eventEmitter.emit(

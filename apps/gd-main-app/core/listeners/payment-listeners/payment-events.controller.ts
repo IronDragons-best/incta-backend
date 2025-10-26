@@ -16,9 +16,11 @@ export class PaymentEventsController {
     this.logger.setContext('PaymentEventsController');
   }
 
-  @MessagePattern('payment.success')
+  @MessagePattern('payment.success.notification')
   handlePaymentSuccess(@Payload() data: any) {
-    this.logger.log(`Received payment.success event from RabbitMQ for user: ${data.userId}`);
+    this.logger.log(
+      `Received payment.success event from RabbitMQ for user: ${data.userId}`,
+    );
 
     this.eventEmitter.emit(
       'payment.success.notification',
@@ -33,21 +35,21 @@ export class PaymentEventsController {
 
   @MessagePattern('subscription.activated')
   handleSubscriptionActivated(@Payload() data: any) {
-    this.logger.log(`Received subscription.activated event from RabbitMQ for user: ${data.userId}`);
+    this.logger.log(
+      `Received subscription.activated event from RabbitMQ for user: ${data.userId}`,
+    );
 
     this.eventEmitter.emit(
       'subscription.activated',
-      new SubscriptionActivatedEvent(
-        data.userId,
-        data.planType,
-        data.endDate,
-      ),
+      new SubscriptionActivatedEvent(data.userId, data.planType, data.endDate),
     );
   }
 
   @MessagePattern('subscription.charge.warning')
   handleSubscriptionChargeWarning(@Payload() data: any) {
-    this.logger.log(`Received subscription.charge.warning event from RabbitMQ for user: ${data.userId}`);
+    this.logger.log(
+      `Received subscription.charge.warning event from RabbitMQ for user: ${data.userId}`,
+    );
 
     this.eventEmitter.emit(
       'subscription.charge.warning',
@@ -62,7 +64,9 @@ export class PaymentEventsController {
 
   @MessagePattern('subscription.expiring.reminder')
   handleSubscriptionExpiringReminder(@Payload() data: any) {
-    this.logger.log(`Received subscription.expiring.reminder event from RabbitMQ for user: ${data.userId}`);
+    this.logger.log(
+      `Received subscription.expiring.reminder event from RabbitMQ for user: ${data.userId}`,
+    );
 
     this.eventEmitter.emit(
       'subscription.expiring.reminder',

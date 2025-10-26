@@ -68,7 +68,7 @@ export class GetCurrentSubscriptionHandler
           headers: { Authorization: authHeader },
         }),
       );
-      const isAutoRenewal = data.currentPeriodEnd === null;
+      const isAutoRenewal = data.cancelAtPeriodEnd === false;
       console.log(isAutoRenewal);
       const plan = data.isActive ? SubscriptionPlan.Business : SubscriptionPlan.Personal;
       console.log('data ', data);

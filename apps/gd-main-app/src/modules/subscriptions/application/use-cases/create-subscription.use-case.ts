@@ -88,7 +88,6 @@ export class CreateSubscriptionUseCase
           result.startDate!,
         );
         const sub = await this.subscriptionRepository.save(userSubscription);
-        console.log(sub);
 
         const additionalPayment = PaymentInfoEntity.createInstance({
           userId: command.userId,
